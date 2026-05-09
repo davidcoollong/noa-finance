@@ -557,7 +557,7 @@ tfoot td{padding:10px 14px;font-weight:800;border-top:2px solid var(--gray100);b
       </div>
       <div>
         <label class="form-label">금액 (원)</label>
-        <input type="number" class="form-input" id="fx-amount" placeholder="0" min="0" style="padding:10px;font-size:14px">
+        <input type="text" class="form-input" id="fx-amount" placeholder="0" style="padding:10px;font-size:14px">
       </div>
       <div>
         <label class="form-label">구분</label>
@@ -624,7 +624,7 @@ tfoot td{padding:10px 14px;font-weight:800;border-top:2px solid var(--gray100);b
     </div>
     <div class="form-group">
       <label class="form-label">금액 (원)</label>
-      <input type="number" class="form-input" id="add-amount" placeholder="0" min="0">
+      <input type="text" class="form-input" id="add-amount" placeholder="0">
     </div>
     <div class="modal-btns">
       <button class="modal-cancel" onclick="closeAddModal()">취소</button>
@@ -647,7 +647,7 @@ tfoot td{padding:10px 14px;font-weight:800;border-top:2px solid var(--gray100);b
     <div class="form-section">연간 목표</div>
     <div class="form-group">
       <label class="form-label">연간 총 수입 목표 (원)</label>
-      <input type="number" class="form-input" id="gm-annual" placeholder="120,000,000" min="0">
+      <input type="text" class="form-input" id="gm-annual" placeholder="120,000,000">
     </div>
     <div class="form-section">월별 수입 목표 (선택)</div>
     <div class="form-row-4" id="gm-monthly"></div>
@@ -771,7 +771,7 @@ function closeAddModal() { document.getElementById('add-overlay').classList.remo
 function submitEntry() {
   const date = document.getElementById('add-date').value;
   const memo = document.getElementById('add-memo').value.trim();
-  const amount = parseFloat(document.getElementById('add-amount').value);
+  const amount = parseFloat(document.getElementById('add-amount').value.replace(/,/g,''));
   if (!date) { alert('날짜를 입력해주세요.'); return; }
   if (!memo) { alert('항목명을 입력해주세요.'); return; }
   if (!amount || amount <= 0) { alert('금액을 올바르게 입력해주세요.'); return; }
@@ -814,25 +814,26 @@ function buildGoalMonthInputs() {
   document.getElementById('gm-monthly').innerHTML = MN.map((m,i) => `
     <div class="form-group form-group-sm">
       <label class="form-label">${m}</label>
-      <input type="number" class="form-input" id="gm-m-${i+1}" placeholder="0" min="0">
+      <input type="text" class="form-input" id="gm-m-${i+1}" placeholder="0">
     </div>`).join('');
 }
 function fillGoalModal() {
   const yr = parseInt(document.getElementById('gm-year').value) || goalYear;
   const t = DB.targets[String(yr)] || {};
-  document.getElementById('gm-annual').value = t.annual || '';
+  const fmt = n => n ? Number(n).toLocaleString('ko-KR') : '';
+  document.getElementById('gm-annual').value = fmt(t.annual);
   for (let m = 1; m <= 12; m++) {
     const el = document.getElementById('gm-m-' + m);
-    if (el) el.value = (t.monthly || {})[String(m).padStart(2,'0')] || '';
+    if (el) el.value = fmt((t.monthly || {})[String(m).padStart(2,'0')]);
   }
 }
 function saveGoal() {
   const yr = parseInt(document.getElementById('gm-year').value) || goalYear;
-  const annual = parseFloat(document.getElementById('gm-annual').value) || 0;
+  const annual = parseFloat(document.getElementById('gm-annual').value.replace(/,/g,'')) || 0;
   const monthly = {};
   for (let m = 1; m <= 12; m++) {
     const el = document.getElementById('gm-m-' + m);
-    const v = el ? (parseFloat(el.value) || 0) : 0;
+    const v = el ? (parseFloat(el.value.replace(/,/g,'')) || 0) : 0;
     if (v > 0) monthly[String(m).padStart(2,'0')] = v;
   }
   DB.targets[String(yr)] = {annual, monthly};
@@ -857,7 +858,7 @@ document.getElementById('fixed-overlay').addEventListener('click', function(e) {
 function addFixed() {
   const day    = parseInt(document.getElementById('fx-day').value);
   const memo   = document.getElementById('fx-memo').value.trim();
-  const amount = parseFloat(document.getElementById('fx-amount').value);
+  const amount = parseFloat(document.getElementById('fx-amount').value.replace(/,/g,''));
   const cat    = document.getElementById('fx-cat').value;
   if (!day || day < 1 || day > 31) { alert('납부일(1~31)을 입력해주세요.'); return; }
   if (!memo)   { alert('항목명을 입력해주세요.'); return; }
@@ -885,7 +886,7 @@ function updateFixed(id, field, value) {
   const f = FX.find(x => x.id === id);
   if (!f) return;
   if (field === 'amount') {
-    const v = parseFloat(value);
+    const v = parseFloat(value.toString().replace(/,/g,''));
     if (!isNaN(v) && v > 0) f.amount = v;
   } else if (field === 'dayOfMonth') {
     const v = parseInt(value);
@@ -932,7 +933,7 @@ function renderFixedModal() {
         onkeydown="if(event.key==='Enter')this.blur()">
     </td>
     <td class="ta-r">
-      <input class="tx-edit-amount" value="${f.amount}" type="number" min="0"
+      <input class="tx-edit-amount" value="${f.amount.toLocaleString('ko-KR')}" type="text"
         style="color:#FF9F0A;width:110px"
         onblur="updateFixed('${f.id}','amount',this.value)"
         onkeydown="if(event.key==='Enter')this.blur()">
@@ -1032,7 +1033,7 @@ function updateEntry(id, field, value) {
   const e = DB.entries.find(x => x.id === id);
   if (!e) return;
   if (field === 'amount') {
-    const v = parseFloat(value);
+    const v = parseFloat(value.toString().replace(/,/g,''));
     if (isNaN(v) || v <= 0) return;
     e.amount = v;
   } else {
@@ -1154,7 +1155,7 @@ function renderBoard() {
               onkeydown="if(event.key==='Enter')this.blur()">
           </div>
           <div style="display:flex;align-items:center;gap:4px">
-            <input class="tx-edit-amount ${e.type}" value="${e.amount}" type="number" min="0" title="클릭하여 편집"
+            <input class="tx-edit-amount ${e.type}" value="${e.amount.toLocaleString('ko-KR')}" type="text" title="클릭하여 편집"
               style="color:${e.type==='income'?'var(--blue)':'var(--gray500)'}"
               onblur="updateEntry('${e.id}','amount',this.value)"
               onkeydown="if(event.key==='Enter')this.blur()">
@@ -1216,7 +1217,7 @@ function renderWeekFixed(startDay, endDay) {
           <input class="fixed-name-edit" value="${f.memo.replace(/"/g,'&quot;')}"
             onblur="updateFixed('${f.id}','memo',this.value)"
             onkeydown="if(event.key==='Enter')this.blur()">
-          <input class="fixed-amount-edit" value="${f.amount}" type="number" min="0"
+          <input class="fixed-amount-edit" value="${f.amount.toLocaleString('ko-KR')}" type="text"
             onblur="updateFixed('${f.id}','amount',this.value)"
             onkeydown="if(event.key==='Enter')this.blur()">
           <button class="fixed-del" onclick="deleteFixed('${f.id}')" title="삭제">×</button>
