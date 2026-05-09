@@ -110,8 +110,47 @@ body{font-family:'Pretendard',-apple-system,'SF Pro Display',sans-serif;font-siz
 .tx-empty{text-align:center;padding:28px 16px;color:var(--gray500);font-size:12px}
 
 /* Week add row */
-.week-add-btn{display:block;width:calc(100% - 24px);margin:6px 12px 10px;background:transparent;border:1.5px dashed var(--gray300);color:var(--gray500);font-family:inherit;font-size:12px;font-weight:600;padding:7px;border-radius:8px;cursor:pointer;transition:all .15s;letter-spacing:-.01em}
+.week-add-btn{display:block;width:calc(100% - 24px);margin:6px 12px 4px;background:transparent;border:1.5px dashed var(--gray300);color:var(--gray500);font-family:inherit;font-size:12px;font-weight:600;padding:7px;border-radius:8px;cursor:pointer;transition:all .15s;letter-spacing:-.01em}
 .week-add-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+
+/* Fixed expense section */
+.fixed-section{border-top:1.5px solid var(--gray100);margin-top:2px}
+.fixed-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 6px}
+.fixed-header-label{font-size:9px;font-weight:800;color:var(--gray500);letter-spacing:.07em;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.fixed-dot{width:6px;height:6px;border-radius:50%;background:#FF9F0A;flex-shrink:0}
+.fixed-list{padding:0 0 8px}
+.fixed-item{display:flex;align-items:center;justify-content:space-between;padding:5px 16px;gap:6px}
+.fixed-item:hover{background:rgba(255,159,10,.05)}
+.fixed-day{font-size:10px;font-weight:700;color:#FF9F0A;width:22px;flex-shrink:0}
+.fixed-name-edit{font-size:11px;font-weight:600;color:var(--gray700);border:none;background:transparent;flex:1;font-family:inherit;padding:0;cursor:text;min-width:0}
+.fixed-name-edit:hover{background:var(--gray100);border-radius:3px;padding:1px 3px}
+.fixed-name-edit:focus{outline:none;background:#fff;border-radius:3px;padding:1px 3px;box-shadow:0 0 0 1.5px #FF9F0A}
+.fixed-amount-edit{font-size:11px;font-weight:800;color:#FF9F0A;border:none;background:transparent;text-align:right;font-family:inherit;width:80px;cursor:text;letter-spacing:-.3px}
+.fixed-amount-edit:hover{background:var(--gray100);border-radius:3px;padding:1px 3px}
+.fixed-amount-edit:focus{outline:none;background:#fff;border-radius:3px;padding:1px 3px;box-shadow:0 0 0 1.5px #FF9F0A}
+.fixed-del{background:none;border:none;color:var(--gray300);cursor:pointer;font-size:13px;padding:0 0 0 4px;line-height:1;transition:color .12s;flex-shrink:0}
+.fixed-del:hover{color:var(--red)}
+.fixed-empty{text-align:center;padding:10px 16px;color:var(--gray300);font-size:11px}
+.fixed-add-btn{display:block;width:calc(100% - 24px);margin:0 12px 10px;background:transparent;border:1.5px dashed rgba(255,159,10,.4);color:#FF9F0A;font-family:inherit;font-size:11px;font-weight:700;padding:5px;border-radius:7px;cursor:pointer;transition:all .15s}
+.fixed-add-btn:hover{border-color:#FF9F0A;background:rgba(255,159,10,.07)}
+.gcal-btn{display:inline-flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--gray300);color:var(--gray700);font-family:inherit;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap}
+.gcal-btn:hover{border-color:var(--blue);color:var(--blue)}
+/* Fixed modal */
+.fixed-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:600;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.fixed-overlay.open{display:flex}
+.fixed-modal{background:var(--surface);border-radius:20px;width:600px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);padding:28px}
+.fixed-modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.fixed-modal-title{font-size:18px;font-weight:800;letter-spacing:-.5px}
+.modal-x{background:var(--gray100);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--gray500);display:flex;align-items:center;justify-content:center}
+.fixed-tbl tbody td{padding:8px 10px}
+.fixed-tbl .cat-badge{display:inline-block;padding:2px 7px;border-radius:12px;font-size:10px;font-weight:700}
+.badge-corp{background:rgba(4,50,255,.1);color:var(--blue)}
+.badge-pers{background:rgba(255,159,10,.12);color:#D97706}
+.gcal-row{background:rgba(4,50,255,.03);border-radius:12px;padding:14px 16px;margin-top:16px}
+.gcal-row-title{font-size:12px;font-weight:800;color:var(--black);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.gcal-row p{font-size:12px;color:var(--gray500);line-height:1.6;margin-bottom:10px}
+.ics-btn{background:var(--blue);color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:700;padding:10px 20px;border-radius:9px;cursor:pointer;transition:opacity .15s}
+.ics-btn:hover{opacity:.85}
 
 /* ─────────────────────────────────────────
    MODAL (Apple sheet style)
@@ -384,6 +423,32 @@ tfoot td{padding:10px 14px;font-weight:800;border-top:2px solid var(--gray100);b
         <div class="clean-sub" id="mv-balance-sub">수입 − 지출</div>
       </div>
     </div>
+    <!-- Monthly fixed expenses -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <div class="card-title"><span style="width:7px;height:7px;border-radius:50%;background:#FF9F0A;display:inline-block;flex-shrink:0"></span>이달 고정비 일정</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:var(--gray500);font-weight:600" id="mv-fixed-total"></span>
+          <button class="btn-primary" style="font-size:12px;padding:6px 14px;background:#FF9F0A" onclick="openFixedModal()">+ 고정비 관리</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr>
+          <th style="width:52px;background:#B45309">납부일</th>
+          <th style="background:#B45309">항목명</th>
+          <th class="ta-r" style="background:#B45309">금액</th>
+          <th class="ta-c" style="width:52px;background:#B45309">구분</th>
+          <th class="ta-c" style="width:88px;background:#B45309">캘린더</th>
+        </tr></thead>
+        <tbody id="mv-fixed-tbody"></tbody>
+        <tfoot><tr>
+          <td colspan="2" style="color:var(--gray500);font-size:12px">고정비 월 합계</td>
+          <td class="ta-r" id="mv-fixed-tfoot" style="color:#B45309">₩0</td>
+          <td colspan="2"></td>
+        </tr></tfoot>
+      </table></div>
+    </div>
+
     <div class="two-col">
       <div class="card">
         <div class="card-header">
@@ -473,6 +538,73 @@ tfoot td{padding:10px 14px;font-weight:800;border-top:2px solid var(--gray100);b
   </div>
 </div>
 
+<!-- ═══════════════ Fixed Expense Modal ═══════════════ -->
+<div class="fixed-overlay" id="fixed-overlay">
+  <div class="fixed-modal">
+    <div class="fixed-modal-hdr">
+      <div class="fixed-modal-title">📌 고정비 관리</div>
+      <button class="modal-x" onclick="closeFixedModal()">✕</button>
+    </div>
+    <!-- Add form -->
+    <div style="display:grid;grid-template-columns:60px 1fr 130px 80px auto;gap:8px;margin-bottom:16px;align-items:end">
+      <div>
+        <label class="form-label">납부일</label>
+        <input type="number" class="form-input" id="fx-day" placeholder="1" min="1" max="31" style="padding:10px;font-size:14px;text-align:center">
+      </div>
+      <div>
+        <label class="form-label">항목명</label>
+        <input type="text" class="form-input" id="fx-memo" placeholder="예: 중진공 이자" style="padding:10px;font-size:14px">
+      </div>
+      <div>
+        <label class="form-label">금액 (원)</label>
+        <input type="number" class="form-input" id="fx-amount" placeholder="0" min="0" style="padding:10px;font-size:14px">
+      </div>
+      <div>
+        <label class="form-label">구분</label>
+        <select class="form-input" id="fx-cat" style="padding:10px;font-size:14px">
+          <option value="법인">법인</option>
+          <option value="개인">개인</option>
+        </select>
+      </div>
+      <div style="padding-bottom:0">
+        <button class="btn-primary" style="padding:10px 14px;margin-top:20px" onclick="addFixed()">추가</button>
+      </div>
+    </div>
+    <!-- List -->
+    <div class="tbl-wrap" style="margin-bottom:16px">
+      <table class="fixed-tbl">
+        <thead><tr>
+          <th style="width:48px;background:var(--gray900)">납부일</th>
+          <th style="background:var(--gray900)">항목명</th>
+          <th class="ta-r" style="background:var(--gray900)">금액</th>
+          <th class="ta-c" style="width:56px;background:var(--gray900)">구분</th>
+          <th class="ta-c" style="width:80px;background:var(--gray900)">캘린더</th>
+          <th style="width:36px;background:var(--gray900)"></th>
+        </tr></thead>
+        <tbody id="fixed-tbl-body"></tbody>
+        <tfoot><tr>
+          <td colspan="2" style="color:var(--gray500);font-size:12px">월 고정비 합계</td>
+          <td class="ta-r" id="fixed-tfoot">₩0</td>
+          <td colspan="3"></td>
+        </tr></tfoot>
+      </table>
+    </div>
+    <!-- Google Calendar section -->
+    <div class="gcal-row">
+      <div class="gcal-row-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#0432FF" stroke-width="2"/><line x1="3" y1="9" x2="21" y2="9" stroke="#0432FF" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="#0432FF" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="#0432FF" stroke-width="2"/></svg>
+        Google Calendar 연동
+      </div>
+      <p>ICS 파일을 내보내어 Google Calendar에 가져오면 모든 고정비가 매월 반복 일정으로 등록되고 알림을 받을 수 있습니다.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="ics-btn" onclick="exportICS()">📅 ICS 파일 내보내기</button>
+        <a class="ics-btn" style="background:var(--gray100);color:var(--gray700);text-decoration:none;display:inline-flex;align-items:center" href="https://calendar.google.com/calendar/r" target="_blank">Google Calendar 열기 →</a>
+      </div>
+      <p style="margin-top:10px;font-size:11px;color:var(--gray300)">① ICS 내보내기 → ② Google Calendar 열기 → ③ 설정 → 가져오기에서 ICS 파일 업로드</p>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════ Add Entry Modal ═══════════════ -->
 <div class="overlay" id="add-overlay">
   <div class="modal">
@@ -555,6 +687,38 @@ function load() {
   catch(e) { return {entries:[],targets:{}}; }
 }
 function save(db) { localStorage.setItem(KEY, JSON.stringify(db)); }
+
+// ─── Fixed expense seed (from Excel 자금일자 정리) ───
+const FIXED_SEED = [
+  {id:'f01',dayOfMonth:1, memo:'중진공 원리금+이자',       amount:1800000,category:'법인'},
+  {id:'f02',dayOfMonth:1, memo:'하나은행 주택대출 원리금',  amount:2600000,category:'개인'},
+  {id:'f03',dayOfMonth:1, memo:'토스 대출 원리금',          amount:500000, category:'개인'},
+  {id:'f04',dayOfMonth:1, memo:'성민 평택 대출 원리금',     amount:2500000,category:'개인'},
+  {id:'f05',dayOfMonth:1, memo:'도내동 임대료',             amount:850000, category:'개인'},
+  {id:'f06',dayOfMonth:5, memo:'기보 2억 이자',             amount:270000, category:'법인'},
+  {id:'f07',dayOfMonth:5, memo:'사무실 관리비',             amount:400000, category:'법인'},
+  {id:'f08',dayOfMonth:5, memo:'신한보험(진욱)',            amount:61140,  category:'개인'},
+  {id:'f09',dayOfMonth:5, memo:'신한보험(소영)',            amount:41515,  category:'개인'},
+  {id:'f10',dayOfMonth:5, memo:'테슬라',                    amount:1000000,category:'개인'},
+  {id:'f11',dayOfMonth:10,memo:'건강보험',                  amount:1500000,category:'법인'},
+  {id:'f12',dayOfMonth:10,memo:'연금보험',                  amount:2000000,category:'법인'},
+  {id:'f13',dayOfMonth:10,memo:'고용산재보험',              amount:100000, category:'법인'},
+  {id:'f14',dayOfMonth:10,memo:'기보 1억 원리금(아크)',     amount:450000, category:'법인'},
+  {id:'f15',dayOfMonth:20,memo:'중진공 수출 이자',          amount:150000, category:'법인'},
+  {id:'f16',dayOfMonth:20,memo:'중진공 시설자금 이자',      amount:1000000,category:'법인'},
+  {id:'f17',dayOfMonth:20,memo:'우리 대출 이자',            amount:250000, category:'개인'},
+  {id:'f18',dayOfMonth:25,memo:'전기요금(강원 포함)',       amount:500000, category:'법인'},
+  {id:'f19',dayOfMonth:30,memo:'급여(소영·진욱·성민·지희)',amount:12000000,category:'법인'},
+];
+const FIXED_KEY = 'noa_fixed_v1';
+
+function loadFixed() {
+  try { return JSON.parse(localStorage.getItem(FIXED_KEY)) || []; } catch(e) { return []; }
+}
+function saveFixed(arr) { localStorage.setItem(FIXED_KEY, JSON.stringify(arr)); }
+
+let FX = loadFixed();
+if (FX.length === 0) { FX = JSON.parse(JSON.stringify(FIXED_SEED)); saveFixed(FX); }
 
 let DB = load();
 if (!DB.targets) DB.targets = {};
@@ -678,6 +842,187 @@ function saveGoal() {
 }
 
 // ─────────────────── Delete ───────────────────
+// ─────────────────── Fixed Expense CRUD ───────────────────
+function openFixedModal() {
+  renderFixedModal();
+  document.getElementById('fixed-overlay').classList.add('open');
+}
+function closeFixedModal() {
+  document.getElementById('fixed-overlay').classList.remove('open');
+}
+document.getElementById('fixed-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeFixedModal();
+});
+
+function addFixed() {
+  const day    = parseInt(document.getElementById('fx-day').value);
+  const memo   = document.getElementById('fx-memo').value.trim();
+  const amount = parseFloat(document.getElementById('fx-amount').value);
+  const cat    = document.getElementById('fx-cat').value;
+  if (!day || day < 1 || day > 31) { alert('납부일(1~31)을 입력해주세요.'); return; }
+  if (!memo)   { alert('항목명을 입력해주세요.'); return; }
+  if (!amount || amount <= 0) { alert('금액을 입력해주세요.'); return; }
+  FX.push({ id: uid(), dayOfMonth: day, memo, amount, category: cat });
+  FX.sort((a,b) => a.dayOfMonth - b.dayOfMonth);
+  saveFixed(FX);
+  document.getElementById('fx-day').value = '';
+  document.getElementById('fx-memo').value = '';
+  document.getElementById('fx-amount').value = '';
+  renderFixedModal();
+  renderBoard();
+  renderMonthly();
+}
+
+function deleteFixed(id) {
+  FX = FX.filter(f => f.id !== id);
+  saveFixed(FX);
+  renderFixedModal();
+  renderBoard();
+  renderMonthly();
+}
+
+function updateFixed(id, field, value) {
+  const f = FX.find(x => x.id === id);
+  if (!f) return;
+  if (field === 'amount') {
+    const v = parseFloat(value);
+    if (!isNaN(v) && v > 0) f.amount = v;
+  } else if (field === 'dayOfMonth') {
+    const v = parseInt(value);
+    if (!isNaN(v) && v >= 1 && v <= 31) { f.dayOfMonth = v; FX.sort((a,b)=>a.dayOfMonth-b.dayOfMonth); }
+  } else {
+    const v = value.trim();
+    if (v) f[field] = v;
+  }
+  saveFixed(FX);
+  renderBoard();
+  renderMonthly();
+}
+
+function gcalLink(f) {
+  // Generate Google Calendar quick-add link for a recurring monthly event
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth()+1;
+  const d = Math.min(f.dayOfMonth, new Date(y, m, 0).getDate());
+  const ds = y + String(m).padStart(2,'0') + String(d).padStart(2,'0');
+  const text = encodeURIComponent(f.memo + ' (고정비)');
+  const details = encodeURIComponent('NOA&ARK 자금관리 고정비 | ' + won(f.amount) + ' | ' + f.category);
+  const recur = encodeURIComponent('RRULE:FREQ=MONTHLY;BYMONTHDAY=' + f.dayOfMonth);
+  return `https://calendar.google.com/calendar/r/eventedit?text=${text}&dates=${ds}/${ds}&recur=${recur}&details=${details}`;
+}
+
+function renderFixedModal() {
+  const total = FX.reduce((s,f) => s+f.amount, 0);
+  document.getElementById('fixed-tfoot').textContent = won(total);
+  const tbody = document.getElementById('fixed-tbl-body');
+  if (FX.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">고정비 항목이 없습니다</td></tr>';
+    return;
+  }
+  tbody.innerHTML = FX.map(f => `<tr>
+    <td class="ta-c">
+      <input class="tx-edit-name" type="number" value="${f.dayOfMonth}" min="1" max="31"
+        style="text-align:center;width:40px;font-weight:800;color:#FF9F0A"
+        onblur="updateFixed('${f.id}','dayOfMonth',this.value)"
+        onkeydown="if(event.key==='Enter')this.blur()">일
+    </td>
+    <td>
+      <input class="tx-edit-name" value="${f.memo.replace(/"/g,'&quot;')}"
+        onblur="updateFixed('${f.id}','memo',this.value)"
+        onkeydown="if(event.key==='Enter')this.blur()">
+    </td>
+    <td class="ta-r">
+      <input class="tx-edit-amount" value="${f.amount}" type="number" min="0"
+        style="color:#FF9F0A;width:110px"
+        onblur="updateFixed('${f.id}','amount',this.value)"
+        onkeydown="if(event.key==='Enter')this.blur()">
+    </td>
+    <td class="ta-c">
+      <span class="cat-badge ${f.category==='법인'?'badge-corp':'badge-pers'}">${f.category}</span>
+    </td>
+    <td class="ta-c">
+      <a class="gcal-btn" href="${gcalLink(f)}" target="_blank">📅 추가</a>
+    </td>
+    <td class="ta-c">
+      <button class="fixed-del" onclick="deleteFixed('${f.id}')">×</button>
+    </td>
+  </tr>`).join('');
+}
+
+function renderMonthlyFixed() {
+  const fixed = [...FX].sort((a,b) => a.dayOfMonth - b.dayOfMonth);
+  const total = fixed.reduce((s,f) => s+f.amount, 0);
+  const el = document.getElementById('mv-fixed-total');
+  if (el) el.textContent = '월 합계 ' + won(total);
+  const tfoot = document.getElementById('mv-fixed-tfoot');
+  if (tfoot) tfoot.textContent = won(total);
+  const tbody = document.getElementById('mv-fixed-tbody');
+  if (!tbody) return;
+  if (fixed.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">고정비 항목이 없습니다</td></tr>';
+    return;
+  }
+  tbody.innerHTML = fixed.map(f => `<tr>
+    <td class="ta-c" style="font-weight:800;color:#B45309">${f.dayOfMonth}일</td>
+    <td style="font-weight:600">${f.memo}</td>
+    <td class="ta-r" style="font-weight:800;color:#B45309">${won(f.amount)}</td>
+    <td class="ta-c"><span class="cat-badge ${f.category==='법인'?'badge-corp':'badge-pers'}">${f.category}</span></td>
+    <td class="ta-c"><a class="gcal-btn" href="${gcalLink(f)}" target="_blank">📅 구글캘린더</a></td>
+  </tr>`).join('');
+}
+
+// ─── ICS Export ───
+function exportICS() {
+  if (FX.length === 0) { alert('내보낼 고정비 항목이 없습니다.'); return; }
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth()+1;
+  const stamp = now.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+
+  const vevents = FX.map(f => {
+    const d = Math.min(f.dayOfMonth, new Date(y, m, 0).getDate());
+    const ds = y + String(m).padStart(2,'0') + String(d).padStart(2,'0');
+    return [
+      'BEGIN:VEVENT',
+      'UID:' + f.id + '@noa-finance',
+      'DTSTAMP:' + stamp,
+      'DTSTART;VALUE=DATE:' + ds,
+      'DTEND;VALUE=DATE:' + ds,
+      'SUMMARY:' + f.memo + ' (' + won(f.amount) + ')',
+      'DESCRIPTION:NOA&ARK 자금관리 고정비\\n구분: ' + f.category + '\\n금액: ' + won(f.amount),
+      'RRULE:FREQ=MONTHLY;BYMONTHDAY=' + f.dayOfMonth,
+      'BEGIN:VALARM',
+      'TRIGGER:-P1D',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:내일 고정비: ' + f.memo + ' ' + won(f.amount),
+      'END:VALARM',
+      'BEGIN:VALARM',
+      'TRIGGER:PT0S',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:오늘 고정비: ' + f.memo + ' ' + won(f.amount),
+      'END:VALARM',
+      'END:VEVENT'
+    ].join('\r\n');
+  }).join('\r\n');
+
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//NOA&ARK//자금관리플랜//KO',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:NOA&ARK 고정비',
+    'X-WR-TIMEZONE:Asia/Seoul',
+    vevents,
+    'END:VCALENDAR'
+  ].join('\r\n');
+
+  const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'NOA_고정비_' + y + String(m).padStart(2,'0') + '.ics';
+  a.click();
+}
+
 function deleteEntry(id) {
   DB.entries = DB.entries.filter(e => e.id !== id);
   save(DB);
@@ -840,8 +1185,45 @@ function renderBoard() {
       </div>
       <div class="week-tx-list">${txHtml}</div>
       <button class="week-add-btn" onclick="openAddModal('income','${dateStr(startDt)}')">+ 항목 추가</button>
+      ${renderWeekFixed(startDt.getDate(), endDt.getDate())}
     </div>`;
   }).join('');
+}
+
+// ─────────────────── Week Fixed Section ───────────────────
+function renderWeekFixed(startDay, endDay) {
+  const items = FX.filter(f => f.dayOfMonth >= startDay && f.dayOfMonth <= endDay);
+  if (items.length === 0) return `
+    <div class="fixed-section">
+      <div class="fixed-header">
+        <div class="fixed-header-label"><span class="fixed-dot"></span>고정비</div>
+        <button class="gcal-btn" onclick="openFixedModal()" style="font-size:9px;padding:2px 6px">관리</button>
+      </div>
+      <div class="fixed-empty">해당 주 고정비 없음</div>
+    </div>`;
+
+  const total = items.reduce((s,f) => s + f.amount, 0);
+  return `
+    <div class="fixed-section">
+      <div class="fixed-header">
+        <div class="fixed-header-label"><span class="fixed-dot"></span>고정비 ${items.length}건</div>
+        <span style="font-size:10px;font-weight:800;color:#FF9F0A">${won(total)}</span>
+      </div>
+      <div class="fixed-list">
+        ${items.map(f => `
+        <div class="fixed-item">
+          <span class="fixed-day">${f.dayOfMonth}일</span>
+          <input class="fixed-name-edit" value="${f.memo.replace(/"/g,'&quot;')}"
+            onblur="updateFixed('${f.id}','memo',this.value)"
+            onkeydown="if(event.key==='Enter')this.blur()">
+          <input class="fixed-amount-edit" value="${f.amount}" type="number" min="0"
+            onblur="updateFixed('${f.id}','amount',this.value)"
+            onkeydown="if(event.key==='Enter')this.blur()">
+          <button class="fixed-del" onclick="deleteFixed('${f.id}')" title="삭제">×</button>
+        </div>`).join('')}
+      </div>
+      <button class="fixed-add-btn" onclick="openFixedModal()">+ 고정비 추가/관리</button>
+    </div>`;
 }
 
 // ─────────────────── Monthly render ───────────────────
@@ -872,6 +1254,7 @@ function renderTable(tbodyId, entries, tfootId) {
 }
 
 function renderMonthly() {
+  renderMonthlyFixed();
   const y = monthYear, m = monthMon;
   document.getElementById('month-label').innerHTML =
     y + '년 ' + m + '월<span class="period-sub">' + y + '.' + String(m).padStart(2,'0') + '.01 ~ ' +
@@ -1120,6 +1503,7 @@ function renderAll() {
   populateGoalYears();
   renderBoard();
   renderMonthly();
+  renderMonthlyFixed();
   renderYearly();
   renderGoal();
 }
