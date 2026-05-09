@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOA&ARK 자금관리플랜</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#0432FF;
+  --blue-soft:rgba(4,50,255,.08);
+  --blue-mid:rgba(4,50,255,.15);
+  --black:#000;
+  --gray900:#111827;
+  --gray700:#374151;
+  --gray500:#6B7280;
+  --gray300:#D1D5DB;
+  --gray100:#F3F4F6;
+  --gray50:#F9FAFB;
+  --red:#FF3B30;
+  --surface:#fff;
+  --radius:14px;
+  --radius-sm:9px;
+}
+html,body{height:100%}
+body{font-family:'Pretendard',-apple-system,'SF Pro Display',sans-serif;font-size:14px;background:var(--gray100);color:var(--black);-webkit-font-smoothing:antialiased;letter-spacing:-0.02em}
+
+/* ── Nav ── */
+.nav{background:rgba(4,50,255,.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;height:52px;display:flex;align-items:center;padding:0 24px;position:sticky;top:0;z-index:300;box-shadow:0 1px 0 rgba(255,255,255,.08)}
+.nav-logo{font-size:14px;font-weight:700;letter-spacing:.04em;margin-right:32px;white-space:nowrap;opacity:.95}
+.nav-tabs{display:flex;gap:1px;flex:1}
+.nav-tab{background:transparent;border:none;color:rgba(255,255,255,.55);font-family:inherit;font-size:13px;font-weight:600;padding:7px 16px;border-radius:8px;cursor:pointer;transition:all .18s;letter-spacing:-.01em;white-space:nowrap}
+.nav-tab:hover{color:#fff;background:rgba(255,255,255,.1)}
+.nav-tab.active{color:#fff;background:rgba(255,255,255,.18)}
+.nav-right{display:flex;gap:8px;align-items:center}
+.btn-nav{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:#fff;font-family:inherit;font-size:12px;font-weight:600;padding:5px 12px;border-radius:7px;cursor:pointer;letter-spacing:-.01em;transition:all .15s}
+.btn-nav:hover{background:rgba(255,255,255,.22)}
+
+/* ── Views ── */
+.view{display:none}.view.active{display:block}
+
+/* ─────────────────────────────────────────
+   APPLE-STYLE STAT CARDS
+───────────────────────────────────────── */
+.stat-row{display:flex;gap:14px;padding:24px 28px 0;flex-wrap:wrap}
+.stat-card{flex:1;min-width:160px;background:var(--surface);border-radius:var(--radius);padding:20px 22px;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 2px 12px rgba(0,0,0,.05)}
+.stat-label{font-size:11px;font-weight:600;color:var(--gray500);letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px}
+.stat-value{font-size:28px;font-weight:800;letter-spacing:-1.5px;line-height:1;color:var(--black)}
+.stat-value.blue{color:var(--blue)}
+.stat-value.red{color:var(--red)}
+.stat-value.muted{color:var(--gray500)}
+.stat-sub{font-size:11px;color:var(--gray500);margin-top:6px;font-weight:500}
+.stat-pill{display:inline-flex;align-items:center;gap:4px;background:var(--blue-soft);color:var(--blue);font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;margin-top:8px}
+.stat-pill.neg{background:rgba(255,59,48,.08);color:var(--red)}
+
+/* ─────────────────────────────────────────
+   WEEKLY BOARD
+───────────────────────────────────────── */
+.board-header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px 16px;flex-wrap:wrap;gap:12px}
+.board-title{font-size:22px;font-weight:800;letter-spacing:-0.8px;color:var(--black)}
+.board-nav{display:flex;align-items:center;gap:10px}
+.board-nav-btn{background:var(--surface);border:1px solid var(--gray300);color:var(--gray700);font-family:inherit;font-size:12px;font-weight:600;padding:6px 14px;border-radius:8px;cursor:pointer;transition:all .15s}
+.board-nav-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+.board-actions{display:flex;gap:8px}
+.btn-primary{background:var(--blue);color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;border:none;cursor:pointer;letter-spacing:-.01em;transition:opacity .15s}
+.btn-primary:hover{opacity:.85}
+.btn-ghost{background:transparent;color:var(--blue);font-family:inherit;font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;border:1.5px solid var(--blue);cursor:pointer;letter-spacing:-.01em;transition:all .15s}
+.btn-ghost:hover{background:var(--blue-soft)}
+
+/* Week columns grid */
+.week-grid{display:grid;gap:14px;padding:0 28px 28px}
+/* Column count set by JS based on weeks in month */
+
+.week-col{background:var(--surface);border-radius:var(--radius);box-shadow:0 0 0 1px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04);overflow:hidden;display:flex;flex-direction:column;min-height:400px}
+.week-col-header{padding:14px 16px 12px;border-bottom:1px solid rgba(0,0,0,.06)}
+.week-num{font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+.week-dates{font-size:12px;font-weight:600;color:var(--gray700);margin-bottom:10px}
+.week-mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.week-stat{background:var(--gray50);border-radius:8px;padding:7px 8px}
+.week-stat-label{font-size:9px;font-weight:700;color:var(--gray500);letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+.week-stat-val{font-size:14px;font-weight:800;letter-spacing:-0.5px;line-height:1}
+.week-stat-val.income{color:var(--blue)}
+.week-stat-val.expense{color:var(--gray700)}
+.week-stat-val.positive{color:var(--blue)}
+.week-stat-val.negative{color:var(--red)}
+
+/* Transaction list */
+.week-tx-list{flex:1;overflow-y:auto;padding:8px 0;max-height:320px}
+.week-tx-list::-webkit-scrollbar{width:3px}
+.week-tx-list::-webkit-scrollbar-track{background:transparent}
+.week-tx-list::-webkit-scrollbar-thumb{background:var(--gray300);border-radius:2px}
+.tx-item{display:flex;align-items:flex-start;justify-content:space-between;padding:7px 16px;gap:8px;transition:background .12s}
+.tx-item:hover{background:var(--gray50)}
+.tx-left{flex:1;min-width:0}
+.tx-date-tag{font-size:9px;font-weight:600;color:var(--gray500);margin-bottom:2px;letter-spacing:.02em}
+.tx-name{font-size:12px;font-weight:600;color:var(--gray900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-amount{font-size:12px;font-weight:800;letter-spacing:-0.3px;white-space:nowrap}
+.tx-amount.income{color:var(--blue)}
+.tx-amount.expense{color:var(--gray500)}
+.tx-del{background:none;border:none;color:var(--gray300);cursor:pointer;font-size:14px;padding:0 0 0 6px;line-height:1;flex-shrink:0;transition:color .12s}
+.tx-del:hover{color:var(--red)}
+.tx-empty{text-align:center;padding:28px 16px;color:var(--gray500);font-size:12px}
+
+/* Week add row */
+.week-add-btn{display:block;width:calc(100% - 24px);margin:6px 12px 10px;background:transparent;border:1.5px dashed var(--gray300);color:var(--gray500);font-family:inherit;font-size:12px;font-weight:600;padding:7px;border-radius:8px;cursor:pointer;transition:all .15s;letter-spacing:-.01em}
+.week-add-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+
+/* ─────────────────────────────────────────
+   MODAL (Apple sheet style)
+───────────────────────────────────────── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:500;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:520px;padding:28px 28px 40px;box-shadow:0 -4px 40px rgba(0,0,0,.15);animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:36px;height:4px;background:var(--gray300);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-size:18px;font-weight:800;letter-spacing:-0.5px;color:var(--black);margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:11px;font-weight:700;color:var(--gray500);letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:6px}
+.form-input{width:100%;padding:12px 14px;border:1.5px solid var(--gray300);border-radius:10px;font-family:inherit;font-size:15px;font-weight:500;color:var(--black);background:var(--gray50);transition:border-color .15s}
+.form-input:focus{outline:none;border-color:var(--blue);background:#fff}
+.type-toggle{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1.5px solid var(--gray300);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.type-btn{background:transparent;border:none;font-family:inherit;font-size:13px;font-weight:700;padding:11px;cursor:pointer;transition:all .15s;color:var(--gray500)}
+.type-btn.active.income{background:var(--blue);color:#fff}
+.type-btn.active.expense{background:var(--gray700);color:#fff}
+.modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.modal-confirm{background:var(--blue);color:#fff;border:none;font-family:inherit;font-size:15px;font-weight:700;padding:14px;border-radius:12px;cursor:pointer;transition:opacity .15s}
+.modal-confirm:hover{opacity:.85}
+.modal-cancel{background:var(--gray100);color:var(--gray700);border:none;font-family:inherit;font-size:15px;font-weight:700;padding:14px;border-radius:12px;cursor:pointer}
+
+/* Goal modal */
+.goal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.goal-overlay.open{display:flex}
+.goal-modal{background:var(--surface);border-radius:20px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);padding:28px}
+.goal-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.goal-modal-title{font-size:18px;font-weight:800;letter-spacing:-0.5px}
+.goal-close{background:var(--gray100);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--gray500);display:flex;align-items:center;justify-content:center}
+.form-section{font-size:11px;font-weight:700;color:var(--gray500);letter-spacing:.05em;text-transform:uppercase;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--gray100)}
+.form-row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.form-row-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.form-group-sm .form-label{font-size:10px}
+.form-group-sm .form-input{padding:9px 10px;font-size:13px}
+.save-btn{background:var(--blue);color:#fff;border:none;font-family:inherit;font-size:15px;font-weight:700;padding:14px;border-radius:12px;cursor:pointer;width:100%;margin-top:20px;transition:opacity .15s}
+.save-btn:hover{opacity:.85}
+
+/* ─────────────────────────────────────────
+   MONTHLY / YEARLY VIEWS
+───────────────────────────────────────── */
+.page{max-width:1200px;margin:0 auto;padding:24px 28px 80px}
+.period-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px}
+.period-nav-btn{background:var(--surface);border:1px solid var(--gray300);border-radius:8px;padding:8px 16px;font-family:inherit;font-size:13px;font-weight:600;color:var(--gray700);cursor:pointer;transition:all .15s}
+.period-nav-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+.period-label{font-size:18px;font-weight:800;color:var(--black);min-width:260px;text-align:center;letter-spacing:-0.5px}
+.period-sub{font-size:12px;color:var(--gray500);font-weight:500;display:block;margin-top:2px}
+
+/* Clean summary strip (apple style) */
+.clean-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.clean-card{background:var(--surface);border-radius:var(--radius);padding:20px 22px;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)}
+.clean-label{font-size:11px;font-weight:700;color:var(--gray500);letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px}
+.clean-value{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;color:var(--black)}
+.clean-value.blue{color:var(--blue)}
+.clean-value.red{color:var(--red)}
+.clean-sub{font-size:11px;color:var(--gray500);margin-top:5px;font-weight:500}
+
+/* Table */
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:0 0 0 1px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04);overflow:hidden;margin-bottom:16px}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--gray100);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-title{font-size:14px;font-weight:800;color:var(--black);letter-spacing:-.3px;display:flex;align-items:center;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-blue{background:var(--blue)}.dot-red{background:var(--red)}.dot-gray{background:var(--gray500)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--gray900);color:#fff;padding:10px 14px;font-weight:700;white-space:nowrap;letter-spacing:-.01em}
+thead th.blue-head{background:var(--blue)}
+thead th.red-head{background:var(--red)}
+tbody td{padding:10px 14px;border-bottom:1px solid var(--gray100);vertical-align:middle;color:var(--gray900)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--gray50)}
+tfoot td{padding:10px 14px;font-weight:800;border-top:2px solid var(--gray100);background:var(--gray50);letter-spacing:-.3px}
+.ta-r{text-align:right}.ta-c{text-align:center}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.add-form-row{display:grid;grid-template-columns:130px 1fr 140px auto;gap:8px;padding:12px 16px;background:var(--gray50);border-top:1px solid var(--gray100);align-items:center}
+.add-form-row input{padding:8px 10px;border:1.5px solid var(--gray300);border-radius:8px;font-family:inherit;font-size:13px;color:var(--black);background:#fff;width:100%;transition:border-color .15s}
+.add-form-row input:focus{outline:none;border-color:var(--blue)}
+.add-pfx{position:relative}
+.add-pfx::before{content:'₩';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gray500);font-size:12px}
+.add-pfx input{padding-left:20px}
+.empty-row td{text-align:center;color:var(--gray500);padding:28px!important;font-size:12px}
+
+/* Goal view */
+.goal-banner{background:var(--surface);border-radius:var(--radius);padding:26px 28px;margin-bottom:16px;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)}
+.goal-sub{font-size:11px;font-weight:700;color:var(--gray500);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.goal-headline{font-size:26px;font-weight:800;letter-spacing:-0.8px;line-height:1.3;margin-bottom:18px;color:var(--black)}
+.goal-headline .accent{color:var(--blue)}
+.goal-headline .green-accent{color:#30D158}
+.achieve-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.achieve-card{background:var(--surface);border-radius:var(--radius);padding:20px 22px;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)}
+.achieve-label{font-size:10px;font-weight:700;color:var(--gray500);letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px}
+.achieve-period{font-size:12px;font-weight:600;color:var(--gray700);margin-bottom:14px}
+.achieve-pct{font-size:36px;font-weight:900;letter-spacing:-1.5px;line-height:1;margin-bottom:8px;color:var(--blue)}
+.achieve-pct.achieved{color:#30D158}
+.achieve-pct.danger{color:var(--red)}
+.progress-bar{height:5px;background:var(--gray100);border-radius:3px;overflow:hidden;margin-bottom:12px}
+.progress-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .6s ease}
+.progress-fill.achieved{background:#30D158}
+.progress-fill.danger{background:var(--red)}
+.achieve-meta{display:flex;flex-direction:column;gap:4px}
+.achieve-meta-row{display:flex;justify-content:space-between;font-size:12px}
+.achieve-meta-key{color:var(--gray500);font-weight:500}
+.achieve-meta-val{font-weight:800;color:var(--black);letter-spacing:-.3px}
+
+.chart-wrap{padding:20px}
+.chart-wrap svg{font-family:inherit;width:100%;min-width:560px}
+.period-sel{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.period-sel select{background:var(--surface);border:1.5px solid var(--gray300);border-radius:9px;padding:8px 14px;font-family:inherit;font-size:14px;font-weight:700;color:var(--black);cursor:pointer;appearance:none;-webkit-appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.period-sel select:focus{outline:none;border-color:var(--blue)}
+
+@media(max-width:900px){
+  .stat-row{padding:16px 16px 0}
+  .board-header{padding:16px 16px 12px}
+  .week-grid{padding:0 16px 24px}
+  .two-col,.clean-strip,.achieve-grid{grid-template-columns:1fr}
+  .page{padding:16px 16px 60px}
+  .add-form-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav class="nav">
+  <div class="nav-logo">NOA&amp;ARK · 자금관리</div>
+  <div class="nav-tabs">
+    <button class="nav-tab" onclick="switchView('goal')">목표</button>
+    <button class="nav-tab active" onclick="switchView('board')">주간보드</button>
+    <button class="nav-tab" onclick="switchView('monthly')">월간</button>
+    <button class="nav-tab" onclick="switchView('yearly')">연간</button>
+  </div>
+  <div class="nav-right">
+    <button class="btn-nav" onclick="exportCSV()">CSV 내보내기</button>
+    <button class="btn-nav" onclick="clearAll()">초기화</button>
+  </div>
+</nav>
+
+<!-- ═══════════════ 목표 View ═══════════════ -->
+<div id="view-goal" class="view">
+  <div class="page">
+    <div class="period-sel" style="margin-bottom:20px">
+      <select id="goal-year-sel" onchange="renderGoal()"></select>
+      <select id="goal-month-sel" onchange="renderGoal()"></select>
+      <div style="flex:1"></div>
+      <button class="btn-primary" onclick="openGoalModal()">🎯 목표 설정</button>
+    </div>
+    <div class="goal-banner">
+      <div class="goal-sub">매출 목표 현황</div>
+      <div class="goal-headline" id="goal-headline">목표를 설정하면 달성률을 확인할 수 있어요</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="openGoalModal()">목표 설정하기</button>
+        <button class="btn-ghost" onclick="switchView('board')">+ 수입/지출 입력</button>
+      </div>
+    </div>
+    <div class="achieve-grid">
+      <div class="achieve-card">
+        <div class="achieve-label">연간</div>
+        <div class="achieve-period" id="ga-annual-period"></div>
+        <div class="achieve-pct" id="ga-annual-pct">—</div>
+        <div class="progress-bar"><div class="progress-fill" id="ga-annual-bar" style="width:0%"></div></div>
+        <div class="achieve-meta">
+          <div class="achieve-meta-row"><span class="achieve-meta-key">달성</span><span class="achieve-meta-val" id="ga-annual-actual">₩0</span></div>
+          <div class="achieve-meta-row"><span class="achieve-meta-key">목표</span><span class="achieve-meta-val" id="ga-annual-target">미설정</span></div>
+          <div class="achieve-meta-row"><span class="achieve-meta-key">잔여</span><span class="achieve-meta-val" id="ga-annual-remain">—</span></div>
+        </div>
+      </div>
+      <div class="achieve-card">
+        <div class="achieve-label">분기</div>
+        <div class="achieve-period" id="ga-q-period"></div>
+        <div class="achieve-pct" id="ga-q-pct">—</div>
+        <div class="progress-bar"><div class="progress-fill" id="ga-q-bar" style="width:0%;background:#FF9F0A"></div></div>
+        <div class="achieve-meta">
+          <div class="achieve-meta-row"><span class="achieve-meta-key">달성</span><span class="achieve-meta-val" id="ga-q-actual">₩0</span></div>
+          <div class="achieve-meta-row"><span class="achieve-meta-key">목표</span><span class="achieve-meta-val" id="ga-q-target">미설정</span></div>
+          <div class="achieve-meta-row"><span class="achieve-meta-key">잔여</span><span class="achieve-meta-val" id="ga-q-remain">—</span></div>
+        </div>
+      </div>
+      <div class="achieve-card">
+        <div class="achieve-label">월간</div>
+        <div class="achieve-period" id="ga-m-period"></div>
+        <div class="achieve-pct" id="ga-m-pct">—</div>
+        <div class="progress-bar"><div class="progress-fill" id="ga-m-bar" style="width:0%"></div></div>
+        <div class="achieve-meta">
+          <div class="achieve-meta-row"><span class="achieve-meta-key">달성</span><span class="achieve-meta-val" id="ga-m-actual">₩0</span></div>
+          <div class="achieve-meta-row"><span class="achieve-meta-key">목표</span><span class="achieve-meta-val" id="ga-m-target">미설정</span></div>
+          <div class="achieve-meta-row"><span class="achieve-meta-key">잔여</span><span class="achieve-meta-val" id="ga-m-remain">—</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="dot dot-blue"></span>월별 수입 vs 목표</div>
+        <div style="display:flex;gap:16px;font-size:11px;color:var(--gray500);font-weight:600">
+          <span>— 실적</span><span style="opacity:.5">- - 목표</span>
+        </div>
+      </div>
+      <div class="chart-wrap" id="goal-chart"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="dot dot-gray"></span>월별 상세</div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th style="width:55px">월</th>
+            <th class="ta-r">수입 목표</th><th class="ta-r">실제 수입</th>
+            <th class="ta-r">지출</th><th class="ta-r">잔액</th>
+            <th class="ta-c" style="width:90px">달성률</th>
+          </tr></thead>
+          <tbody id="goal-tbl-body"></tbody>
+          <tfoot><tr>
+            <td>합계</td>
+            <td class="ta-r" id="gf-target">—</td>
+            <td class="ta-r" id="gf-income">₩0</td>
+            <td class="ta-r" id="gf-expense">₩0</td>
+            <td class="ta-r" id="gf-balance">₩0</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ 주간 BOARD View ═══════════════ -->
+<div id="view-board" class="view active">
+  <!-- Stats row -->
+  <div id="board-stat-row" class="stat-row"></div>
+
+  <!-- Board header -->
+  <div class="board-header">
+    <div class="board-nav">
+      <button class="board-nav-btn" onclick="shiftBoardMonth(-1)">◀</button>
+      <div class="board-title" id="board-title">2026년 5월</div>
+      <button class="board-nav-btn" onclick="shiftBoardMonth(1)">▶</button>
+    </div>
+    <div class="board-actions">
+      <button class="btn-ghost" onclick="openAddModal('income')">+ 수입</button>
+      <button class="btn-primary" onclick="openAddModal('expense')">+ 지출</button>
+    </div>
+  </div>
+
+  <!-- Week columns -->
+  <div class="week-grid" id="week-grid"></div>
+</div>
+
+<!-- ═══════════════ 월간 View ═══════════════ -->
+<div id="view-monthly" class="view">
+  <div class="page">
+    <div class="period-nav">
+      <button class="period-nav-btn" onclick="shiftMonth(-1)">◀ 이전 달</button>
+      <div><div class="period-label" id="month-label"></div></div>
+      <button class="period-nav-btn" onclick="shiftMonth(1)">다음 달 ▶</button>
+    </div>
+    <div class="clean-strip">
+      <div class="clean-card">
+        <div class="clean-label">수입</div>
+        <div class="clean-value blue" id="mv-income">₩0</div>
+        <div class="clean-sub" id="mv-income-cnt">0건</div>
+      </div>
+      <div class="clean-card">
+        <div class="clean-label">지출</div>
+        <div class="clean-value" id="mv-expense">₩0</div>
+        <div class="clean-sub" id="mv-expense-cnt">0건</div>
+      </div>
+      <div class="clean-card">
+        <div class="clean-label">잔액</div>
+        <div class="clean-value" id="mv-balance">₩0</div>
+        <div class="clean-sub" id="mv-balance-sub">수입 − 지출</div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot dot-blue"></span>수입</div>
+          <button class="btn-primary" style="font-size:12px;padding:6px 12px" onclick="openAddModal('income')">+ 추가</button>
+        </div>
+        <div class="tbl-wrap">
+          <table><thead><tr>
+            <th class="blue-head">날짜</th><th class="blue-head">항목</th>
+            <th class="blue-head ta-r">금액</th><th class="blue-head ta-c" style="width:44px"></th>
+          </tr></thead>
+          <tbody id="mv-income-tbody"></tbody>
+          <tfoot><tr>
+            <td colspan="2" style="color:var(--gray500);font-size:12px">합계</td>
+            <td class="ta-r" id="mv-income-tfoot">₩0</td><td></td>
+          </tr></tfoot></table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot dot-red"></span>지출</div>
+          <button class="btn-primary" style="background:var(--red);font-size:12px;padding:6px 12px" onclick="openAddModal('expense')">+ 추가</button>
+        </div>
+        <div class="tbl-wrap">
+          <table><thead><tr>
+            <th class="red-head">날짜</th><th class="red-head">항목</th>
+            <th class="red-head ta-r">금액</th><th class="red-head ta-c" style="width:44px"></th>
+          </tr></thead>
+          <tbody id="mv-expense-tbody"></tbody>
+          <tfoot><tr>
+            <td colspan="2" style="color:var(--gray500);font-size:12px">합계</td>
+            <td class="ta-r" id="mv-expense-tfoot">₩0</td><td></td>
+          </tr></tfoot></table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ 연간 View ═══════════════ -->
+<div id="view-yearly" class="view">
+  <div class="page">
+    <div class="period-nav">
+      <button class="period-nav-btn" onclick="shiftYear(-1)">◀ 이전 연도</button>
+      <div><div class="period-label" id="year-label"></div></div>
+      <button class="period-nav-btn" onclick="shiftYear(1)">다음 연도 ▶</button>
+    </div>
+    <div class="clean-strip">
+      <div class="clean-card">
+        <div class="clean-label">연간 수입</div>
+        <div class="clean-value blue" id="yv-income">₩0</div>
+        <div class="clean-sub" id="yv-income-cnt">0건</div>
+      </div>
+      <div class="clean-card">
+        <div class="clean-label">연간 지출</div>
+        <div class="clean-value" id="yv-expense">₩0</div>
+        <div class="clean-sub" id="yv-expense-cnt">0건</div>
+      </div>
+      <div class="clean-card">
+        <div class="clean-label">연간 잔액</div>
+        <div class="clean-value" id="yv-balance">₩0</div>
+        <div class="clean-sub" id="yv-balance-sub">수입 − 지출</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="dot dot-blue"></span>월별 현황 <span style="font-size:11px;color:var(--gray500);font-weight:500">※ 월 클릭 시 월간 보기로 이동</span></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th style="width:60px">월</th><th class="ta-r">수입</th>
+            <th class="ta-r">지출</th><th class="ta-r">잔액</th>
+            <th class="ta-c" style="width:90px">지출비율</th>
+          </tr></thead>
+          <tbody id="yv-tbody"></tbody>
+          <tfoot><tr>
+            <td>합계</td>
+            <td class="ta-r" id="yv-tfoot-income">₩0</td>
+            <td class="ta-r" id="yv-tfoot-expense">₩0</td>
+            <td class="ta-r" id="yv-tfoot-balance">₩0</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ Add Entry Modal ═══════════════ -->
+<div class="overlay" id="add-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="add-modal-title">수입 추가</div>
+    <div class="type-toggle">
+      <button class="type-btn active income" id="type-btn-income" onclick="setModalType('income')">수입</button>
+      <button class="type-btn expense" id="type-btn-expense" onclick="setModalType('expense')">지출</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">날짜</label>
+      <input type="date" class="form-input" id="add-date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">항목명</label>
+      <input type="text" class="form-input" id="add-memo" placeholder="예: 매출, 급여, 임대료">
+    </div>
+    <div class="form-group">
+      <label class="form-label">금액 (원)</label>
+      <input type="number" class="form-input" id="add-amount" placeholder="0" min="0">
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeAddModal()">취소</button>
+      <button class="modal-confirm" onclick="submitEntry()">추가하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ Goal Modal ═══════════════ -->
+<div class="goal-overlay" id="goal-overlay">
+  <div class="goal-modal">
+    <div class="goal-modal-header">
+      <div class="goal-modal-title">목표 설정</div>
+      <button class="goal-close" onclick="closeGoalModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">연도</label>
+      <select class="form-input" id="gm-year" onchange="fillGoalModal()"></select>
+    </div>
+    <div class="form-section">연간 목표</div>
+    <div class="form-group">
+      <label class="form-label">연간 총 수입 목표 (원)</label>
+      <input type="number" class="form-input" id="gm-annual" placeholder="120,000,000" min="0">
+    </div>
+    <div class="form-section">월별 수입 목표 (선택)</div>
+    <div class="form-row-4" id="gm-monthly"></div>
+    <button class="save-btn" onclick="saveGoal()">저장하기</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────── SEED DATA (Excel) ───────────────────
+const SEED = [{"date":"2026-03-23","item":"아크","income":1600000,"expense":0},{"date":"2026-03-24","item":"SH 물류","income":0,"expense":3200000},{"date":"2026-03-25","item":"기보 기술료 보험 해지","income":4800000,"expense":0},{"date":"2026-03-26","item":"현대, 우리 카드","income":10500000,"expense":0},{"date":"2026-03-27","item":"삼성카드 일부 납부","income":0,"expense":10000000},{"date":"2026-03-28","item":"성민 보증금","income":0,"expense":5200000},{"date":"2026-03-28","item":"삼성카드 선 사용금","income":4800000,"expense":0},{"date":"2026-03-28","item":"티비판매","income":1900000,"expense":0},{"date":"2026-03-28","item":"성민 집 이자","income":0,"expense":1200000},{"date":"2026-03-28","item":"엄마","income":10000000,"expense":0},{"date":"2026-03-28","item":"교보 보험 대출","income":850000,"expense":0},{"date":"2026-03-30","item":"급여","income":0,"expense":7421431},{"date":"2026-03-30","item":"법인세","income":0,"expense":987040},{"date":"2026-03-30","item":"아크 이자","income":0,"expense":1100000},{"date":"2026-03-30","item":"아크 법인세","income":0,"expense":70000},{"date":"2026-03-31","item":"SH 물류","income":0,"expense":1174700},{"date":"2026-04-01","item":"하나 이자 등","income":0,"expense":2500000},{"date":"2026-04-01","item":"중진공 등","income":0,"expense":1646880},{"date":"2026-04-01","item":"삼성카드 잔액 결재","income":0,"expense":3800000},{"date":"2026-04-10","item":"성민 아파트","income":80000000,"expense":0},{"date":"2026-04-10","item":"성민 아파트 출금","income":0,"expense":80000000},{"date":"2026-04-10","item":"롯데카드","income":0,"expense":250760},{"date":"2026-04-10","item":"우리카드","income":0,"expense":3069790},{"date":"2026-04-12","item":"현대카드","income":0,"expense":2000000},{"date":"2026-04-13","item":"월세 사무실","income":0,"expense":3500000},{"date":"2026-04-15","item":"자근 잔금","income":30000000,"expense":0},{"date":"2026-04-15","item":"아파트 관리비","income":0,"expense":7500000},{"date":"2026-04-15","item":"일산 보증금","income":0,"expense":10850000},{"date":"2026-04-15","item":"이사비용","income":0,"expense":3000000},{"date":"2026-04-28","item":"노아 자금","income":0,"expense":300000},{"date":"2026-04-29","item":"중진공 이자","income":0,"expense":1020197},{"date":"2026-05-01","item":"노아 이체","income":0,"expense":200000},{"date":"2026-05-01","item":"베를린","income":0,"expense":3799620},{"date":"2026-05-01","item":"급여","income":0,"expense":7558431},{"date":"2026-05-01","item":"서일 디앤피","income":0,"expense":2000000},{"date":"2026-05-01","item":"구공구이","income":0,"expense":2000000},{"date":"2026-05-01","item":"성민 평택 이자","income":0,"expense":2500000},{"date":"2026-05-01","item":"도내동 임대료","income":0,"expense":425000},{"date":"2026-05-01","item":"하나 용산집 이자","income":0,"expense":2600000},{"date":"2026-05-01","item":"삼성카드","income":0,"expense":13000000},{"date":"2026-05-01","item":"신한카드","income":0,"expense":1423776},{"date":"2026-05-01","item":"우리카드","income":0,"expense":268400},{"date":"2026-05-01","item":"생활비(카카오)","income":0,"expense":661500},{"date":"2026-05-01","item":"보험 외","income":0,"expense":298345},{"date":"2026-05-01","item":"신한카드(2)","income":0,"expense":170280},{"date":"2026-05-01","item":"변호사","income":0,"expense":1000000},{"date":"2026-05-01","item":"중진공 이자","income":0,"expense":1684205},{"date":"2026-05-01","item":"기업은행 이자","income":0,"expense":257917},{"date":"2026-05-01","item":"지원사업 환수","income":0,"expense":2300000},{"date":"2026-05-01","item":"관리비 사무실","income":0,"expense":346770},{"date":"2026-05-01","item":"토사 대출 이자","income":0,"expense":450000},{"date":"2026-05-01","item":"아크 네이버 매출","income":1700000,"expense":0},{"date":"2026-05-11","item":"지승","income":16000000,"expense":0},{"date":"2026-05-11","item":"현대 카드","income":0,"expense":705571},{"date":"2026-05-11","item":"롯데카드","income":0,"expense":2479172},{"date":"2026-05-11","item":"법인카드 기업","income":0,"expense":557743},{"date":"2026-05-11","item":"법인카드 우리","income":0,"expense":308379},{"date":"2026-05-14","item":"성민 아파트 등록비","income":0,"expense":5900000},{"date":"2026-05-20","item":"우리카드","income":0,"expense":2682137}];
+
+// ─────────────────── Storage ───────────────────
+const KEY = 'noa_fin_v2';
+const SEED_KEY = 'noa_fin_seeded_v2';
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function won(n) { return '₩' + Math.round(Math.abs(n)).toLocaleString('ko-KR'); }
+function wonSign(n) { return (n>=0?'+':'-') + won(n); }
+function fmtFull(d) {
+  const dt = new Date(d + 'T00:00:00');
+  return (dt.getMonth()+1) + '/' + dt.getDate();
+}
+function fmtDateLong(d) {
+  const dt = new Date(d + 'T00:00:00');
+  return dt.getFullYear() + '.' + String(dt.getMonth()+1).padStart(2,'0') + '.' + String(dt.getDate()).padStart(2,'0');
+}
+function todayStr() {
+  const t = new Date();
+  return t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+}
+function dateStr(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || {entries:[],targets:{}}; }
+  catch(e) { return {entries:[],targets:{}}; }
+}
+function save(db) { localStorage.setItem(KEY, JSON.stringify(db)); }
+
+let DB = load();
+if (!DB.targets) DB.targets = {};
+
+// Seed with Excel data on first load
+if (!localStorage.getItem(SEED_KEY)) {
+  SEED.forEach(s => {
+    if (s.income > 0) DB.entries.push({id:uid(), type:'income', date:s.date, memo:s.item, amount:s.income});
+    if (s.expense > 0) DB.entries.push({id:uid(), type:'expense', date:s.date, memo:s.item, amount:s.expense});
+  });
+  save(DB);
+  localStorage.setItem(SEED_KEY, '1');
+}
+
+// ─────────────────── State ───────────────────
+let boardYear = 2026, boardMonth = 5;
+let monthYear = 2026, monthMon = 5;
+let curYear = 2026;
+let goalYear = 2026, goalMonth = 5;
+let addModalType = 'income';
+let addModalDate = '';
+
+// ─────────────────── View switch ───────────────────
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  const idx = {goal:0,board:1,monthly:2,yearly:3}[v];
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  renderAll();
+}
+
+// ─────────────────── Modal ───────────────────
+function openAddModal(type, date) {
+  addModalType = type;
+  document.getElementById('add-date').value = date || todayStr();
+  document.getElementById('add-memo').value = '';
+  document.getElementById('add-amount').value = '';
+  setModalType(type);
+  document.getElementById('add-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('add-memo').focus(), 200);
+}
+function setModalType(t) {
+  addModalType = t;
+  document.getElementById('add-modal-title').textContent = t === 'income' ? '수입 추가' : '지출 추가';
+  document.getElementById('type-btn-income').className = 'type-btn' + (t==='income'?' active income':'');
+  document.getElementById('type-btn-expense').className = 'type-btn' + (t==='expense'?' active expense':'');
+}
+function closeAddModal() { document.getElementById('add-overlay').classList.remove('open'); }
+function submitEntry() {
+  const date = document.getElementById('add-date').value;
+  const memo = document.getElementById('add-memo').value.trim();
+  const amount = parseFloat(document.getElementById('add-amount').value);
+  if (!date) { alert('날짜를 입력해주세요.'); return; }
+  if (!memo) { alert('항목명을 입력해주세요.'); return; }
+  if (!amount || amount <= 0) { alert('금액을 올바르게 입력해주세요.'); return; }
+  DB.entries.push({id:uid(), type:addModalType, date, memo, amount});
+  save(DB);
+  closeAddModal();
+  renderAll();
+}
+document.getElementById('add-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAddModal();
+});
+
+// Goal modal
+function openGoalModal() {
+  populateGoalYears();
+  document.getElementById('gm-year').value = String(goalYear);
+  buildGoalMonthInputs();
+  fillGoalModal();
+  document.getElementById('goal-overlay').classList.add('open');
+}
+function closeGoalModal() { document.getElementById('goal-overlay').classList.remove('open'); }
+document.getElementById('goal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeGoalModal();
+});
+function populateGoalYears() {
+  const ty = new Date().getFullYear();
+  const years = [ty-2,ty-1,ty,ty+1,ty+2];
+  ['goal-year-sel','gm-year'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = years.map(y => `<option value="${y}" ${y==cur?'selected':''}>${y}년</option>`).join('');
+  });
+  const ms = document.getElementById('goal-month-sel');
+  if (ms) ms.innerHTML = Array.from({length:12},(_,i) =>
+    `<option value="${i+1}" ${i+1===goalMonth?'selected':''}>${i+1}월</option>`).join('');
+}
+function buildGoalMonthInputs() {
+  const MN = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('gm-monthly').innerHTML = MN.map((m,i) => `
+    <div class="form-group form-group-sm">
+      <label class="form-label">${m}</label>
+      <input type="number" class="form-input" id="gm-m-${i+1}" placeholder="0" min="0">
+    </div>`).join('');
+}
+function fillGoalModal() {
+  const yr = parseInt(document.getElementById('gm-year').value) || goalYear;
+  const t = DB.targets[String(yr)] || {};
+  document.getElementById('gm-annual').value = t.annual || '';
+  for (let m = 1; m <= 12; m++) {
+    const el = document.getElementById('gm-m-' + m);
+    if (el) el.value = (t.monthly || {})[String(m).padStart(2,'0')] || '';
+  }
+}
+function saveGoal() {
+  const yr = parseInt(document.getElementById('gm-year').value) || goalYear;
+  const annual = parseFloat(document.getElementById('gm-annual').value) || 0;
+  const monthly = {};
+  for (let m = 1; m <= 12; m++) {
+    const el = document.getElementById('gm-m-' + m);
+    const v = el ? (parseFloat(el.value) || 0) : 0;
+    if (v > 0) monthly[String(m).padStart(2,'0')] = v;
+  }
+  DB.targets[String(yr)] = {annual, monthly};
+  save(DB);
+  closeGoalModal();
+  renderGoal();
+}
+
+// ─────────────────── Delete ───────────────────
+function deleteEntry(id) {
+  DB.entries = DB.entries.filter(e => e.id !== id);
+  save(DB);
+  renderAll();
+}
+
+// ─────────────────── Helpers ───────────────────
+function getIncome(entries) { return entries.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0); }
+function getExpense(entries) { return entries.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0); }
+function getMonthEntries(y, m) {
+  const p = y + '-' + String(m).padStart(2,'0');
+  return DB.entries.filter(e => e.date.startsWith(p));
+}
+
+// ─────────────────── Board navigation ───────────────────
+function shiftBoardMonth(dir) {
+  boardMonth += dir;
+  if (boardMonth > 12) { boardMonth = 1; boardYear++; }
+  if (boardMonth < 1) { boardMonth = 12; boardYear--; }
+  renderBoard();
+}
+
+// ─────────────────── BOARD RENDER ───────────────────
+function getMondayOf(d) {
+  const dt = new Date(d);
+  const day = dt.getDay();
+  dt.setDate(dt.getDate() + (day===0?-6:1-day));
+  dt.setHours(0,0,0,0);
+  return dt;
+}
+
+function renderBoard() {
+  const y = boardYear, m = boardMonth;
+  document.getElementById('board-title').textContent = y + '년 ' + m + '월';
+
+  // All entries for this month
+  const mEntries = getMonthEntries(y, m);
+  const totalIncome = getIncome(mEntries);
+  const totalExpense = getExpense(mEntries);
+  const balance = totalIncome - totalExpense;
+
+  // Stat row
+  document.getElementById('board-stat-row').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">월간 수입</div>
+      <div class="stat-value blue">${won(totalIncome)}</div>
+      <div class="stat-sub">${mEntries.filter(e=>e.type==='income').length}건</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">월간 지출</div>
+      <div class="stat-value">${won(totalExpense)}</div>
+      <div class="stat-sub">${mEntries.filter(e=>e.type==='expense').length}건</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">잔액</div>
+      <div class="stat-value ${balance>=0?'blue':'red'}">${balance>=0?'+':'-'}${won(balance)}</div>
+      <div class="stat-sub">${balance>=0?'흑자':'적자'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">총 거래</div>
+      <div class="stat-value muted">${mEntries.length}</div>
+      <div class="stat-sub">건</div>
+    </div>`;
+
+  // Build weeks for this month
+  const firstDay = new Date(y, m-1, 1);
+  const lastDay = new Date(y, m, 0);
+  const weeks = [];
+  let cur = getMondayOf(firstDay);
+
+  // If Monday is before the 1st, start from 1st but keep week range
+  while (cur <= lastDay) {
+    const weekStart = new Date(cur);
+    const weekEnd = new Date(cur);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    // Clamp to month
+    const dispStart = new Date(Math.max(weekStart, firstDay));
+    const dispEnd = new Date(Math.min(weekEnd, lastDay));
+    weeks.push({
+      start: dateStr(weekStart),
+      end: dateStr(weekEnd),
+      dispStart: dateStr(dispStart),
+      dispEnd: dateStr(dispEnd)
+    });
+    cur.setDate(cur.getDate() + 7);
+  }
+
+  const grid = document.getElementById('week-grid');
+  grid.style.gridTemplateColumns = `repeat(${weeks.length}, 1fr)`;
+
+  const DAY_KO = ['일','월','화','수','목','금','토'];
+
+  grid.innerHTML = weeks.map((w, wi) => {
+    const wEntries = mEntries.filter(e => e.date >= w.start && e.date <= w.end);
+    const wIncome = getIncome(wEntries);
+    const wExpense = getExpense(wEntries);
+    const wBalance = wIncome - wExpense;
+
+    const startDt = new Date(w.dispStart + 'T00:00:00');
+    const endDt = new Date(w.dispEnd + 'T00:00:00');
+    const sameDay = w.dispStart === w.dispEnd;
+    const dateRange = sameDay
+      ? `${startDt.getMonth()+1}/${startDt.getDate()}(${DAY_KO[startDt.getDay()]})`
+      : `${startDt.getMonth()+1}/${startDt.getDate()}(${DAY_KO[startDt.getDay()]}) ~ ${endDt.getMonth()+1}/${endDt.getDate()}(${DAY_KO[endDt.getDay()]})`;
+
+    const txHtml = wEntries.length === 0
+      ? `<div class="tx-empty">거래 없음</div>`
+      : wEntries.sort((a,b)=>a.date.localeCompare(b.date)).map(e => `
+        <div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-date-tag">${fmtFull(e.date)}</div>
+            <div class="tx-name" title="${e.memo}">${e.memo}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <span class="tx-amount ${e.type}">${e.type==='income'?'+':'-'}${won(e.amount)}</span>
+            <button class="tx-del" onclick="deleteEntry('${e.id}')" title="삭제">×</button>
+          </div>
+        </div>`).join('');
+
+    const defaultDate = dateStr(startDt) >= todayStr() ? dateStr(startDt) : todayStr();
+
+    return `<div class="week-col">
+      <div class="week-col-header">
+        <div class="week-num">${wi+1}주차</div>
+        <div class="week-dates">${dateRange}</div>
+        <div class="week-mini-stats">
+          <div class="week-stat">
+            <div class="week-stat-label">수입</div>
+            <div class="week-stat-val income">${wIncome>0?won(wIncome):'—'}</div>
+          </div>
+          <div class="week-stat">
+            <div class="week-stat-label">지출</div>
+            <div class="week-stat-val expense">${wExpense>0?won(wExpense):'—'}</div>
+          </div>
+          <div class="week-stat">
+            <div class="week-stat-label">잔액</div>
+            <div class="week-stat-val ${wBalance>=0?'positive':'negative'}">${wIncome===0&&wExpense===0?'—':(wBalance>=0?'+':'-')+won(wBalance)}</div>
+          </div>
+        </div>
+      </div>
+      <div class="week-tx-list">${txHtml}</div>
+      <button class="week-add-btn" onclick="openAddModal('income','${dateStr(startDt)}')">+ 항목 추가</button>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────── Monthly render ───────────────────
+function shiftMonth(dir) {
+  monthMon += dir;
+  if (monthMon > 12) { monthMon = 1; monthYear++; }
+  if (monthMon < 1) { monthMon = 12; monthYear--; }
+  renderMonthly();
+}
+
+function renderTable(tbodyId, entries, tfootId) {
+  const tbody = document.getElementById(tbodyId);
+  if (entries.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="4">항목이 없습니다</td></tr>';
+    if (tfootId) document.getElementById(tfootId).textContent = '₩0';
+    return 0;
+  }
+  entries.sort((a,b) => a.date.localeCompare(b.date));
+  tbody.innerHTML = entries.map(e => `<tr>
+    <td>${fmtDateLong(e.date)}</td>
+    <td>${e.memo}</td>
+    <td class="ta-r" style="font-weight:800;letter-spacing:-.3px">${won(e.amount)}</td>
+    <td class="ta-c"><button style="background:none;border:none;color:var(--gray300);cursor:pointer;font-size:16px;transition:color .12s" onmouseenter="this.style.color='var(--red)'" onmouseleave="this.style.color='var(--gray300)'" onclick="deleteEntry('${e.id}')">×</button></td>
+  </tr>`).join('');
+  const total = entries.reduce((s,e)=>s+e.amount,0);
+  if (tfootId) document.getElementById(tfootId).textContent = won(total);
+  return total;
+}
+
+function renderMonthly() {
+  const y = monthYear, m = monthMon;
+  document.getElementById('month-label').innerHTML =
+    y + '년 ' + m + '월<span class="period-sub">' + y + '.' + String(m).padStart(2,'0') + '.01 ~ ' +
+    y + '.' + String(m).padStart(2,'0') + '.' + new Date(y,m,0).getDate() + '</span>';
+  const mEntries = getMonthEntries(y, m);
+  const inc = mEntries.filter(e=>e.type==='income');
+  const exp = mEntries.filter(e=>e.type==='expense');
+  const ti = renderTable('mv-income-tbody', inc, 'mv-income-tfoot');
+  const te = renderTable('mv-expense-tbody', exp, 'mv-expense-tfoot');
+  document.getElementById('mv-income').textContent = won(ti);
+  document.getElementById('mv-income').className = 'clean-value blue';
+  document.getElementById('mv-income-cnt').textContent = inc.length + '건';
+  document.getElementById('mv-expense').textContent = won(te);
+  document.getElementById('mv-expense-cnt').textContent = exp.length + '건';
+  const bal = ti - te;
+  document.getElementById('mv-balance').textContent = (bal>=0?'+':'-') + won(bal);
+  document.getElementById('mv-balance').className = 'clean-value ' + (bal>=0?'blue':'red');
+  document.getElementById('mv-balance-sub').textContent = bal >= 0 ? '흑자' : '적자';
+}
+
+// ─────────────────── Yearly render ───────────────────
+function shiftYear(dir) { curYear += dir; renderYearly(); }
+
+function renderYearly() {
+  const y = curYear;
+  document.getElementById('year-label').innerHTML =
+    y + '년<span class="period-sub">' + y + '.01.01 ~ ' + y + '.12.31</span>';
+  const yEntries = DB.entries.filter(e => e.date.startsWith(String(y)));
+  const ti = getIncome(yEntries), te = getExpense(yEntries);
+  document.getElementById('yv-income').textContent = won(ti);
+  document.getElementById('yv-income').className = 'clean-value blue';
+  document.getElementById('yv-income-cnt').textContent = yEntries.filter(e=>e.type==='income').length + '건';
+  document.getElementById('yv-expense').textContent = won(te);
+  document.getElementById('yv-expense-cnt').textContent = yEntries.filter(e=>e.type==='expense').length + '건';
+  const bal = ti - te;
+  document.getElementById('yv-balance').textContent = (bal>=0?'+':'-') + won(bal);
+  document.getElementById('yv-balance').className = 'clean-value ' + (bal>=0?'blue':'red');
+  document.getElementById('yv-balance-sub').textContent = bal >= 0 ? '흑자' : '적자';
+
+  const MN = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  let rows = '', sumI = 0, sumE = 0;
+  for (let m = 1; m <= 12; m++) {
+    const me = getMonthEntries(y, m);
+    const mi = getIncome(me), mex = getExpense(me), mb = mi - mex;
+    sumI += mi; sumE += mex;
+    const ratio = mi > 0 ? Math.min(100, Math.round(mex/mi*100)) : (mex>0?100:0);
+    const barC = ratio>=100?'var(--red)':ratio>=80?'#FF9F0A':'var(--blue)';
+    rows += `<tr>
+      <td><span style="cursor:pointer;color:var(--blue);font-weight:700;text-decoration:underline;text-decoration-style:dotted" onclick="goToMonth(${y},${m})">${MN[m-1]}</span></td>
+      <td class="ta-r" style="color:var(--blue);font-weight:800">${mi>0?won(mi):'<span style="color:var(--gray300)">—</span>'}</td>
+      <td class="ta-r" style="font-weight:700">${mex>0?won(mex):'<span style="color:var(--gray300)">—</span>'}</td>
+      <td class="ta-r" style="font-weight:800;color:${mb>=0?'var(--blue)':'var(--red)'}">${mi===0&&mex===0?'<span style="color:var(--gray300)">—</span>':(mb>=0?'+':'-')+won(mb)}</td>
+      <td class="ta-c"><div style="display:flex;align-items:center;gap:6px">
+        <div style="flex:1;height:5px;background:var(--gray100);border-radius:3px;overflow:hidden">
+          <div style="width:${ratio}%;height:100%;background:${barC};border-radius:3px"></div>
+        </div>
+        <span style="font-size:11px;color:var(--gray500);width:28px;text-align:right">${ratio}%</span>
+      </div></td>
+    </tr>`;
+  }
+  document.getElementById('yv-tbody').innerHTML = rows;
+  document.getElementById('yv-tfoot-income').textContent = won(sumI);
+  document.getElementById('yv-tfoot-expense').textContent = won(sumE);
+  const tb = sumI - sumE;
+  const tfEl = document.getElementById('yv-tfoot-balance');
+  tfEl.textContent = (tb>=0?'+':'-') + won(tb);
+  tfEl.style.color = tb >= 0 ? 'var(--blue)' : 'var(--red)';
+}
+
+function goToMonth(y, m) { monthYear=y; monthMon=m; switchView('monthly'); }
+
+// ─────────────────── Goal render ───────────────────
+function renderGoal() {
+  goalYear = parseInt(document.getElementById('goal-year-sel').value) || goalYear;
+  goalMonth = parseInt(document.getElementById('goal-month-sel').value) || goalMonth;
+  populateGoalYears();
+
+  const t = DB.targets[String(goalYear)] || {};
+  const mAnnualTarget = t.annual || 0;
+  const allYEntries = DB.entries.filter(e => e.date.startsWith(String(goalYear)));
+  const annualActual = getIncome(allYEntries);
+
+  // Annual
+  document.getElementById('ga-annual-period').textContent = goalYear + '년';
+  updateAchCard('annual', annualActual, mAnnualTarget, 'var(--blue)');
+
+  // Quarter
+  const q = Math.ceil(goalMonth / 3);
+  const qMonths = [q*3-2, q*3-1, q*3];
+  const qTarget = qMonths.reduce((s,m) => s+((t.monthly||{})[String(m).padStart(2,'0')]||0),0) || Math.round(mAnnualTarget/4);
+  const qActual = qMonths.reduce((s,m) => s+getIncome(getMonthEntries(goalYear,m)),0);
+  document.getElementById('ga-q-period').textContent = q + '/4 분기';
+  updateAchCard('q', qActual, qTarget, '#FF9F0A');
+
+  // Month
+  const mTarget = (t.monthly||{})[String(goalMonth).padStart(2,'0')] || Math.round(mAnnualTarget/12);
+  const mActual = getIncome(getMonthEntries(goalYear, goalMonth));
+  document.getElementById('ga-m-period').textContent = goalMonth + '월';
+  updateAchCard('m', mActual, mTarget, 'var(--blue)');
+
+  // Banner
+  const hEl = document.getElementById('goal-headline');
+  if (mTarget > 0) {
+    const remain = mTarget - mActual;
+    if (remain > 0) {
+      hEl.innerHTML = `${goalMonth}월, 매출 목표까지 <span class="accent">${won(remain)}</span> 남았어요 💪`;
+    } else {
+      hEl.innerHTML = `${goalMonth}월 목표 달성! <span class="green-accent">${won(-remain)}</span> 초과했어요 🎉`;
+    }
+  } else {
+    hEl.innerHTML = '목표를 설정하면 달성률을 확인할 수 있어요';
+  }
+
+  // Monthly table
+  const MN = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  let rows = '', sumT=0, sumI=0, sumE=0, hasT=false;
+  for (let m = 1; m <= 12; m++) {
+    const mt = (t.monthly||{})[String(m).padStart(2,'0')]||0;
+    const me = getMonthEntries(goalYear, m);
+    const mi = getIncome(me), mex = getExpense(me), mb = mi-mex;
+    sumT+=mt; sumI+=mi; sumE+=mex; if(mt>0) hasT=true;
+    const mpct = mt>0 ? Math.min(999, Math.round(mi/mt*100)) : null;
+    const pctCell = mpct!==null
+      ? `<div style="display:flex;align-items:center;gap:6px">
+          <div style="flex:1;height:5px;background:var(--gray100);border-radius:3px;overflow:hidden">
+            <div style="width:${Math.min(100,mpct)}%;height:100%;background:${mpct>=100?'#30D158':mpct>=80?'#FF9F0A':'var(--blue)'};border-radius:3px"></div>
+          </div>
+          <span style="font-size:11px;color:${mpct>=100?'#30D158':'var(--gray500)'};width:34px;text-align:right;font-weight:700">${mpct}%</span>
+        </div>`
+      : '<span style="color:var(--gray300);font-size:12px">미설정</span>';
+    rows += `<tr ${m===goalMonth?'style="background:rgba(4,50,255,.04)"':''}>
+      <td style="font-weight:${m===goalMonth?800:500}">${MN[m-1]}</td>
+      <td class="ta-r">${mt>0?won(mt):'<span style="color:var(--gray300)">—</span>'}</td>
+      <td class="ta-r" style="color:var(--blue);font-weight:700">${mi>0?won(mi):'<span style="color:var(--gray300)">—</span>'}</td>
+      <td class="ta-r" style="font-weight:600">${mex>0?won(mex):'<span style="color:var(--gray300)">—</span>'}</td>
+      <td class="ta-r" style="font-weight:800;color:${mb>=0?'var(--blue)':'var(--red)'}">${mi===0&&mex===0?'<span style="color:var(--gray300)">—</span>':(mb>=0?'+':'-')+won(mb)}</td>
+      <td class="ta-c">${pctCell}</td>
+    </tr>`;
+  }
+  document.getElementById('goal-tbl-body').innerHTML = rows;
+  document.getElementById('gf-target').textContent = hasT ? won(sumT) : '—';
+  document.getElementById('gf-income').textContent = won(sumI);
+  document.getElementById('gf-expense').textContent = won(sumE);
+  const tb = sumI-sumE;
+  const gfb = document.getElementById('gf-balance');
+  gfb.textContent = (tb>=0?'+':'-')+won(tb);
+  gfb.style.color = tb>=0?'var(--blue)':'var(--red)';
+
+  renderGoalChart(goalYear, t);
+}
+
+function updateAchCard(id, actual, target, color) {
+  const pctEl = document.getElementById('ga-'+id+'-pct');
+  const barEl = document.getElementById('ga-'+id+'-bar');
+  document.getElementById('ga-'+id+'-actual').textContent = won(actual);
+  if (target <= 0) {
+    pctEl.textContent = '—'; pctEl.className='achieve-pct';
+    barEl.style.width='0%';
+    document.getElementById('ga-'+id+'-target').textContent='미설정';
+    document.getElementById('ga-'+id+'-remain').textContent='—';
+    return;
+  }
+  document.getElementById('ga-'+id+'-target').textContent = won(target);
+  const remain = target - actual;
+  const remEl = document.getElementById('ga-'+id+'-remain');
+  remEl.textContent = remain > 0 ? won(remain)+' 부족' : won(-remain)+' 초과';
+  remEl.style.color = remain > 0 ? 'var(--red)' : '#30D158';
+  const pct = Math.round(actual/target*1000)/10;
+  pctEl.textContent = pct.toFixed(1) + '%';
+  barEl.style.width = Math.min(100,pct) + '%';
+  if (pct >= 100) { pctEl.className='achieve-pct achieved'; barEl.className='progress-fill achieved'; }
+  else { pctEl.className='achieve-pct'; barEl.className='progress-fill'; barEl.style.background=color; }
+}
+
+function renderGoalChart(year, targets) {
+  const W=860, H=220, PL=72, PR=20, PT=16, PB=36;
+  const CW=W-PL-PR, CH=H-PT-PB;
+  const actuals = Array.from({length:12},(_,i) => getIncome(getMonthEntries(year, i+1)));
+  const goalVals = Array.from({length:12},(_,i) => {
+    const mt=(targets.monthly||{})[String(i+1).padStart(2,'0')]||0;
+    return mt || (targets.annual ? Math.round(targets.annual/12) : 0);
+  });
+  const maxVal = Math.max(...actuals, ...goalVals, 1);
+  const ys = v => CH - (v/maxVal)*CH;
+  const xs = i => (i/11)*CW;
+  function yL(v) {
+    if(v>=100000000) return (v/100000000).toFixed(0)+'억';
+    if(v>=10000000) return (v/10000000).toFixed(0)+'천만';
+    if(v>=1000000) return (v/1000000).toFixed(0)+'백만';
+    if(v>=10000) return (v/10000).toFixed(0)+'만';
+    return v.toLocaleString();
+  }
+  const steps=4;
+  let grid='',yLbls='';
+  for(let i=0;i<=steps;i++){
+    const v=maxVal*i/steps, y=ys(v);
+    grid+=`<line x1="0" y1="${y}" x2="${CW}" y2="${y}" stroke="#F3F4F6" stroke-width="1"/>`;
+    yLbls+=`<text x="-8" y="${y+4}" text-anchor="end" font-size="10" fill="#9CA3AF" font-family="Pretendard">${yL(v)}</text>`;
+  }
+  const hasGoal = goalVals.some(v=>v>0);
+  const gPath = hasGoal ? 'M '+goalVals.map((v,i)=>xs(i)+','+ys(v)).join(' L ') : '';
+  const aPath = 'M '+actuals.map((v,i)=>xs(i)+','+ys(v)).join(' L ');
+  const gPts = hasGoal ? goalVals.map((v,i)=>`<circle cx="${xs(i)}" cy="${ys(v)}" r="3" fill="none" stroke="#D1D5DB" stroke-width="1.5"/>`).join('') : '';
+  const aPts = actuals.map((v,i)=>{
+    const gv=goalVals[i];
+    const c=gv>0&&v>=gv?'#30D158':'#0432FF';
+    return `<circle cx="${xs(i)}" cy="${ys(v)}" r="4" fill="${c}" stroke="#fff" stroke-width="2"/>
+    ${v>0?`<text x="${xs(i)}" y="${ys(v)-10}" text-anchor="middle" font-size="10" fill="${c}" font-weight="700" font-family="Pretendard">${yL(v)}</text>`:''}`;
+  }).join('');
+  const xLbls = ['1','2','3','4','5','6','7','8','9','10','11','12'].map((m,i)=>
+    `<text x="${xs(i)}" y="${CH+20}" text-anchor="middle" font-size="11" fill="#9CA3AF" font-family="Pretendard">${m}월</text>`).join('');
+  document.getElementById('goal-chart').innerHTML =
+    `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+      <g transform="translate(${PL},${PT})">
+        ${grid}${yLbls}${xLbls}
+        ${hasGoal?`<path d="${gPath}" fill="none" stroke="#D1D5DB" stroke-width="1.5" stroke-dasharray="5,4"/>`:''}
+        ${gPts}
+        <path d="${aPath}" fill="none" stroke="#0432FF" stroke-width="2.5"/>
+        ${aPts}
+      </g>
+    </svg>`;
+}
+
+// ─────────────────── Export / Clear ───────────────────
+function exportCSV() {
+  if (!DB.entries.length) { alert('내보낼 데이터가 없습니다.'); return; }
+  const rows = [['날짜','구분','항목','금액'],
+    ...[...DB.entries].sort((a,b)=>a.date.localeCompare(b.date))
+      .map(e=>[e.date, e.type==='income'?'수입':'지출', e.memo, e.amount])];
+  const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download = 'NOA_자금관리_' + todayStr() + '.csv';
+  a.click();
+}
+function clearAll() {
+  if (!confirm('모든 자금 데이터를 초기화하시겠습니까?\n(엑셀 초기 데이터도 삭제됩니다)')) return;
+  DB = {entries:[],targets:{}};
+  save(DB);
+  localStorage.removeItem(SEED_KEY);
+  renderAll();
+}
+
+// ─────────────────── Render All ───────────────────
+function renderAll() {
+  populateGoalYears();
+  renderBoard();
+  renderMonthly();
+  renderYearly();
+  renderGoal();
+}
+
+renderAll();
+</script>
+</body>
+</html>
