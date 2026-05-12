@@ -1454,10 +1454,6 @@ function renderBoard() {
             <div class="week-stat-label">지출</div>
             <div class="week-stat-val expense">${wExpense>0?won(wExpense):'—'}</div>
           </div>
-          <div class="week-stat">
-            <div class="week-stat-label">주간손익</div>
-            <div class="week-stat-val ${wBalance>=0?'positive':'negative'}">${wIncome===0&&wExpense===0?'—':`<span class="week-stat-sign">${wBalance>=0?'+':'−'}</span>${won(wBalance)}`}</div>
-          </div>
         </div>
         ${carryRow}
       </div>
