@@ -324,8 +324,20 @@ tfoot td{padding:10px 14px;font-weight:800;border-top:2px solid var(--gray100);b
 .pw-err{font-size:11px;color:#FF3B30;margin-bottom:8px;min-height:14px}
 
 </style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+<!-- FS Loading Overlay -->
+<div id="fs-loading" style="position:fixed;inset:0;background:var(--gray100,#F3F4F6);z-index:8500;display:flex;align-items:center;justify-content:center;font-family:'Pretendard',-apple-system,sans-serif">
+  <div style="text-align:center">
+    <div style="width:32px;height:32px;border:3px solid #E5E7EB;border-top-color:#0432FF;border-radius:50%;animation:_fsspin .75s linear infinite;margin:0 auto 12px"></div>
+    <div style="font-size:13px;font-weight:600;color:#6B7280;letter-spacing:-.01em">클라우드 동기화 중...</div>
+  </div>
+  <style>@keyframes _fsspin{to{transform:rotate(360deg)}}</style>
+</div>
 
 <!-- ═══ AUTH OVERLAY ═══ -->
 <div id="auth-overlay">
@@ -783,6 +795,15 @@ tfoot td{padding:10px 14px;font-weight:800;border-top:2px solid var(--gray100);b
 </div>
 
 <script>
+// ─────────────────── Firebase Init ───────────────────
+(function(){
+  var cfg={apiKey:"AIzaSyBvLd4BtsmxTe2P0ZTNTBLmYTQPQGtCwYg",authDomain:"noaark-f8f75.firebaseapp.com",
+    projectId:"noaark-f8f75",storageBucket:"noaark-f8f75.firebasestorage.app",
+    messagingSenderId:"497213476251",appId:"1:497213476251:web:64b118a76adb76f7ff653e"};
+  if(!firebase.apps.length) firebase.initializeApp(cfg);
+  window._fsDB=firebase.firestore();
+})();
+
 // ─────────────────── SEED DATA (Excel) ───────────────────
 const SEED = [{"date":"2026-03-23","item":"아크","income":1600000,"expense":0},{"date":"2026-03-24","item":"SH 물류","income":0,"expense":3200000},{"date":"2026-03-25","item":"기보 기술료 보험 해지","income":4800000,"expense":0},{"date":"2026-03-26","item":"현대, 우리 카드","income":10500000,"expense":0},{"date":"2026-03-27","item":"삼성카드 일부 납부","income":0,"expense":10000000},{"date":"2026-03-28","item":"성민 보증금","income":0,"expense":5200000},{"date":"2026-03-28","item":"삼성카드 선 사용금","income":4800000,"expense":0},{"date":"2026-03-28","item":"티비판매","income":1900000,"expense":0},{"date":"2026-03-28","item":"성민 집 이자","income":0,"expense":1200000},{"date":"2026-03-28","item":"엄마","income":10000000,"expense":0},{"date":"2026-03-28","item":"교보 보험 대출","income":850000,"expense":0},{"date":"2026-03-30","item":"급여","income":0,"expense":7421431},{"date":"2026-03-30","item":"법인세","income":0,"expense":987040},{"date":"2026-03-30","item":"아크 이자","income":0,"expense":1100000},{"date":"2026-03-30","item":"아크 법인세","income":0,"expense":70000},{"date":"2026-03-31","item":"SH 물류","income":0,"expense":1174700},{"date":"2026-04-01","item":"하나 이자 등","income":0,"expense":2500000},{"date":"2026-04-01","item":"중진공 등","income":0,"expense":1646880},{"date":"2026-04-01","item":"삼성카드 잔액 결재","income":0,"expense":3800000},{"date":"2026-04-10","item":"성민 아파트","income":80000000,"expense":0},{"date":"2026-04-10","item":"성민 아파트 출금","income":0,"expense":80000000},{"date":"2026-04-10","item":"롯데카드","income":0,"expense":250760},{"date":"2026-04-10","item":"우리카드","income":0,"expense":3069790},{"date":"2026-04-12","item":"현대카드","income":0,"expense":2000000},{"date":"2026-04-13","item":"월세 사무실","income":0,"expense":3500000},{"date":"2026-04-15","item":"자근 잔금","income":30000000,"expense":0},{"date":"2026-04-15","item":"아파트 관리비","income":0,"expense":7500000},{"date":"2026-04-15","item":"일산 보증금","income":0,"expense":10850000},{"date":"2026-04-15","item":"이사비용","income":0,"expense":3000000},{"date":"2026-04-28","item":"노아 자금","income":0,"expense":300000},{"date":"2026-04-29","item":"중진공 이자","income":0,"expense":1020197},{"date":"2026-05-01","item":"노아 이체","income":0,"expense":200000},{"date":"2026-05-01","item":"베를린","income":0,"expense":3799620},{"date":"2026-05-01","item":"급여","income":0,"expense":7558431},{"date":"2026-05-01","item":"서일 디앤피","income":0,"expense":2000000},{"date":"2026-05-01","item":"구공구이","income":0,"expense":2000000},{"date":"2026-05-01","item":"성민 평택 이자","income":0,"expense":2500000},{"date":"2026-05-01","item":"도내동 임대료","income":0,"expense":425000},{"date":"2026-05-01","item":"하나 용산집 이자","income":0,"expense":2600000},{"date":"2026-05-01","item":"삼성카드","income":0,"expense":13000000},{"date":"2026-05-01","item":"신한카드","income":0,"expense":1423776},{"date":"2026-05-01","item":"우리카드","income":0,"expense":268400},{"date":"2026-05-01","item":"생활비(카카오)","income":0,"expense":661500},{"date":"2026-05-01","item":"보험 외","income":0,"expense":298345},{"date":"2026-05-01","item":"신한카드(2)","income":0,"expense":170280},{"date":"2026-05-01","item":"변호사","income":0,"expense":1000000},{"date":"2026-05-01","item":"중진공 이자","income":0,"expense":1684205},{"date":"2026-05-01","item":"기업은행 이자","income":0,"expense":257917},{"date":"2026-05-01","item":"지원사업 환수","income":0,"expense":2300000},{"date":"2026-05-01","item":"관리비 사무실","income":0,"expense":346770},{"date":"2026-05-01","item":"토사 대출 이자","income":0,"expense":450000},{"date":"2026-05-01","item":"아크 네이버 매출","income":1700000,"expense":0},{"date":"2026-05-11","item":"지승","income":16000000,"expense":0},{"date":"2026-05-11","item":"현대 카드","income":0,"expense":705571},{"date":"2026-05-11","item":"롯데카드","income":0,"expense":2479172},{"date":"2026-05-11","item":"법인카드 기업","income":0,"expense":557743},{"date":"2026-05-11","item":"법인카드 우리","income":0,"expense":308379},{"date":"2026-05-14","item":"성민 아파트 등록비","income":0,"expense":5900000},{"date":"2026-05-20","item":"우리카드","income":0,"expense":2682137}];
 
@@ -813,7 +834,16 @@ function load() {
   try { return JSON.parse(localStorage.getItem(KEY)) || {entries:[],targets:{}}; }
   catch(e) { return {entries:[],targets:{}}; }
 }
-function save(db) { localStorage.setItem(KEY, JSON.stringify(db)); }
+function save(db) {
+  localStorage.setItem(KEY, JSON.stringify(db));
+  clearTimeout(window._fsFinTimer);
+  window._fsFinTimer = setTimeout(function(){
+    if(!window._fsDB) return;
+    window._fsDB.collection('noa_data').doc('finance')
+      .set({entries:db.entries,targets:db.targets,fixed:FX,seeded:true},{merge:true})
+      .catch(function(e){console.warn('Firestore save:',e);});
+  },600);
+}
 
 // ─── Fixed expense seed (from Excel 자금일자 정리) ───
 const FIXED_SEED = [
@@ -842,7 +872,16 @@ const FIXED_KEY = 'noa_fixed_v1';
 function loadFixed() {
   try { return JSON.parse(localStorage.getItem(FIXED_KEY)) || []; } catch(e) { return []; }
 }
-function saveFixed(arr) { localStorage.setItem(FIXED_KEY, JSON.stringify(arr)); }
+function saveFixed(arr) {
+  localStorage.setItem(FIXED_KEY, JSON.stringify(arr));
+  clearTimeout(window._fsFixTimer);
+  window._fsFixTimer = setTimeout(function(){
+    if(!window._fsDB) return;
+    window._fsDB.collection('noa_data').doc('finance')
+      .set({fixed:arr},{merge:true})
+      .catch(function(e){console.warn('Firestore saveFixed:',e);});
+  },600);
+}
 
 let FX = loadFixed();
 if (FX.length === 0) { FX = JSON.parse(JSON.stringify(FIXED_SEED)); saveFixed(FX); }
@@ -1636,7 +1675,36 @@ function renderAll() {
   renderGoal();
 }
 
-renderAll();
+// ─── Firebase async init ───
+(async function _fsInit(){
+  var loadEl = document.getElementById('fs-loading');
+  try {
+    if(window._fsDB){
+      var snap = await window._fsDB.collection('noa_data').doc('finance').get();
+      if(snap.exists){
+        var d = snap.data();
+        if(d.seeded) localStorage.setItem(SEED_KEY,'1');
+        if(d.entries !== undefined){
+          DB.entries = d.entries;
+          DB.targets = d.targets || {};
+          localStorage.setItem(KEY, JSON.stringify(DB));
+        }
+        if(d.fixed && d.fixed.length > 0){
+          FX = d.fixed;
+          localStorage.setItem(FIXED_KEY, JSON.stringify(FX));
+        }
+      } else {
+        // First time: push localStorage data up to Firestore
+        await window._fsDB.collection('noa_data').doc('finance').set({
+          entries:DB.entries, targets:DB.targets, fixed:FX,
+          seeded:!!localStorage.getItem(SEED_KEY)
+        });
+      }
+    }
+  } catch(e){ console.warn('Firestore init failed, using local cache:',e); }
+  renderAll();
+  if(loadEl) loadEl.style.display='none';
+})();
 
 // ═══════════════ AUTH + BACKUP ═══════════════
 (function() {

@@ -474,8 +474,20 @@ body {
 .pw-err{font-size:11px;color:#FF3B30;margin-bottom:8px;min-height:14px}
 
 </style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+<!-- FS Loading Overlay -->
+<div id="fs-loading" style="position:fixed;inset:0;background:var(--gray100,#F3F4F6);z-index:8500;display:flex;align-items:center;justify-content:center;font-family:'Pretendard',-apple-system,sans-serif">
+  <div style="text-align:center">
+    <div style="width:32px;height:32px;border:3px solid #E5E7EB;border-top-color:#0432FF;border-radius:50%;animation:_fsspin .75s linear infinite;margin:0 auto 12px"></div>
+    <div style="font-size:13px;font-weight:600;color:#6B7280;letter-spacing:-.01em">클라우드 동기화 중...</div>
+  </div>
+  <style>@keyframes _fsspin{to{transform:rotate(360deg)}}</style>
+</div>
 
 <!-- ═══ AUTH OVERLAY ═══ -->
 <div id="auth-overlay">
@@ -767,6 +779,15 @@ body {
 </div><!-- /page -->
 
 <script>
+// ─────────────────── Firebase Init ───────────────────
+(function(){
+  var cfg={apiKey:"AIzaSyBvLd4BtsmxTe2P0ZTNTBLmYTQPQGtCwYg",authDomain:"noaark-f8f75.firebaseapp.com",
+    projectId:"noaark-f8f75",storageBucket:"noaark-f8f75.firebasestorage.app",
+    messagingSenderId:"497213476251",appId:"1:497213476251:web:64b118a76adb76f7ff653e"};
+  if(!firebase.apps.length) firebase.initializeApp(cfg);
+  window._fsDB=firebase.firestore();
+})();
+
 // ── Data ───────────────────────────────────────────────────────────────────────
 const _QUOTE_KEY = 'noa_quote_v1';
 const _DB_DEFAULTS = {
@@ -823,6 +844,13 @@ let items = _ITEMS_DEFAULTS;
 
 function saveQuote() {
   localStorage.setItem(_QUOTE_KEY, JSON.stringify({ db: DB, items: items }));
+  clearTimeout(window._fsQuoteTimer);
+  window._fsQuoteTimer = setTimeout(function(){
+    if(!window._fsDB) return;
+    window._fsDB.collection('noa_data').doc('quote')
+      .set({db:{companies:DB.companies,clients:DB.clients,products:DB.products},items:items},{merge:true})
+      .catch(function(e){console.warn('Firestore saveQuote:',e);});
+  },600);
 }
 
 // ── Utils ──────────────────────────────────────────────────────────────────────
@@ -1008,16 +1036,42 @@ function resetDoc() {
   renderItems(); setToday();
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────────
+// ── Init (Firebase async) ──────────────────────────────────────────────────────
 setToday();
-populateSels();
-renderItems();
-renderCompanyDB();
-renderClientDB();
-renderProductDB();
-
-$('senderSel').value = 'NOA';   fillSender('NOA');
-$('receiverSel').value = 'BROSCO'; fillReceiver('BROSCO');
+(async function _fsInit(){
+  var loadEl = document.getElementById('fs-loading');
+  try {
+    if(window._fsDB){
+      var snap = await window._fsDB.collection('noa_data').doc('quote').get();
+      if(snap.exists){
+        var d = snap.data();
+        if(d.db){
+          if(d.db.companies) DB.companies = d.db.companies;
+          if(d.db.clients)   DB.clients   = d.db.clients;
+          if(d.db.products)  DB.products  = d.db.products;
+        }
+        if(d.items && d.items.length > 0){
+          items.length = 0;
+          d.items.forEach(function(x){ items.push(x); });
+        }
+        localStorage.setItem(_QUOTE_KEY, JSON.stringify({db:DB, items:items}));
+      } else {
+        await window._fsDB.collection('noa_data').doc('quote').set({
+          db:{companies:DB.companies,clients:DB.clients,products:DB.products},
+          items:items
+        });
+      }
+    }
+  } catch(e){ console.warn('Firestore init failed, using local cache:',e); }
+  populateSels();
+  renderItems();
+  renderCompanyDB();
+  renderClientDB();
+  renderProductDB();
+  $('senderSel').value = 'NOA';   fillSender('NOA');
+  $('receiverSel').value = 'BROSCO'; fillReceiver('BROSCO');
+  if(loadEl) loadEl.style.display='none';
+})();
 
 // ═══════════════ AUTH + BACKUP ═══════════════
 (function() {

@@ -193,8 +193,20 @@ tbody tr:hover td{background:#F8F9FF}
 .pw-err{font-size:11px;color:#FF3B30;margin-bottom:8px;min-height:14px}
 
 </style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+<!-- FS Loading Overlay -->
+<div id="fs-loading" style="position:fixed;inset:0;background:var(--gray100,#F3F4F6);z-index:8500;display:flex;align-items:center;justify-content:center;font-family:'Pretendard',-apple-system,sans-serif">
+  <div style="text-align:center">
+    <div style="width:32px;height:32px;border:3px solid #E5E7EB;border-top-color:#0432FF;border-radius:50%;animation:_fsspin .75s linear infinite;margin:0 auto 12px"></div>
+    <div style="font-size:13px;font-weight:600;color:#6B7280;letter-spacing:-.01em">클라우드 동기화 중...</div>
+  </div>
+  <style>@keyframes _fsspin{to{transform:rotate(360deg)}}</style>
+</div>
 
 <!-- ═══ AUTH OVERLAY ═══ -->
 <div id="auth-overlay">
@@ -550,7 +562,16 @@ function load() {
   try { return JSON.parse(localStorage.getItem(KEY)) || initDB(); }
   catch { return initDB(); }
 }
-function save() { localStorage.setItem(KEY, JSON.stringify(DB)); }
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(DB));
+  clearTimeout(window._fsInvTimer);
+  window._fsInvTimer = setTimeout(function(){
+    if(!window._fsDB) return;
+    window._fsDB.collection('noa_data').doc('inventory')
+      .set({ips:DB.ips,items:DB.items,sales:DB.sales},{merge:true})
+      .catch(function(e){console.warn('Firestore save:',e);});
+  },600);
+}
 
 function initDB() {
   const db = { ips: [], items: [], sales: [] };
@@ -1107,7 +1128,28 @@ document.querySelectorAll('.modal-bg').forEach(bg => {
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-renderDashboard();
+// ─── Firebase async init ───
+(async function _fsInit(){
+  var loadEl = document.getElementById('fs-loading');
+  try {
+    if(window._fsDB){
+      var snap = await window._fsDB.collection('noa_data').doc('inventory').get();
+      if(snap.exists){
+        var d = snap.data();
+        if(d.ips !== undefined)   { DB.ips   = d.ips;   }
+        if(d.items !== undefined) { DB.items = d.items; }
+        if(d.sales !== undefined) { DB.sales = d.sales; }
+        localStorage.setItem(KEY, JSON.stringify(DB));
+      } else {
+        await window._fsDB.collection('noa_data').doc('inventory').set({
+          ips:DB.ips, items:DB.items, sales:DB.sales
+        });
+      }
+    }
+  } catch(e){ console.warn('Firestore init failed, using local cache:',e); }
+  renderDashboard();
+  if(loadEl) loadEl.style.display='none';
+})();
 
 // ═══════════════ AUTH + BACKUP ═══════════════
 (function() {
