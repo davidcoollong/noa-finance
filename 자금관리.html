@@ -273,9 +273,127 @@ tfoot td{padding:10px 14px;font-weight:800;border-top:2px solid var(--gray100);b
   .page{padding:16px 16px 60px}
   .add-form-row{grid-template-columns:1fr 1fr}
 }
+
+/* ── Auth Overlay ── */
+#auth-overlay{position:fixed;inset:0;background:rgba(4,50,255,.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:9999;display:flex;align-items:center;justify-content:center}
+.auth-box{background:#fff;border-radius:24px;padding:44px 40px 36px;width:380px;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 24px 64px rgba(0,0,0,.18);text-align:center}
+.auth-brand{font-size:13px;font-weight:700;letter-spacing:.12em;color:rgba(4,50,255,.5);text-transform:uppercase;margin-bottom:8px}
+.auth-title{font-size:26px;font-weight:800;letter-spacing:-1px;color:#000;margin-bottom:28px}
+.auth-field{width:100%;border:1.5px solid #E5E7EB;border-radius:10px;padding:12px 16px;font-family:inherit;font-size:14px;font-weight:500;color:#111;outline:none;transition:border-color .15s;margin-bottom:10px;background:#FAFAFA}
+.auth-field:focus{border-color:#0432FF;background:#fff;box-shadow:0 0 0 3px rgba(4,50,255,.1)}
+.auth-btn{width:100%;background:#0432FF;color:#fff;border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .15s;letter-spacing:-.01em}
+.auth-btn:hover{opacity:.88}
+.auth-err{font-size:12px;color:#FF3B30;margin-top:10px;min-height:16px;font-weight:500}
+.auth-footer{font-size:11px;color:#9CA3AF;margin-top:20px}
+/* ── User badge & logout ── */
+.user-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;color:#fff;cursor:default}
+.user-badge .dot-online{width:7px;height:7px;background:#34C759;border-radius:50%;flex-shrink:0}
+.btn-logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);font-family:inherit;font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;cursor:pointer;transition:all .15s;letter-spacing:-.01em}
+.btn-logout:hover{background:rgba(255,255,255,.2);color:#fff}
+/* ── Backup Panel ── */
+#backup-panel{position:fixed;top:0;right:0;height:100%;width:340px;background:#fff;box-shadow:-4px 0 32px rgba(0,0,0,.12);z-index:8000;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+#backup-panel.open{transform:none}
+.bp-header{padding:20px 20px 16px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between}
+.bp-title{font-size:16px;font-weight:800;letter-spacing:-.4px}
+.bp-close{background:none;border:none;font-size:20px;cursor:pointer;color:#9CA3AF;line-height:1;padding:0}
+.bp-close:hover{color:#000}
+.bp-body{flex:1;overflow-y:auto;padding:16px 20px}
+.bp-section{margin-bottom:20px}
+.bp-section-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9CA3AF;margin-bottom:10px}
+.bp-btn{width:100%;background:#F3F4F6;border:none;border-radius:10px;padding:12px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:left;color:#111;transition:background .12s;display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.bp-btn:hover{background:#E5E7EB}
+.bp-btn.primary{background:#0432FF;color:#fff}
+.bp-btn.primary:hover{background:#0228D4}
+.bp-btn .bp-icon{font-size:16px;flex-shrink:0}
+.bp-btn-sub{font-size:11px;font-weight:500;color:rgba(255,255,255,.7);display:block;margin-top:1px}
+.bp-btn.primary .bp-btn-sub{color:rgba(255,255,255,.7)}
+.bp-btn:not(.primary) .bp-btn-sub{color:#6B7280}
+.snap-item{background:#F9FAFB;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.snap-date{font-size:11px;font-weight:600;color:#374151}
+.snap-size{font-size:10px;color:#9CA3AF}
+.snap-restore{background:#fff;border:1px solid #E5E7EB;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer;color:#0432FF;font-family:inherit}
+.snap-restore:hover{background:#EEF2FF}
+.snap-del{background:none;border:none;cursor:pointer;font-size:14px;color:#D1D5DB;padding:0 0 0 6px}
+.snap-del:hover{color:#FF3B30}
+.bp-storage-info{background:#F0F9FF;border-radius:8px;padding:10px 12px;font-size:11px;color:#0369A1;font-weight:500;line-height:1.5;margin-bottom:12px}
+/* ── PW Change modal ── */
+#pw-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:10000;align-items:center;justify-content:center}
+#pw-modal.open{display:flex}
+.pw-box{background:#fff;border-radius:16px;padding:28px;width:320px;box-shadow:0 8px 40px rgba(0,0,0,.15)}
+.pw-title{font-size:16px;font-weight:800;margin-bottom:16px}
+.pw-err{font-size:11px;color:#FF3B30;margin-bottom:8px;min-height:14px}
+
 </style>
 </head>
 <body>
+
+<!-- ═══ AUTH OVERLAY ═══ -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-brand">NOA &amp; ARK</div>
+    <div class="auth-title">로그인</div>
+    <input id="auth-user" class="auth-field" type="text" placeholder="아이디" autocomplete="username"
+      onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    <input id="auth-pass" class="auth-field" type="password" placeholder="비밀번호" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="auth-btn" onclick="doLogin()">로그인</button>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-footer">© NOA&amp;ARK · 접근 권한 보유자만 사용 가능</div>
+  </div>
+</div>
+
+<!-- ═══ BACKUP PANEL ═══ -->
+<div id="backup-panel">
+  <div class="bp-header">
+    <span class="bp-title">💾 데이터 관리</span>
+    <button class="bp-close" onclick="closeBackup()">×</button>
+  </div>
+  <div class="bp-body">
+    <div class="bp-storage-info" id="bp-storage-info">브라우저 로컬 스토리지에 저장됨</div>
+    <div class="bp-section">
+      <div class="bp-section-title">백업 내보내기 / 불러오기</div>
+      <button class="bp-btn primary" onclick="exportBackup()">
+        <span class="bp-icon">⬇️</span>
+        <span><span>JSON 백업 다운로드</span><span class="bp-btn-sub">전체 데이터를 파일로 저장</span></span>
+      </button>
+      <button class="bp-btn" onclick="importBackup()">
+        <span class="bp-icon">⬆️</span>
+        <span><span>백업 파일에서 복원</span><span class="bp-btn-sub">JSON 파일 선택 후 데이터 복원</span></span>
+      </button>
+    </div>
+    <div class="bp-section">
+      <div class="bp-section-title">스냅샷 (최근 7개 자동 보관)</div>
+      <button class="bp-btn" onclick="saveSnapshot()">
+        <span class="bp-icon">📸</span>
+        <span><span>지금 스냅샷 저장</span><span class="bp-btn-sub">현재 상태를 즉시 저장</span></span>
+      </button>
+      <div id="snap-list"></div>
+    </div>
+    <div class="bp-section">
+      <div class="bp-section-title">계정 관리</div>
+      <button class="bp-btn" onclick="openPwModal()">
+        <span class="bp-icon">🔑</span>
+        <span><span>비밀번호 변경</span><span class="bp-btn-sub">내 계정 비밀번호 변경</span></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PW CHANGE MODAL ═══ -->
+<div id="pw-modal">
+  <div class="pw-box">
+    <div class="pw-title">🔑 비밀번호 변경</div>
+    <div class="pw-err" id="pw-err"></div>
+    <input id="pw-cur"  class="auth-field" type="password" placeholder="현재 비밀번호" style="margin-bottom:8px">
+    <input id="pw-new"  class="auth-field" type="password" placeholder="새 비밀번호 (8자 이상)" style="margin-bottom:8px">
+    <input id="pw-new2" class="auth-field" type="password" placeholder="새 비밀번호 확인" style="margin-bottom:12px">
+    <div style="display:flex;gap:8px">
+      <button class="auth-btn" style="background:#E5E7EB;color:#111" onclick="document.getElementById('pw-modal').classList.remove('open')">취소</button>
+      <button class="auth-btn" onclick="changePw()">변경하기</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- ── Navigation ── -->
 <nav class="nav">
@@ -288,6 +406,9 @@ tfoot td{padding:10px 14px;font-weight:800;border-top:2px solid var(--gray100);b
     <button class="nav-tab" onclick="switchView('yearly')">연간</button>
   </div>
   <div class="nav-right">
+  <div class="user-badge"><span class="dot-online"></span><span class="auth-user-name">-</span></div>
+  <button class="btn-nav" onclick="openBackup()">💾 백업</button>
+  <button class="btn-logout" onclick="doLogout()">로그아웃</button>
     <button class="btn-nav" onclick="exportCSV()">CSV 내보내기</button>
     <button class="btn-nav" onclick="clearAll()">초기화</button>
     <img class="nav-logo-img" src="data:image/png;base64,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" alt="ARK" style="margin-left:10px">
@@ -1516,6 +1637,219 @@ function renderAll() {
 }
 
 renderAll();
+
+// ═══════════════ AUTH + BACKUP ═══════════════
+(function() {
+const _AUTH_USERS_KEY = 'noa_auth_users_v1';
+const _SESSION_KEY    = 'noa_session_v1';
+const _SESSION_TTL    = 8 * 60 * 60 * 1000; // 8h
+const _SNAP_KEY       = 'noa_snap_finance';
+const _BK_KEYS        = ['noa_fin_v2', 'noa_fixed_v1'];
+const _APPNAME        = '자금관리';
+const _LAST_BK_KEY    = 'noa_lastbk_finance';
+
+// Default users (passwords are SHA-256 hashed)
+const _DEFAULT_USERS = [
+  { username:'admin',    hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926', name:'관리자',  role:'admin' },
+  { username:'david',    hash:'2d2a6626eb7a70813ec876ad277281379a2d0d6c6e33e67f3c20d5d66452ef5e', name:'김진욱',  role:'admin' },
+  { username:'sooyoung', hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926', name:'소영',    role:'user'  }
+];
+
+function _loadUsers() {
+  try { return JSON.parse(localStorage.getItem(_AUTH_USERS_KEY)) || _DEFAULT_USERS; } catch(e) { return _DEFAULT_USERS; }
+}
+function _saveUsers(u) { localStorage.setItem(_AUTH_USERS_KEY, JSON.stringify(u)); }
+
+async function _sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function _getSession() {
+  try { return JSON.parse(sessionStorage.getItem(_SESSION_KEY)); } catch(e) { return null; }
+}
+function _setSession(user) {
+  sessionStorage.setItem(_SESSION_KEY, JSON.stringify({
+    username: user.username, name: user.name, role: user.role,
+    expires: Date.now() + _SESSION_TTL
+  }));
+}
+
+function _showUser(name) {
+  const ov = document.getElementById('auth-overlay');
+  if (ov) ov.remove();
+  document.querySelectorAll('.auth-user-name').forEach(el => el.textContent = name);
+  _checkBackupReminder();
+}
+
+window.doLogin = async function() {
+  const username = document.getElementById('auth-user').value.trim();
+  const password = document.getElementById('auth-pass').value;
+  if (!username || !password) { document.getElementById('auth-err').textContent = '아이디와 비밀번호를 입력해주세요.'; return; }
+  const hash = await _sha256(password);
+  const users = _loadUsers();
+  const user = users.find(u => u.username === username && u.hash === hash);
+  if (user) {
+    _setSession(user);
+    _showUser(user.name);
+  } else {
+    document.getElementById('auth-err').textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+    document.getElementById('auth-pass').value = '';
+  }
+};
+
+window.doLogout = function() {
+  if (confirm('로그아웃 하시겠습니까?')) {
+    sessionStorage.removeItem(_SESSION_KEY);
+    location.reload();
+  }
+};
+
+// Check session on load
+(function() {
+  const s = _getSession();
+  if (s && Date.now() < s.expires) {
+    _showUser(s.name);
+  }
+})();
+
+// ── Backup ──
+function _allData() {
+  const obj = {};
+  _BK_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v) obj[k] = JSON.parse(v); });
+  return obj;
+}
+function _dataSize() {
+  let total = 0;
+  _BK_KEYS.forEach(k => { total += (localStorage.getItem(k) || '').length; });
+  return (total / 1024).toFixed(1);
+}
+
+window.openBackup = function() {
+  document.getElementById('backup-panel').classList.add('open');
+  _renderSnapList();
+  const info = document.getElementById('bp-storage-info');
+  if (info) {
+    const lastBk = localStorage.getItem(_LAST_BK_KEY);
+    const lastStr = lastBk ? new Date(lastBk).toLocaleString('ko-KR') : '기록 없음';
+    info.innerHTML = `📦 저장 위치: 브라우저 로컬 스토리지<br>💿 데이터 크기: ${_dataSize()} KB<br>🕐 마지막 백업: ${lastStr}`;
+  }
+};
+window.closeBackup = function() {
+  document.getElementById('backup-panel').classList.remove('open');
+};
+
+window.exportBackup = function() {
+  const backup = { version:2, app:_APPNAME, exportDate:new Date().toISOString(), data:_allData() };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = _APPNAME + '_백업_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  localStorage.setItem(_LAST_BK_KEY, new Date().toISOString());
+  const info = document.getElementById('bp-storage-info');
+  if (info) info.innerHTML += '<br>✅ 방금 백업 완료!';
+};
+
+window.importBackup = function() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const bk = JSON.parse(ev.target.result);
+        if (!bk.data) { alert('올바른 백업 파일이 아닙니다.'); return; }
+        if (!confirm('현재 데이터를 백업 파일로 덮어쓰겠습니까?\n내보낸 날짜: ' + new Date(bk.exportDate).toLocaleString('ko-KR'))) return;
+        Object.entries(bk.data).forEach(([k,v]) => localStorage.setItem(k, JSON.stringify(v)));
+        alert('복원 완료! 페이지를 새로고침합니다.');
+        location.reload();
+      } catch(e) { alert('파일 읽기 오류: ' + e.message); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+};
+
+window.saveSnapshot = function() {
+  const snaps = _loadSnaps();
+  snaps.unshift({ id: Date.now().toString(), date: new Date().toISOString(), size: _dataSize(), data: _allData() });
+  if (snaps.length > 7) snaps.length = 7;
+  localStorage.setItem(_SNAP_KEY, JSON.stringify(snaps));
+  _renderSnapList();
+  alert('스냅샷이 저장되었습니다 (' + new Date().toLocaleString('ko-KR') + ')');
+};
+
+function _loadSnaps() { try { return JSON.parse(localStorage.getItem(_SNAP_KEY)) || []; } catch(e) { return []; } }
+
+function _renderSnapList() {
+  const el = document.getElementById('snap-list'); if (!el) return;
+  const snaps = _loadSnaps();
+  if (snaps.length === 0) { el.innerHTML = '<div style="font-size:11px;color:#9CA3AF;padding:8px 0">저장된 스냅샷 없음</div>'; return; }
+  el.innerHTML = snaps.map((s,i) => `
+    <div class="snap-item">
+      <div><div class="snap-date">${new Date(s.date).toLocaleString('ko-KR')}</div><div class="snap-size">${s.size} KB</div></div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button class="snap-restore" onclick="_restoreSnap(${i})">복원</button>
+        <button class="snap-del" onclick="_delSnap(${i})" title="삭제">×</button>
+      </div>
+    </div>`).join('');
+}
+
+window._restoreSnap = function(i) {
+  const snaps = _loadSnaps();
+  const s = snaps[i]; if (!s) return;
+  if (!confirm('이 스냅샷으로 복원하시겠습니까?\n' + new Date(s.date).toLocaleString('ko-KR'))) return;
+  Object.entries(s.data).forEach(([k,v]) => localStorage.setItem(k, JSON.stringify(v)));
+  alert('복원 완료!'); location.reload();
+};
+window._delSnap = function(i) {
+  const snaps = _loadSnaps(); snaps.splice(i,1);
+  localStorage.setItem(_SNAP_KEY, JSON.stringify(snaps)); _renderSnapList();
+};
+
+// Auto-save snapshot every 7 days
+function _checkBackupReminder() {
+  const lastBk = localStorage.getItem(_LAST_BK_KEY);
+  const diff = lastBk ? (Date.now() - new Date(lastBk).getTime()) / 86400000 : 999;
+  if (diff >= 7) {
+    setTimeout(() => {
+      if (confirm('마지막 백업으로부터 ' + Math.floor(diff) + '일이 경과했습니다.\n지금 백업하시겠습니까?')) {
+        openBackup(); setTimeout(() => exportBackup(), 300);
+      }
+    }, 2000);
+  }
+}
+
+// ── Password change ──
+window.openPwModal = function() {
+  ['pw-cur','pw-new','pw-new2'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  const err = document.getElementById('pw-err'); if(err) err.textContent='';
+  document.getElementById('pw-modal').classList.add('open');
+};
+window.changePw = async function() {
+  const cur  = document.getElementById('pw-cur').value;
+  const nw   = document.getElementById('pw-new').value;
+  const nw2  = document.getElementById('pw-new2').value;
+  const err  = document.getElementById('pw-err');
+  if (!cur || !nw || !nw2) { err.textContent = '모든 항목을 입력해주세요.'; return; }
+  if (nw.length < 8)       { err.textContent = '새 비밀번호는 8자 이상이어야 합니다.'; return; }
+  if (nw !== nw2)          { err.textContent = '새 비밀번호가 일치하지 않습니다.'; return; }
+  const s = _getSession(); if (!s) return;
+  const curHash = await _sha256(cur);
+  const users = _loadUsers();
+  const user = users.find(u => u.username === s.username && u.hash === curHash);
+  if (!user) { err.textContent = '현재 비밀번호가 올바르지 않습니다.'; return; }
+  user.hash = await _sha256(nw);
+  _saveUsers(users);
+  document.getElementById('pw-modal').classList.remove('open');
+  alert('비밀번호가 변경되었습니다.');
+};
+
+})();
+
 </script>
 </body>
 </html>

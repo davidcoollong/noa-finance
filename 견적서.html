@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOA 견적서</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 14px;
+  background: #F3F4F6;
+  color: #000;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+
+/* ── Logos ── */
+.doc-logos {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 36px 16px;
+  border-bottom: 1px solid #E5E7EB;
+}
+.doc-logo-left  { height: 80px; width: auto; object-fit: contain; }
+.doc-logo-right { height: 88px; width: auto; object-fit: contain; }
+
+/* ── App Bar (web-only) ── */
+.app-bar {
+  background: #0432FF;
+  color: #fff;
+  padding: 0 36px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.app-bar-logo {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.app-bar-actions { display: flex; gap: 8px; }
+.btn {
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: opacity 0.15s;
+}
+.btn:hover { opacity: 0.85; }
+.btn-white { background: #fff; color: #0432FF; }
+.btn-outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.45); }
+.btn-blue { background: #0432FF; color: #fff; }
+.btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 4px; }
+.btn-danger { background: #EF4444; color: #fff; }
+.btn-add-row { width: 100%; padding: 9px; background: #F9FAFB; border: 1px dashed #D1D5DB; border-radius: 6px; color: #6B7280; font-family: 'Pretendard', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; margin-top: 8px; }
+.btn-add-row:hover { background: #F0F2FF; border-color: #0432FF; color: #0432FF; }
+
+/* ── Page Layout ── */
+.page { max-width: 960px; margin: 28px auto; padding: 0 20px 80px; }
+
+/* ── Quote Document ── */
+.doc {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10), 0 4px 24px rgba(0,0,0,0.06);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+/* ── Doc Header ── */
+.doc-header {
+  padding: 28px 36px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid #E5E7EB;
+}
+.doc-title-input {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #000;
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.doc-title-input::placeholder { color: #D1D5DB; }
+.doc-brand {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0432FF;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  margin-left: 24px;
+  padding-top: 6px;
+}
+
+/* ── Doc Meta Row ── */
+.doc-meta {
+  padding: 14px 36px;
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  border-bottom: 1px solid #E5E7EB;
+  flex-wrap: wrap;
+  background: #FAFAFA;
+}
+.meta-field { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.meta-label { color: #6B7280; font-weight: 500; white-space: nowrap; }
+.meta-input {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  border: none;
+  border-bottom: 1px solid #E5E7EB;
+  outline: none;
+  background: transparent;
+  color: #000;
+  padding: 2px 0;
+}
+.meta-input:focus { border-bottom-color: #0432FF; }
+.meta-input.wide { width: 260px; }
+.meta-input.mid { width: 100px; }
+
+/* ── Parties ── */
+.parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #E5E7EB;
+}
+.party {
+  padding: 20px 36px;
+}
+.party:first-child { border-right: 1px solid #E5E7EB; }
+
+.party-selector select {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #000;
+  background: #FFFBEB;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  outline: none;
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+}
+.party-selector select:focus { border-color: #0432FF; }
+
+.party-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.party-row {
+  display: flex;
+  gap: 6px;
+  font-size: 10px;
+  margin-bottom: 3px;
+  line-height: 1.5;
+}
+.party-key { color: #6B7280; min-width: 32px; flex-shrink: 0; }
+.party-val { color: #000; }
+
+/* ── Section Label ── */
+.section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-label .bullet { color: #0432FF; font-size: 14px; }
+.section-label .sub { font-size: 11px; font-weight: 400; color: #6B7280; margin-left: 4px; }
+
+/* ── Items Table ── */
+.items-section { padding: 20px 36px; border-bottom: 1px solid #E5E7EB; }
+
+.items-table { width: 100%; border-collapse: collapse; }
+.items-table thead tr th {
+  background: #0432FF;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 9px 10px;
+  letter-spacing: -0.01em;
+}
+.items-table thead tr th:first-child { border-radius: 0; }
+.items-table th.ta-left { text-align: left; }
+.items-table th.ta-right { text-align: right; }
+.items-table th.ta-center { text-align: center; }
+
+.items-table tbody tr td {
+  padding: 0;
+  border-bottom: 1px solid #E5E7EB;
+  vertical-align: middle;
+}
+.items-table tbody tr:last-child td { border-bottom: none; }
+.items-table tbody tr:hover td { background: #F9FAFB; }
+
+.cell-input {
+  display: block;
+  width: 100%;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 10px;
+  color: #000;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 9px 10px;
+}
+.cell-input::placeholder { color: #D1D5DB; }
+.cell-input:focus { background: #F0F2FF; }
+.cell-input.name { font-weight: 600; }
+.cell-input.desc { color: #6B7280; }
+.cell-input.ta-right { text-align: right; }
+.cell-input.ta-center { text-align: center; }
+
+.cell-select {
+  display: block;
+  width: 100%;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #000;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 9px 6px;
+  cursor: pointer;
+}
+.cell-select:focus { background: #F0F2FF; }
+
+.cell-amount {
+  font-size: 10px;
+  font-weight: 700;
+  color: #000;
+  text-align: right;
+  padding: 9px 10px;
+  white-space: nowrap;
+}
+.cell-del { text-align: center; padding: 4px 6px; }
+
+.col-no { width: 32px; }
+.col-name { width: 190px; }
+.col-desc { }
+.col-price { width: 100px; }
+.col-qty { width: 62px; }
+.col-unit { width: 54px; }
+.col-amount { width: 110px; }
+.col-del { width: 38px; }
+
+/* ── Bottom: Notes + Summary ── */
+.doc-bottom {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+}
+
+/* Notes */
+.notes-section { padding: 20px 36px; border-right: 1px solid #E5E7EB; }
+.notes-textarea {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  color: #374151;
+  line-height: 1.75;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  min-height: 150px;
+  resize: none;
+  letter-spacing: -0.01em;
+}
+
+/* Summary */
+.summary-section { padding: 20px 24px; background: #FAFAFA; }
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid #E5E7EB;
+  font-size: 14px;
+}
+.sum-row:last-child { border-bottom: none; padding: 0; }
+.sum-label { font-weight: 700; color: #000; }
+.sum-value { font-weight: 700; color: #000; font-size: 12px; }
+.sum-row.final {
+  margin-top: 8px;
+  background: #0432FF;
+  border-radius: 4px;
+  padding: 10px 14px;
+  border-bottom: none;
+}
+.sum-row.final .sum-label { color: #fff; font-size: 14px; }
+.sum-row.final .sum-value { color: #fff; font-size: 16px; font-weight: 700; }
+
+/* ── Bank ── */
+.bank-section {
+  padding: 14px 36px;
+  border-top: 1px solid #E5E7EB;
+  font-size: 11px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.bank-label { color: #6B7280; }
+.bank-value { font-weight: 500; color: #000; }
+.bank-note { color: #6B7280; margin-left: auto; }
+
+/* ── DB Manager ── */
+.dbm {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+.dbm-header {
+  background: #0432FF;
+  color: #fff;
+  padding: 12px 24px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.dbm-body { padding: 20px 24px; }
+
+.tab-bar { display: flex; gap: 4px; margin-bottom: 16px; }
+.tab-btn {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 18px;
+  border: none;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  background: #F3F4F6;
+  color: #6B7280;
+  border-bottom: 2px solid #E5E7EB;
+}
+.tab-btn.active { background: #0432FF; color: #fff; border-bottom-color: #0432FF; }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+.db-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.db-table th {
+  background: #F3F4F6;
+  font-weight: 600;
+  color: #374151;
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #E5E7EB;
+  white-space: nowrap;
+}
+.db-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #F3F4F6;
+  color: #374151;
+}
+.db-table tr:last-child td { border-bottom: none; }
+.db-table tr:hover td { background: #F9FAFB; }
+
+.add-row-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  padding: 12px;
+  background: #F9FAFB;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+}
+.add-input {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  padding: 6px 10px;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  outline: none;
+  min-width: 80px;
+  flex: 1;
+}
+.add-input:focus { border-color: #0432FF; }
+
+/* ── Print ── */
+@media print {
+  body { background: #fff; font-size: 11px; }
+  .app-bar, .dbm, .btn-add-row, .btn-danger, .cell-del, .party-selector { display: none !important; }
+  .page { margin: 0; padding: 0; max-width: 100%; }
+  .doc { box-shadow: none; border-radius: 0; border: none; }
+  .cell-input, .cell-select, .meta-input, .notes-textarea, .doc-title-input { pointer-events: none; }
+}
+
+@media (max-width: 680px) {
+  .parties { grid-template-columns: 1fr; }
+  .party:first-child { border-right: none; border-bottom: 1px solid #E5E7EB; }
+  .doc-bottom { grid-template-columns: 1fr; }
+  .notes-section { border-right: none; border-bottom: 1px solid #E5E7EB; }
+  .doc-header { flex-direction: column; gap: 8px; }
+  .doc-brand { margin-left: 0; }
+}
+
+/* ── Auth Overlay ── */
+#auth-overlay{position:fixed;inset:0;background:rgba(4,50,255,.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:9999;display:flex;align-items:center;justify-content:center}
+.auth-box{background:#fff;border-radius:24px;padding:44px 40px 36px;width:380px;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 24px 64px rgba(0,0,0,.18);text-align:center}
+.auth-brand{font-size:13px;font-weight:700;letter-spacing:.12em;color:rgba(4,50,255,.5);text-transform:uppercase;margin-bottom:8px}
+.auth-title{font-size:26px;font-weight:800;letter-spacing:-1px;color:#000;margin-bottom:28px}
+.auth-field{width:100%;border:1.5px solid #E5E7EB;border-radius:10px;padding:12px 16px;font-family:inherit;font-size:14px;font-weight:500;color:#111;outline:none;transition:border-color .15s;margin-bottom:10px;background:#FAFAFA}
+.auth-field:focus{border-color:#0432FF;background:#fff;box-shadow:0 0 0 3px rgba(4,50,255,.1)}
+.auth-btn{width:100%;background:#0432FF;color:#fff;border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .15s;letter-spacing:-.01em}
+.auth-btn:hover{opacity:.88}
+.auth-err{font-size:12px;color:#FF3B30;margin-top:10px;min-height:16px;font-weight:500}
+.auth-footer{font-size:11px;color:#9CA3AF;margin-top:20px}
+/* ── User badge & logout ── */
+.user-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;color:#fff;cursor:default}
+.user-badge .dot-online{width:7px;height:7px;background:#34C759;border-radius:50%;flex-shrink:0}
+.btn-logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);font-family:inherit;font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;cursor:pointer;transition:all .15s;letter-spacing:-.01em}
+.btn-logout:hover{background:rgba(255,255,255,.2);color:#fff}
+/* ── Backup Panel ── */
+#backup-panel{position:fixed;top:0;right:0;height:100%;width:340px;background:#fff;box-shadow:-4px 0 32px rgba(0,0,0,.12);z-index:8000;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+#backup-panel.open{transform:none}
+.bp-header{padding:20px 20px 16px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between}
+.bp-title{font-size:16px;font-weight:800;letter-spacing:-.4px}
+.bp-close{background:none;border:none;font-size:20px;cursor:pointer;color:#9CA3AF;line-height:1;padding:0}
+.bp-close:hover{color:#000}
+.bp-body{flex:1;overflow-y:auto;padding:16px 20px}
+.bp-section{margin-bottom:20px}
+.bp-section-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9CA3AF;margin-bottom:10px}
+.bp-btn{width:100%;background:#F3F4F6;border:none;border-radius:10px;padding:12px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:left;color:#111;transition:background .12s;display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.bp-btn:hover{background:#E5E7EB}
+.bp-btn.primary{background:#0432FF;color:#fff}
+.bp-btn.primary:hover{background:#0228D4}
+.bp-btn .bp-icon{font-size:16px;flex-shrink:0}
+.bp-btn-sub{font-size:11px;font-weight:500;color:rgba(255,255,255,.7);display:block;margin-top:1px}
+.bp-btn.primary .bp-btn-sub{color:rgba(255,255,255,.7)}
+.bp-btn:not(.primary) .bp-btn-sub{color:#6B7280}
+.snap-item{background:#F9FAFB;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.snap-date{font-size:11px;font-weight:600;color:#374151}
+.snap-size{font-size:10px;color:#9CA3AF}
+.snap-restore{background:#fff;border:1px solid #E5E7EB;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer;color:#0432FF;font-family:inherit}
+.snap-restore:hover{background:#EEF2FF}
+.snap-del{background:none;border:none;cursor:pointer;font-size:14px;color:#D1D5DB;padding:0 0 0 6px}
+.snap-del:hover{color:#FF3B30}
+.bp-storage-info{background:#F0F9FF;border-radius:8px;padding:10px 12px;font-size:11px;color:#0369A1;font-weight:500;line-height:1.5;margin-bottom:12px}
+/* ── PW Change modal ── */
+#pw-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:10000;align-items:center;justify-content:center}
+#pw-modal.open{display:flex}
+.pw-box{background:#fff;border-radius:16px;padding:28px;width:320px;box-shadow:0 8px 40px rgba(0,0,0,.15)}
+.pw-title{font-size:16px;font-weight:800;margin-bottom:16px}
+.pw-err{font-size:11px;color:#FF3B30;margin-bottom:8px;min-height:14px}
+
+</style>
+</head>
+<body>
+
+<!-- ═══ AUTH OVERLAY ═══ -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-brand">NOA &amp; ARK</div>
+    <div class="auth-title">로그인</div>
+    <input id="auth-user" class="auth-field" type="text" placeholder="아이디" autocomplete="username"
+      onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    <input id="auth-pass" class="auth-field" type="password" placeholder="비밀번호" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="auth-btn" onclick="doLogin()">로그인</button>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-footer">© NOA&amp;ARK · 접근 권한 보유자만 사용 가능</div>
+  </div>
+</div>
+
+<!-- ═══ BACKUP PANEL ═══ -->
+<div id="backup-panel">
+  <div class="bp-header">
+    <span class="bp-title">💾 데이터 관리</span>
+    <button class="bp-close" onclick="closeBackup()">×</button>
+  </div>
+  <div class="bp-body">
+    <div class="bp-storage-info" id="bp-storage-info">브라우저 로컬 스토리지에 저장됨</div>
+    <div class="bp-section">
+      <div class="bp-section-title">백업 내보내기 / 불러오기</div>
+      <button class="bp-btn primary" onclick="exportBackup()">
+        <span class="bp-icon">⬇️</span>
+        <span><span>JSON 백업 다운로드</span><span class="bp-btn-sub">전체 데이터를 파일로 저장</span></span>
+      </button>
+      <button class="bp-btn" onclick="importBackup()">
+        <span class="bp-icon">⬆️</span>
+        <span><span>백업 파일에서 복원</span><span class="bp-btn-sub">JSON 파일 선택 후 데이터 복원</span></span>
+      </button>
+    </div>
+    <div class="bp-section">
+      <div class="bp-section-title">스냅샷 (최근 7개 자동 보관)</div>
+      <button class="bp-btn" onclick="saveSnapshot()">
+        <span class="bp-icon">📸</span>
+        <span><span>지금 스냅샷 저장</span><span class="bp-btn-sub">현재 상태를 즉시 저장</span></span>
+      </button>
+      <div id="snap-list"></div>
+    </div>
+    <div class="bp-section">
+      <div class="bp-section-title">계정 관리</div>
+      <button class="bp-btn" onclick="openPwModal()">
+        <span class="bp-icon">🔑</span>
+        <span><span>비밀번호 변경</span><span class="bp-btn-sub">내 계정 비밀번호 변경</span></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PW CHANGE MODAL ═══ -->
+<div id="pw-modal">
+  <div class="pw-box">
+    <div class="pw-title">🔑 비밀번호 변경</div>
+    <div class="pw-err" id="pw-err"></div>
+    <input id="pw-cur"  class="auth-field" type="password" placeholder="현재 비밀번호" style="margin-bottom:8px">
+    <input id="pw-new"  class="auth-field" type="password" placeholder="새 비밀번호 (8자 이상)" style="margin-bottom:8px">
+    <input id="pw-new2" class="auth-field" type="password" placeholder="새 비밀번호 확인" style="margin-bottom:12px">
+    <div style="display:flex;gap:8px">
+      <button class="auth-btn" style="background:#E5E7EB;color:#111" onclick="document.getElementById('pw-modal').classList.remove('open')">취소</button>
+      <button class="auth-btn" onclick="changePw()">변경하기</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- App Bar -->
+<div class="app-bar">
+  <div class="app-bar-logo">NOA&ARK · 견적서</div>
+  <div class="app-bar-actions">
+    <div class="user-badge" style="background:rgba(4,50,255,.06);border-color:#E5E7EB;color:#374151"><span class="dot-online"></span><span class="auth-user-name" style="color:#374151">-</span></div>
+    <button onclick="openBackup()" class="btn btn-outline" style="background:#F3F4F6;border-color:#E5E7EB;color:#374151">💾 백업</button>
+    <button onclick="doLogout()" class="btn" style="background:#F3F4F6;border:1.5px solid #E5E7EB;color:#374151;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px">로그아웃</button>
+    <button class="btn btn-outline" onclick="window.print()">인쇄 / PDF</button>
+    <button class="btn btn-white" onclick="resetDoc()">새 견적서</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ── Quote Document ── -->
+  <div class="doc" id="quoteDoc">
+
+    <!-- Header -->
+    <div class="doc-logos">
+      <img class="doc-logo-left" src="data:image/png;base64,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uHDhbCTh7apVq+Qzzzwj8+XLZ00znXXxa1OwYEG5d+/ebONL9eDixYuSNX7iiSfkAw88IAsUKCDz588v77nnHv1/6dKl5fTp0+X169cDyfz444/y5Zdflg899JC87777strff//9skiRInpf/Pnnn4HtGfMjjzwiq1WrJr///ntdH1qsD2N5++235fHjx+Wvv/6qx9SxY0d59uxZ+eWXX8rHH39cMm8zbtoUKlRI1q5dWzIu1iavFpGTA89LALF69WrJxvQTglTPevTooTdOFL5euXLFmj59V6pUKRv57du3y+eeey4teqnmY/vOFiBOnz4t+/btKxFkhOrFF1+Uw4YNkxMnTpTvvvuurF69uhZIQPHzzz+X//77b8Lcb968KVkrhBvBBCB79+4tJ0+eLEePHi1btWolixUrpvkC7d9++81XYPfs2aP7efTRR+Wrr76qhf2pp56SDRo0kB9++KH89ttvNUD98ssvmhZ0R4wYIRkXAMHBxPjGjBkjO3furA8XAO7ZZ5+V69atSxhzXvrHAYQSOD8NYv369bJy5crWAvfWW2/JY8eORdoDnFq2Akj9Zs2aZaPfvn37tGil03+qNgh5VA3ixo0bWog58UuVKiW/+OKLbNoXIPr+++9rgUO7WLp0acLcWSf65B2n/LZt2ySgYcq1a9fk8uXLtWaAJoBg//HHH+Z11qcBCOb24IMPStZx3759We/NFwMQ5cuXlxUrVtR00dy8fVJ3w4YNsnHjxhpo6tSpk01DNfRy+6cDiACA2L17t3zllVeshe6ll16KLCCop6mELehdr169EvYVphXqcFD9VM8RmqJFi8qqVavK1157TQsQgtalSxf5/PPPW9O0AQiA5Omnn9an/4QJEwJNiPPnz2stAxW+Zs2aWXM/c+aMbN26tR4jwrh///6sd8lfABK0C078KVOmZOvLAAT8aNGihTxw4ICvpmEAAjOOsaO9+BUA46effpI1atTQ4xs3bpxftVz/zAFEAECgBTRs2NBaQFB1N27cGGnhUUVTCW/Qu1GjRiXQ/+yzz9KiU6VKFblgwQKtdnNaHjlyRP7999/yxIkTEuH75JNPtP0dNA6/5zYAMWTIED3uDh06hGpda9askWXKlNF+iUOHDun5c3KXLFlS0/juu+8SeOL3D2YLY8YcOHXqVEIVAxAALaZJUDEAAZ1BgwZl03i8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" alt="NOA logo">
+      <img class="doc-logo-right" src="data:image/png;base64,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" alt="ARK logo">
+    </div>
+    <div class="doc-header">
+      <input class="doc-title-input" id="docTitle" type="text" value="코렐라인 스노우볼 2종 제작 견적서" placeholder="견적서 제목을 입력하세요">
+    </div>
+
+    <!-- Meta -->
+    <div class="doc-meta">
+      <div class="meta-field">
+        <span class="meta-label">견적일자</span>
+        <input class="meta-input" id="metaDate" type="date">
+      </div>
+      <div class="meta-field">
+        <span class="meta-label">No.</span>
+        <input class="meta-input mid" id="metaNo" value="202601-1">
+      </div>
+      <div class="meta-field">
+        <span class="meta-label">담당자</span>
+        <input class="meta-input wide" id="metaMgr">
+      </div>
+    </div>
+
+    <!-- Parties -->
+    <div class="parties">
+      <div class="party">
+        <div class="party-selector">
+          <select id="senderSel" onchange="fillSender(this.value)">
+            <option value="">— 자사 선택 —</option>
+          </select>
+        </div>
+        <div class="party-name" id="sName">-</div>
+        <div class="party-row"><span class="party-key">사업자</span><span class="party-val" id="sBiz">-</span></div>
+        <div class="party-row"><span class="party-key">대표자</span><span class="party-val" id="sCeo">-</span></div>
+        <div class="party-row"><span class="party-key">이메일</span><span class="party-val" id="sEmail">-</span></div>
+        <div class="party-row"><span class="party-key">주소</span><span class="party-val" id="sAddr">-</span></div>
+      </div>
+      <div class="party">
+        <div class="party-selector">
+          <select id="receiverSel" onchange="fillReceiver(this.value)">
+            <option value="">— 거래처 선택 —</option>
+          </select>
+        </div>
+        <div class="party-name" id="rName">-</div>
+        <div class="party-row"><span class="party-key">사업자</span><span class="party-val" id="rBiz">-</span></div>
+        <div class="party-row"><span class="party-key">수신자</span><span class="party-val" id="rContact">-</span></div>
+        <div class="party-row"><span class="party-key">이메일</span><span class="party-val" id="rEmail">-</span></div>
+        <div class="party-row"><span class="party-key">주소</span><span class="party-val" id="rAddr">-</span></div>
+      </div>
+    </div>
+
+    <!-- Items -->
+    <div class="items-section">
+      <div class="section-label">
+        <span class="bullet">●</span> 견적항목
+        <span class="sub" id="itemsTotalLabel"></span>
+      </div>
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th class="col-no ta-center">No</th>
+            <th class="col-name ta-left">항목</th>
+            <th class="ta-left">설명</th>
+            <th class="col-price ta-right">단가</th>
+            <th class="col-qty ta-center">수량</th>
+            <th class="col-unit ta-center">단위</th>
+            <th class="col-amount ta-right">금액</th>
+            <th class="col-del"></th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+      </table>
+      <button class="btn-add-row" onclick="addItem()">+ 항목 추가</button>
+    </div>
+
+    <!-- Bottom -->
+    <div class="doc-bottom">
+      <!-- Notes -->
+      <div class="notes-section">
+        <div class="section-label"><span class="bullet">●</span> 참고사항</div>
+        <textarea class="notes-textarea" id="notesArea">1. 본 견적은 최종 확정된, 디자인과 사양을 반영하였습니다.
+2. 사양변경에 따른 일정변경과 견적추가는 발주사에 책임이 있습니다.
+3. 디자인 수정 요청은 1회까지 무료 제공되며, 이후 요청은 추가 비용이 발생할 수 있습니다.
+4. 납품장소는 1회, 지정된 장소로 입고합니다.
+5. 사양 : 상기 기재 내용 기준.
+6. 관세8% 적용, 14세 이상 KC인증 제외 기준입니다.
+7. 3일 운송 기준 물류비입니다. 에어물류 시, 추가비용 발생입니다.</textarea>
+
+        <div style="margin-top:20px">
+          <div class="section-label"><span class="bullet">●</span> 입금정보</div>
+          <div style="font-size:11px; color:#000; font-weight:500; margin-top:4px" id="bankDisplay">-</div>
+          <div style="font-size:11px; color:#6B7280; margin-top:3px">견적 유효기간 이내에 납부 부탁드립니다. :)</div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-section">
+        <div class="section-label" style="margin-bottom:12px"><span class="bullet">●</span> 금액 요약</div>
+        <div class="sum-row">
+          <span class="sum-label">총 합계</span>
+          <span class="sum-value" id="sumTotal">₩0</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-label">공급가액</span>
+          <span class="sum-value" id="sumSupply">₩0</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-label">VAT (10%)</span>
+          <span class="sum-value" id="sumVat">₩0</span>
+        </div>
+        <div class="sum-row final" style="margin-top:12px">
+          <span class="sum-label">최종 견적</span>
+          <span class="sum-value" id="sumFinal">₩0</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /doc -->
+
+  <!-- ── DB Manager ── -->
+  <div class="dbm">
+    <div class="dbm-header">데이터베이스 관리</div>
+    <div class="dbm-body">
+
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="company" onclick="switchTab(this,'company')">회사정보</button>
+        <button class="tab-btn" data-tab="client" onclick="switchTab(this,'client')">거래처DB</button>
+        <button class="tab-btn" data-tab="product" onclick="switchTab(this,'product')">품목DB</button>
+      </div>
+
+      <!-- Company -->
+      <div class="tab-pane active" id="tab-company">
+        <table class="db-table">
+          <thead><tr>
+            <th>코드</th><th>회사명</th><th>사업자</th><th>대표자</th>
+            <th>이메일</th><th>전화</th><th>은행</th><th>계좌번호</th>
+            <th>담당자</th><th>담당자연락처</th><th>담당자이메일</th><th></th>
+          </tr></thead>
+          <tbody id="companyTbody"></tbody>
+        </table>
+        <div class="add-row-form">
+          <input class="add-input" id="c_code" placeholder="코드">
+          <input class="add-input" id="c_name" placeholder="회사명">
+          <input class="add-input" id="c_biz" placeholder="사업자번호">
+          <input class="add-input" id="c_ceo" placeholder="대표자">
+          <input class="add-input" id="c_email" placeholder="이메일">
+          <input class="add-input" id="c_tel" placeholder="전화">
+          <input class="add-input" id="c_bank" placeholder="은행">
+          <input class="add-input" id="c_acct" placeholder="계좌번호">
+          <input class="add-input" id="c_mgr" placeholder="담당자">
+          <input class="add-input" id="c_mtel" placeholder="담당자연락처">
+          <input class="add-input" id="c_memail" placeholder="담당자이메일">
+          <button class="btn btn-blue" onclick="addCompany()">추가</button>
+        </div>
+      </div>
+
+      <!-- Client -->
+      <div class="tab-pane" id="tab-client">
+        <table class="db-table">
+          <thead><tr>
+            <th>코드</th><th>회사명</th><th>사업자</th><th>수신자</th>
+            <th>이메일</th><th>전화</th><th>주소</th><th>비고</th><th></th>
+          </tr></thead>
+          <tbody id="clientTbody"></tbody>
+        </table>
+        <div class="add-row-form">
+          <input class="add-input" id="cl_code" placeholder="코드">
+          <input class="add-input" id="cl_name" placeholder="회사명">
+          <input class="add-input" id="cl_biz" placeholder="사업자번호">
+          <input class="add-input" id="cl_contact" placeholder="수신자">
+          <input class="add-input" id="cl_email" placeholder="이메일">
+          <input class="add-input" id="cl_tel" placeholder="전화">
+          <input class="add-input" id="cl_addr" placeholder="주소">
+          <input class="add-input" id="cl_note" placeholder="비고">
+          <button class="btn btn-blue" onclick="addClient()">추가</button>
+        </div>
+      </div>
+
+      <!-- Product -->
+      <div class="tab-pane" id="tab-product">
+        <table class="db-table">
+          <thead><tr>
+            <th>코드</th><th>항목명</th><th>설명</th><th>단가</th><th>단위</th><th>비고</th><th></th>
+          </tr></thead>
+          <tbody id="productTbody"></tbody>
+        </table>
+        <div class="add-row-form">
+          <input class="add-input" id="pr_code" placeholder="품목코드">
+          <input class="add-input" id="pr_name" placeholder="항목명">
+          <input class="add-input" id="pr_desc" placeholder="설명">
+          <input class="add-input" id="pr_price" placeholder="단가" type="number">
+          <input class="add-input" id="pr_unit" placeholder="단위" style="max-width:70px">
+          <input class="add-input" id="pr_note" placeholder="비고">
+          <button class="btn btn-blue" onclick="addProduct()">추가</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+// ── Data ───────────────────────────────────────────────────────────────────────
+const _QUOTE_KEY = 'noa_quote_v1';
+const _DB_DEFAULTS = {
+  companies: [
+    { code:'NOA', name:'(주)노아코퍼레이션', biz:'487-87-02055', ceo:'김소영',
+      email:'sogood@noawid.com', tel:'02-1234-5678',
+      addr:'강원도 양양군 현남면 안남애길 62 삼광빌딩 / 서울시 마포구 양화로6길 91,4층',
+      bank:'우리은행', acct:'1005-504-069846', holder:'(주)노아코퍼레이션',
+      manager:'김진욱', mtel:'010-6276-6468', memail:'good@noawid.com' }
+  ],
+  clients: [
+    { code:'BROSCO', name:'(주)브로스코', biz:'215-87-78552', contact:'김태경',
+      email:'todd@brosco.com', tel:'031-123-4567',
+      addr:'경기 용인시 수지구 포은대로59번길 37 지1층 B138', note:'' },
+    { code:'SAMPLE1', name:'(주)샘플상사', biz:'123-45-67890', contact:'이영희',
+      email:'sample@example.com', tel:'02-987-6543',
+      addr:'서울시 강남구 테헤란로 123', note:'예시 거래처' }
+  ],
+  products: [
+    { code:'SB-PINK-01',  name:'핑크팰리스 스노우볼',           desc:'유리구슬10cm',           price:11000,   unit:'EA', note:'' },
+    { code:'SB-PINK-3D',  name:'핑크팰리스 3D모델링/목업',      desc:'모델링 수정/3D출력',      price:1500000, unit:'EA', note:'' },
+    { code:'SB-PINK-PKG', name:'핑크팰리스 패키지',             desc:'600g 하드커버,내부완충제', price:3000,    unit:'EA', note:'' },
+    { code:'LOG-PINK-08', name:'물류/관세 8% (핑크팰리스)',      desc:'관세 8%, 물류비(3일 운송)',price:1550000, unit:'EA', note:'' },
+    { code:'SB-DZ-01',   name:'디트로이트 ZOO 스노우볼',        desc:'유리구슬10cm',           price:9000,    unit:'EA', note:'' },
+    { code:'SB-DZ-3D',   name:'디트로이트 ZOO 3D모델링/목업',  desc:'모델링 수정/3D출력',      price:1500000, unit:'EA', note:'' },
+    { code:'SB-DZ-PKG',  name:'디트로이트 ZOO 패키지',          desc:'600g 하드커버,내부완충제', price:3000,    unit:'EA', note:'' },
+    { code:'LOG-DZ-08',  name:'물류/관세 8% (디트로이트 ZOO)',  desc:'관세 8%, 물류비(3일 운송)',price:1920000, unit:'EA', note:'' }
+  ]
+};
+
+const _ITEMS_DEFAULTS = [
+  { name:'핑크팰리스 스노우볼',          desc:'유리구슬10cm',            price:11000,   qty:400, unit:'EA' },
+  { name:'핑크팰리스 3D모델링/목업',     desc:'모델링 수정/3D출력',       price:1500000, qty:1,   unit:'EA' },
+  { name:'핑크팰리스 패키지',            desc:'600g 하드커버,내부완충제',  price:3000,    qty:400, unit:'EA' },
+  { name:'물류/관세 8% (핑크팰리스)',    desc:'관세 8%, 물류비(3일 운송)', price:1550000, qty:1,   unit:'EA' },
+  { name:'디트로이트 ZOO 스노우볼',      desc:'유리구슬10cm',            price:9000,    qty:700, unit:'EA' },
+  { name:'디트로이트 ZOO 3D모델링/목업', desc:'모델링 수정/3D출력',       price:1500000, qty:1,   unit:'EA' },
+  { name:'디트로이트 ZOO 패키지',        desc:'600g 하드커버,내부완충제',  price:3000,    qty:700, unit:'EA' },
+  { name:'물류/관세 8% (디트로이트 ZOO)', desc:'관세 8%, 물류비(3일 운송)',price:1920000, qty:1,   unit:'EA' }
+];
+
+(function _loadQuoteStorage() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
+    if (saved) {
+      if (saved.db) { Object.assign(_DB_DEFAULTS, saved.db); }
+      if (saved.items) { _ITEMS_DEFAULTS.length = 0; saved.items.forEach(x => _ITEMS_DEFAULTS.push(x)); }
+    }
+  } catch(e) {}
+})();
+
+const DB = _DB_DEFAULTS;
+let items = _ITEMS_DEFAULTS;
+
+function saveQuote() {
+  localStorage.setItem(_QUOTE_KEY, JSON.stringify({ db: DB, items: items }));
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────────────
+const won = n => '₩' + Math.round(n).toLocaleString('ko-KR');
+const toNum = s => parseFloat(String(s).replace(/,/g,'')) || 0;
+const $ = id => document.getElementById(id);
+
+function setToday() {
+  $('metaDate').value = new Date().toISOString().slice(0,10);
+}
+
+// ── Render Items ───────────────────────────────────────────────────────────────
+function renderItems() {
+  const tbody = $('itemsBody');
+  tbody.innerHTML = '';
+  let total = 0;
+
+  items.forEach((it, i) => {
+    const amt = it.price * it.qty;
+    total += amt;
+
+    const matchedCode = DB.products.find(p => p.name === it.name)?.code || '__custom__';
+    const opts = DB.products.map(p =>
+      `<option value="${p.code}"${p.code===matchedCode?' selected':''}>${p.name}</option>`
+    ).join('');
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-no" style="text-align:center;font-size:10px;color:#9CA3AF;padding:9px 6px">${i+1}</td>
+      <td class="col-name">
+        <select class="cell-select" onchange="onProductSel(${i},this.value)">
+          <option value="">— 선택 —</option>
+          ${opts}
+          <option value="__custom__"${matchedCode==='__custom__'?' selected':''}>직접입력</option>
+        </select>
+        ${matchedCode==='__custom__'
+          ? `<input class="cell-input name" value="${it.name}" placeholder="항목명" oninput="upd(${i},'name',this.value)" style="border-top:1px solid #F0F2FF">`
+          : ''}
+      </td>
+      <td><input class="cell-input desc" value="${it.desc}" placeholder="설명" oninput="upd(${i},'desc',this.value)"></td>
+      <td class="col-price"><input class="cell-input ta-right" value="${it.price.toLocaleString('ko-KR')}" oninput="upd(${i},'price',this.value)"></td>
+      <td class="col-qty"><input class="cell-input ta-center" type="number" min="0" value="${it.qty}" oninput="upd(${i},'qty',this.value)" style="text-align:center"></td>
+      <td class="col-unit"><input class="cell-input ta-center" value="${it.unit}" oninput="upd(${i},'unit',this.value)"></td>
+      <td class="col-amount cell-amount">${won(amt)}</td>
+      <td class="col-del cell-del"><button class="btn btn-sm btn-danger" onclick="removeItem(${i})">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const vat = total * 0.1;
+  const final = total + vat;
+  $('itemsTotalLabel').textContent = won(total);
+  $('sumTotal').textContent = won(total);
+  $('sumSupply').textContent = won(total);
+  $('sumVat').textContent = won(vat);
+  $('sumFinal').textContent = won(final);
+}
+
+function onProductSel(i, code) {
+  const p = DB.products.find(x => x.code === code);
+  if (p) {
+    items[i] = { ...items[i], name:p.name, desc:p.desc, price:p.price, unit:p.unit };
+  } else if (code === '__custom__') {
+    items[i] = { ...items[i], name:'', desc:'', price:0, unit:'EA' };
+  }
+  renderItems(); saveQuote();
+}
+
+function upd(i, field, val) {
+  items[i][field] = (field==='price'||field==='qty') ? toNum(val) : val;
+  if (field==='price'||field==='qty') renderItems();
+  saveQuote();
+}
+
+function addItem()   { items.push({name:'',desc:'',price:0,qty:1,unit:'EA'}); renderItems(); saveQuote(); }
+function removeItem(i) { items.splice(i,1); renderItems(); saveQuote(); }
+
+// ── Dropdowns ─────────────────────────────────────────────────────────────────
+function populateSels() {
+  $('senderSel').innerHTML   = '<option value="">— 자사 선택 —</option>' +
+    DB.companies.map(c=>`<option value="${c.code}">${c.code} · ${c.name}</option>`).join('');
+  $('receiverSel').innerHTML = '<option value="">— 거래처 선택 —</option>' +
+    DB.clients.map(c=>`<option value="${c.code}">${c.code} · ${c.name}</option>`).join('');
+}
+
+function fillSender(code) {
+  const c = DB.companies.find(x=>x.code===code); if(!c) return;
+  $('sName').textContent  = c.name;
+  $('sBiz').textContent   = c.biz;
+  $('sCeo').textContent   = c.ceo;
+  $('sEmail').textContent = c.email;
+  $('sAddr').textContent  = c.addr;
+  $('metaMgr').value      = `${c.manager} (${c.mtel}, ${c.memail})`;
+  $('bankDisplay').textContent = `${c.bank} ${c.acct} · ${c.holder}`;
+}
+
+function fillReceiver(code) {
+  const c = DB.clients.find(x=>x.code===code); if(!c) return;
+  $('rName').textContent    = c.name;
+  $('rBiz').textContent     = c.biz;
+  $('rContact').textContent = c.contact;
+  $('rEmail').textContent   = c.email;
+  $('rAddr').textContent    = c.addr;
+}
+
+// ── DB Tables ─────────────────────────────────────────────────────────────────
+function renderCompanyDB() {
+  $('companyTbody').innerHTML = DB.companies.map((c,i)=>`
+    <tr>
+      <td>${c.code}</td><td>${c.name}</td><td>${c.biz}</td><td>${c.ceo}</td>
+      <td>${c.email}</td><td>${c.tel}</td><td>${c.bank}</td><td>${c.acct}</td>
+      <td>${c.manager}</td><td>${c.mtel}</td><td>${c.memail}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="delCompany(${i})">✕</button></td>
+    </tr>`).join('');
+}
+function renderClientDB() {
+  $('clientTbody').innerHTML = DB.clients.map((c,i)=>`
+    <tr>
+      <td>${c.code}</td><td>${c.name}</td><td>${c.biz}</td><td>${c.contact}</td>
+      <td>${c.email}</td><td>${c.tel}</td><td>${c.addr}</td><td>${c.note}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="delClient(${i})">✕</button></td>
+    </tr>`).join('');
+}
+function renderProductDB() {
+  $('productTbody').innerHTML = DB.products.map((p,i)=>`
+    <tr>
+      <td>${p.code}</td><td>${p.name}</td><td>${p.desc}</td>
+      <td>${p.price.toLocaleString('ko-KR')}</td><td>${p.unit}</td><td>${p.note}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="delProduct(${i})">✕</button></td>
+    </tr>`).join('');
+}
+
+function g(id) { return $(id).value.trim(); }
+
+function addCompany() {
+  if (!g('c_code')||!g('c_name')) return alert('코드와 회사명은 필수입니다.');
+  DB.companies.push({ code:g('c_code'), name:g('c_name'), biz:g('c_biz'), ceo:g('c_ceo'),
+    email:g('c_email'), tel:g('c_tel'), addr:'', bank:g('c_bank'), acct:g('c_acct'),
+    holder:g('c_name'), manager:g('c_mgr'), mtel:g('c_mtel'), memail:g('c_memail') });
+  ['c_code','c_name','c_biz','c_ceo','c_email','c_tel','c_bank','c_acct','c_mgr','c_mtel','c_memail']
+    .forEach(id=>$(id).value='');
+  renderCompanyDB(); populateSels(); saveQuote();
+}
+function addClient() {
+  if (!g('cl_code')||!g('cl_name')) return alert('코드와 회사명은 필수입니다.');
+  DB.clients.push({ code:g('cl_code'), name:g('cl_name'), biz:g('cl_biz'), contact:g('cl_contact'),
+    email:g('cl_email'), tel:g('cl_tel'), addr:g('cl_addr'), note:g('cl_note') });
+  ['cl_code','cl_name','cl_biz','cl_contact','cl_email','cl_tel','cl_addr','cl_note']
+    .forEach(id=>$(id).value='');
+  renderClientDB(); populateSels(); saveQuote();
+}
+function addProduct() {
+  if (!g('pr_code')||!g('pr_name')) return alert('코드와 항목명은 필수입니다.');
+  DB.products.push({ code:g('pr_code'), name:g('pr_name'), desc:g('pr_desc'),
+    price:parseFloat(g('pr_price'))||0, unit:g('pr_unit')||'EA', note:g('pr_note') });
+  ['pr_code','pr_name','pr_desc','pr_price','pr_unit','pr_note'].forEach(id=>$(id).value='');
+  renderProductDB(); renderItems(); saveQuote();
+}
+
+function delCompany(i) { if(confirm('삭제하시겠습니까?')) { DB.companies.splice(i,1); renderCompanyDB(); populateSels(); saveQuote(); } }
+function delClient(i)  { if(confirm('삭제하시겠습니까?')) { DB.clients.splice(i,1);  renderClientDB();  populateSels(); saveQuote(); } }
+function delProduct(i) { if(confirm('삭제하시겠습니까?')) { DB.products.splice(i,1); renderProductDB(); renderItems(); saveQuote(); } }
+
+// ── Tabs ───────────────────────────────────────────────────────────────────────
+function switchTab(btn, name) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  $('tab-'+name).classList.add('active');
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────────────
+function resetDoc() {
+  if (!confirm('새 견적서를 작성하시겠습니까? 현재 내용이 초기화됩니다.')) return;
+  $('docTitle').value = '견적서';
+  $('metaNo').value = 'NO-' + Date.now().toString().slice(-6);
+  $('metaMgr').value = '';
+  $('senderSel').value = ''; $('receiverSel').value = '';
+  ['sName','sBiz','sCeo','sEmail','sAddr','rName','rBiz','rContact','rEmail','rAddr']
+    .forEach(id=>$(id).textContent='-');
+  $('bankDisplay').textContent = '-';
+  items = [{ name:'', desc:'', price:0, qty:1, unit:'EA' }];
+  renderItems(); setToday();
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+setToday();
+populateSels();
+renderItems();
+renderCompanyDB();
+renderClientDB();
+renderProductDB();
+
+$('senderSel').value = 'NOA';   fillSender('NOA');
+$('receiverSel').value = 'BROSCO'; fillReceiver('BROSCO');
+
+// ═══════════════ AUTH + BACKUP ═══════════════
+(function() {
+const _AUTH_USERS_KEY = 'noa_auth_users_v1';
+const _SESSION_KEY    = 'noa_session_v1';
+const _SESSION_TTL    = 8 * 60 * 60 * 1000; // 8h
+const _SNAP_KEY       = 'noa_snap_quote';
+const _BK_KEYS        = ['noa_quote_v1'];
+const _APPNAME        = '견적서';
+const _LAST_BK_KEY    = 'noa_lastbk_quote';
+
+// Default users (passwords are SHA-256 hashed)
+const _DEFAULT_USERS = [
+  { username:'admin',    hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926', name:'관리자',  role:'admin' },
+  { username:'david',    hash:'2d2a6626eb7a70813ec876ad277281379a2d0d6c6e33e67f3c20d5d66452ef5e', name:'김진욱',  role:'admin' },
+  { username:'sooyoung', hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926', name:'소영',    role:'user'  }
+];
+
+function _loadUsers() {
+  try { return JSON.parse(localStorage.getItem(_AUTH_USERS_KEY)) || _DEFAULT_USERS; } catch(e) { return _DEFAULT_USERS; }
+}
+function _saveUsers(u) { localStorage.setItem(_AUTH_USERS_KEY, JSON.stringify(u)); }
+
+async function _sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function _getSession() {
+  try { return JSON.parse(sessionStorage.getItem(_SESSION_KEY)); } catch(e) { return null; }
+}
+function _setSession(user) {
+  sessionStorage.setItem(_SESSION_KEY, JSON.stringify({
+    username: user.username, name: user.name, role: user.role,
+    expires: Date.now() + _SESSION_TTL
+  }));
+}
+
+function _showUser(name) {
+  const ov = document.getElementById('auth-overlay');
+  if (ov) ov.remove();
+  document.querySelectorAll('.auth-user-name').forEach(el => el.textContent = name);
+  _checkBackupReminder();
+}
+
+window.doLogin = async function() {
+  const username = document.getElementById('auth-user').value.trim();
+  const password = document.getElementById('auth-pass').value;
+  if (!username || !password) { document.getElementById('auth-err').textContent = '아이디와 비밀번호를 입력해주세요.'; return; }
+  const hash = await _sha256(password);
+  const users = _loadUsers();
+  const user = users.find(u => u.username === username && u.hash === hash);
+  if (user) {
+    _setSession(user);
+    _showUser(user.name);
+  } else {
+    document.getElementById('auth-err').textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+    document.getElementById('auth-pass').value = '';
+  }
+};
+
+window.doLogout = function() {
+  if (confirm('로그아웃 하시겠습니까?')) {
+    sessionStorage.removeItem(_SESSION_KEY);
+    location.reload();
+  }
+};
+
+// Check session on load
+(function() {
+  const s = _getSession();
+  if (s && Date.now() < s.expires) {
+    _showUser(s.name);
+  }
+})();
+
+// ── Backup ──
+function _allData() {
+  const obj = {};
+  _BK_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v) obj[k] = JSON.parse(v); });
+  return obj;
+}
+function _dataSize() {
+  let total = 0;
+  _BK_KEYS.forEach(k => { total += (localStorage.getItem(k) || '').length; });
+  return (total / 1024).toFixed(1);
+}
+
+window.openBackup = function() {
+  document.getElementById('backup-panel').classList.add('open');
+  _renderSnapList();
+  const info = document.getElementById('bp-storage-info');
+  if (info) {
+    const lastBk = localStorage.getItem(_LAST_BK_KEY);
+    const lastStr = lastBk ? new Date(lastBk).toLocaleString('ko-KR') : '기록 없음';
+    info.innerHTML = `📦 저장 위치: 브라우저 로컬 스토리지<br>💿 데이터 크기: ${_dataSize()} KB<br>🕐 마지막 백업: ${lastStr}`;
+  }
+};
+window.closeBackup = function() {
+  document.getElementById('backup-panel').classList.remove('open');
+};
+
+window.exportBackup = function() {
+  const backup = { version:2, app:_APPNAME, exportDate:new Date().toISOString(), data:_allData() };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = _APPNAME + '_백업_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  localStorage.setItem(_LAST_BK_KEY, new Date().toISOString());
+  const info = document.getElementById('bp-storage-info');
+  if (info) info.innerHTML += '<br>✅ 방금 백업 완료!';
+};
+
+window.importBackup = function() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const bk = JSON.parse(ev.target.result);
+        if (!bk.data) { alert('올바른 백업 파일이 아닙니다.'); return; }
+        if (!confirm('현재 데이터를 백업 파일로 덮어쓰겠습니까?\n내보낸 날짜: ' + new Date(bk.exportDate).toLocaleString('ko-KR'))) return;
+        Object.entries(bk.data).forEach(([k,v]) => localStorage.setItem(k, JSON.stringify(v)));
+        alert('복원 완료! 페이지를 새로고침합니다.');
+        location.reload();
+      } catch(e) { alert('파일 읽기 오류: ' + e.message); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+};
+
+window.saveSnapshot = function() {
+  const snaps = _loadSnaps();
+  snaps.unshift({ id: Date.now().toString(), date: new Date().toISOString(), size: _dataSize(), data: _allData() });
+  if (snaps.length > 7) snaps.length = 7;
+  localStorage.setItem(_SNAP_KEY, JSON.stringify(snaps));
+  _renderSnapList();
+  alert('스냅샷이 저장되었습니다 (' + new Date().toLocaleString('ko-KR') + ')');
+};
+
+function _loadSnaps() { try { return JSON.parse(localStorage.getItem(_SNAP_KEY)) || []; } catch(e) { return []; } }
+
+function _renderSnapList() {
+  const el = document.getElementById('snap-list'); if (!el) return;
+  const snaps = _loadSnaps();
+  if (snaps.length === 0) { el.innerHTML = '<div style="font-size:11px;color:#9CA3AF;padding:8px 0">저장된 스냅샷 없음</div>'; return; }
+  el.innerHTML = snaps.map((s,i) => `
+    <div class="snap-item">
+      <div><div class="snap-date">${new Date(s.date).toLocaleString('ko-KR')}</div><div class="snap-size">${s.size} KB</div></div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button class="snap-restore" onclick="_restoreSnap(${i})">복원</button>
+        <button class="snap-del" onclick="_delSnap(${i})" title="삭제">×</button>
+      </div>
+    </div>`).join('');
+}
+
+window._restoreSnap = function(i) {
+  const snaps = _loadSnaps();
+  const s = snaps[i]; if (!s) return;
+  if (!confirm('이 스냅샷으로 복원하시겠습니까?\n' + new Date(s.date).toLocaleString('ko-KR'))) return;
+  Object.entries(s.data).forEach(([k,v]) => localStorage.setItem(k, JSON.stringify(v)));
+  alert('복원 완료!'); location.reload();
+};
+window._delSnap = function(i) {
+  const snaps = _loadSnaps(); snaps.splice(i,1);
+  localStorage.setItem(_SNAP_KEY, JSON.stringify(snaps)); _renderSnapList();
+};
+
+// Auto-save snapshot every 7 days
+function _checkBackupReminder() {
+  const lastBk = localStorage.getItem(_LAST_BK_KEY);
+  const diff = lastBk ? (Date.now() - new Date(lastBk).getTime()) / 86400000 : 999;
+  if (diff >= 7) {
+    setTimeout(() => {
+      if (confirm('마지막 백업으로부터 ' + Math.floor(diff) + '일이 경과했습니다.\n지금 백업하시겠습니까?')) {
+        openBackup(); setTimeout(() => exportBackup(), 300);
+      }
+    }, 2000);
+  }
+}
+
+// ── Password change ──
+window.openPwModal = function() {
+  ['pw-cur','pw-new','pw-new2'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  const err = document.getElementById('pw-err'); if(err) err.textContent='';
+  document.getElementById('pw-modal').classList.add('open');
+};
+window.changePw = async function() {
+  const cur  = document.getElementById('pw-cur').value;
+  const nw   = document.getElementById('pw-new').value;
+  const nw2  = document.getElementById('pw-new2').value;
+  const err  = document.getElementById('pw-err');
+  if (!cur || !nw || !nw2) { err.textContent = '모든 항목을 입력해주세요.'; return; }
+  if (nw.length < 8)       { err.textContent = '새 비밀번호는 8자 이상이어야 합니다.'; return; }
+  if (nw !== nw2)          { err.textContent = '새 비밀번호가 일치하지 않습니다.'; return; }
+  const s = _getSession(); if (!s) return;
+  const curHash = await _sha256(cur);
+  const users = _loadUsers();
+  const user = users.find(u => u.username === s.username && u.hash === curHash);
+  if (!user) { err.textContent = '현재 비밀번호가 올바르지 않습니다.'; return; }
+  user.hash = await _sha256(nw);
+  _saveUsers(users);
+  document.getElementById('pw-modal').classList.remove('open');
+  alert('비밀번호가 변경되었습니다.');
+};
+
+})();
+
+</script>
+</body>
+</html>
