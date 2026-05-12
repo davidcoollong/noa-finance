@@ -7,70 +7,367 @@
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--blue:#0432FF;--blue-soft:rgba(4,50,255,.07);--gray100:#F3F4F6;--gray500:#6B7280;--gray900:#111827;--red:#FF3B30;--surface:#fff;--radius:18px}
-html,body{height:100%;font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;background:var(--gray100);color:var(--gray900);-webkit-font-smoothing:antialiased;letter-spacing:-.02em}
+:root{
+  --blue:#0432FF;
+  --blue-soft:rgba(4,50,255,.07);
+  --blue-mid:rgba(4,50,255,.14);
+  --black:#000;
+  --gray900:#111827;
+  --gray700:#374151;
+  --gray500:#6B7280;
+  --gray300:#D1D5DB;
+  --gray100:#F3F4F6;
+  --gray50:#F9FAFB;
+  --red:#FF3B30;
+  --surface:#fff;
+  --radius:16px;
+}
+html,body{
+  height:100%;
+  font-family:'Pretendard',-apple-system,'SF Pro Display',sans-serif;
+  font-size:14px;
+  background:var(--gray100);
+  color:var(--black);
+  -webkit-font-smoothing:antialiased;
+  letter-spacing:-.02em;
+}
 
-/* ── Auth overlay ── */
-#auth-overlay{position:fixed;inset:0;background:rgba(4,50,255,.05);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:9999;display:flex;align-items:center;justify-content:center}
-.auth-box{background:#fff;border-radius:24px;padding:44px 40px 36px;width:380px;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 24px 64px rgba(0,0,0,.18);text-align:center}
-.auth-brand{font-size:12px;font-weight:700;letter-spacing:.12em;color:rgba(4,50,255,.5);text-transform:uppercase;margin-bottom:8px}
-.auth-title{font-size:26px;font-weight:800;letter-spacing:-1px;color:#000;margin-bottom:28px}
-.auth-field{width:100%;border:1.5px solid #E5E7EB;border-radius:10px;padding:12px 16px;font-family:inherit;font-size:14px;font-weight:500;color:#111;outline:none;transition:border-color .15s;margin-bottom:10px;background:#FAFAFA}
-.auth-field:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(4,50,255,.1)}
-.auth-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .15s}
-.auth-btn:hover{opacity:.88}
+/* ─── Nav ─────────────────────────────────────── */
+.nav{
+  background:rgba(4,50,255,.97);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  color:#fff;
+  height:52px;
+  display:flex;
+  align-items:center;
+  padding:0 28px;
+  position:sticky;
+  top:0;
+  z-index:300;
+  box-shadow:0 1px 0 rgba(255,255,255,.08);
+}
+.nav-logo{
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.05em;
+  flex:1;
+}
+.nav-right{display:flex;align-items:center;gap:8px}
+.user-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:8px;
+  padding:5px 12px;
+  font-size:12px;
+  font-weight:600;
+  color:#fff;
+}
+.user-badge .dot{width:7px;height:7px;background:#34C759;border-radius:50%;flex-shrink:0}
+.btn-nav{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+  color:rgba(255,255,255,.85);
+  font-family:inherit;
+  font-size:11px;
+  font-weight:600;
+  padding:5px 12px;
+  border-radius:7px;
+  cursor:pointer;
+  transition:all .15s;
+  letter-spacing:-.01em;
+}
+.btn-nav:hover{background:rgba(255,255,255,.22);color:#fff}
+
+/* ─── Hero ────────────────────────────────────── */
+.hero{
+  padding:60px 40px 48px;
+  text-align:center;
+}
+.hero-eyebrow{
+  display:inline-block;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--blue);
+  background:var(--blue-soft);
+  padding:5px 14px;
+  border-radius:20px;
+  margin-bottom:20px;
+}
+.hero-title{
+  font-size:42px;
+  font-weight:800;
+  letter-spacing:-2px;
+  line-height:1.08;
+  color:var(--black);
+  margin-bottom:14px;
+}
+.hero-sub{
+  font-size:15px;
+  color:var(--gray500);
+  font-weight:500;
+  line-height:1.6;
+  max-width:420px;
+  margin:0 auto;
+}
+
+/* ─── App Grid ────────────────────────────────── */
+.app-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+  padding:0 40px 64px;
+  max-width:1040px;
+  margin:0 auto;
+  width:100%;
+}
+@media(max-width:800px){
+  .app-grid{grid-template-columns:1fr;padding:0 20px 48px}
+  .hero{padding:40px 20px 32px}
+  .hero-title{font-size:32px}
+}
+
+.app-card{
+  background:var(--surface);
+  border-radius:var(--radius);
+  box-shadow:0 0 0 1px rgba(0,0,0,.06),0 2px 12px rgba(0,0,0,.05);
+  overflow:hidden;
+  text-decoration:none;
+  color:inherit;
+  display:flex;
+  flex-direction:column;
+  transition:transform .2s cubic-bezier(.4,0,.2,1),box-shadow .2s cubic-bezier(.4,0,.2,1);
+  cursor:pointer;
+}
+.app-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 0 0 1px rgba(0,0,0,.08),0 16px 40px rgba(0,0,0,.1);
+}
+.app-card:active{transform:translateY(-2px)}
+
+.card-thumb{
+  height:160px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+.card-thumb-icon{
+  font-size:56px;
+  line-height:1;
+  position:relative;
+  z-index:1;
+}
+/* Blue gradient */
+.card-thumb.c-blue{background:linear-gradient(145deg,#0432FF 0%,#3A6FFF 100%)}
+/* Purple gradient */
+.card-thumb.c-purple{background:linear-gradient(145deg,#5856D6 0%,#BF5AF2 100%)}
+/* Teal gradient */
+.card-thumb.c-teal{background:linear-gradient(145deg,#00C7BE 0%,#30D158 100%)}
+
+/* subtle noise texture overlay */
+.card-thumb::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.5;
+  mix-blend-mode:overlay;
+  pointer-events:none;
+}
+
+.card-body{
+  padding:22px 24px 20px;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+.card-title{
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:-.5px;
+  margin-bottom:6px;
+}
+.card-desc{
+  font-size:12px;
+  color:var(--gray500);
+  font-weight:500;
+  line-height:1.65;
+  flex:1;
+}
+.card-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px solid var(--gray100);
+}
+.card-tag{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--gray300);
+}
+.card-open{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-size:12px;
+  font-weight:700;
+  color:var(--blue);
+  transition:gap .15s;
+}
+.app-card:hover .card-open{gap:8px}
+.card-open-arrow{font-size:14px}
+
+/* ─── Info strip ──────────────────────────────── */
+.info-strip{
+  border-top:1px solid var(--gray300);
+  padding:28px 40px;
+  display:flex;
+  gap:32px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.info-item{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  max-width:280px;
+}
+.info-icon{
+  font-size:18px;
+  flex-shrink:0;
+  margin-top:1px;
+}
+.info-text-title{
+  font-size:12px;
+  font-weight:700;
+  color:var(--gray700);
+  margin-bottom:3px;
+}
+.info-text-sub{
+  font-size:11px;
+  color:var(--gray500);
+  font-weight:500;
+  line-height:1.6;
+}
+footer{
+  text-align:center;
+  padding:20px;
+  font-size:11px;
+  color:var(--gray300);
+  font-weight:500;
+  letter-spacing:.02em;
+}
+
+/* ─── Auth Overlay ────────────────────────────── */
+#auth-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(4,50,255,.04);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.auth-box{
+  background:#fff;
+  border-radius:22px;
+  padding:44px 40px 36px;
+  width:360px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.07),0 24px 64px rgba(0,0,0,.15);
+  text-align:center;
+}
+.auth-brand{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.14em;
+  color:var(--blue);
+  text-transform:uppercase;
+  opacity:.6;
+  margin-bottom:10px;
+}
+.auth-title{
+  font-size:24px;
+  font-weight:800;
+  letter-spacing:-.8px;
+  color:var(--black);
+  margin-bottom:26px;
+}
+.auth-field{
+  width:100%;
+  border:1.5px solid var(--gray300);
+  border-radius:10px;
+  padding:12px 16px;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:500;
+  color:#111;
+  outline:none;
+  transition:border-color .15s,box-shadow .15s;
+  margin-bottom:10px;
+  background:var(--gray50);
+}
+.auth-field:focus{
+  border-color:var(--blue);
+  background:#fff;
+  box-shadow:0 0 0 3px rgba(4,50,255,.1);
+}
+.auth-btn{
+  width:100%;
+  background:var(--blue);
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  padding:13px;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:6px;
+  transition:opacity .15s;
+  letter-spacing:-.01em;
+}
+.auth-btn:hover{opacity:.86}
 .auth-err{font-size:12px;color:var(--red);margin-top:10px;min-height:16px;font-weight:500}
-.auth-footer{font-size:11px;color:#9CA3AF;margin-top:20px}
+.auth-footer{font-size:11px;color:var(--gray300);margin-top:20px}
 
-/* ── Portal layout ── */
-.portal-wrap{min-height:100vh;display:flex;flex-direction:column}
-.portal-nav{background:rgba(4,50,255,.97);backdrop-filter:blur(12px);color:#fff;height:56px;display:flex;align-items:center;padding:0 32px;gap:20px;position:sticky;top:0;z-index:200;box-shadow:0 1px 0 rgba(255,255,255,.08)}
-.portal-nav-logo{font-size:15px;font-weight:800;letter-spacing:.06em;flex:1}
-.user-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;color:#fff}
-.user-badge .dot{width:7px;height:7px;background:#34C759;border-radius:50%}
-.btn-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);font-family:inherit;font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;cursor:pointer;transition:all .15s}
-.btn-logout:hover{background:rgba(255,255,255,.2);color:#fff}
-
-.portal-hero{padding:56px 40px 24px;text-align:center}
-.portal-hero-tag{display:inline-block;background:var(--blue-soft);color:var(--blue);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:18px}
-.portal-hero-title{font-size:40px;font-weight:800;letter-spacing:-2px;line-height:1.1;color:#000;margin-bottom:12px}
-.portal-hero-sub{font-size:15px;color:var(--gray500);font-weight:500;line-height:1.6}
-
-/* ── App cards ── */
-.apps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;padding:32px 40px 56px;max-width:1100px;margin:0 auto;width:100%}
-.app-card{background:var(--surface);border-radius:var(--radius);box-shadow:0 0 0 1px rgba(0,0,0,.06),0 4px 20px rgba(0,0,0,.06);overflow:hidden;display:flex;flex-direction:column;transition:transform .18s,box-shadow .18s;cursor:pointer;text-decoration:none;color:inherit}
-.app-card:hover{transform:translateY(-4px);box-shadow:0 0 0 1px rgba(0,0,0,.08),0 12px 40px rgba(0,0,0,.1)}
-.app-card-hero{height:140px;display:flex;align-items:center;justify-content:center;font-size:52px;position:relative;overflow:hidden}
-.app-card-hero.blue{background:linear-gradient(135deg,#0432FF 0%,#3B6FFF 100%)}
-.app-card-hero.purple{background:linear-gradient(135deg,#5856D6 0%,#AF52DE 100%)}
-.app-card-hero.teal{background:linear-gradient(135deg,#00C7BE 0%,#30D158 100%)}
-.app-card-body{padding:22px 24px 20px;flex:1;display:flex;flex-direction:column}
-.app-card-title{font-size:19px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
-.app-card-desc{font-size:13px;color:var(--gray500);font-weight:500;line-height:1.6;flex:1}
-.app-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--gray100)}
-.app-card-tag{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray500)}
-.app-card-arrow{font-size:18px;color:var(--blue);font-weight:700}
-
-/* ── Info section ── */
-.info-section{background:var(--surface);border-top:1px solid var(--gray100);padding:32px 40px}
-.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;max-width:1100px;margin:0 auto}
-.info-card{background:var(--gray100);border-radius:12px;padding:20px}
-.info-card-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray500);margin-bottom:10px}
-.info-card-body{font-size:13px;color:var(--gray900);line-height:1.7;font-weight:500}
-.info-card-body strong{color:var(--blue)}
-.info-card-body .warn{color:var(--red)}
-
-/* ── PW change modal ── */
-#pw-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:10000;align-items:center;justify-content:center}
+/* ─── PW Modal ────────────────────────────────── */
+#pw-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.36);
+  z-index:10000;
+  align-items:center;
+  justify-content:center;
+}
 #pw-modal.open{display:flex}
-.pw-box{background:#fff;border-radius:16px;padding:28px;width:320px;box-shadow:0 8px 40px rgba(0,0,0,.15)}
-.pw-title{font-size:16px;font-weight:800;margin-bottom:16px}
-.pw-err{font-size:11px;color:var(--red);margin-bottom:8px;min-height:14px}
+.pw-box{
+  background:#fff;
+  border-radius:16px;
+  padding:28px 28px 24px;
+  width:320px;
+  box-shadow:0 8px 40px rgba(0,0,0,.14);
+}
+.pw-title{font-size:16px;font-weight:800;letter-spacing:-.4px;margin-bottom:16px}
+.pw-err{font-size:11px;color:var(--red);margin-bottom:8px;min-height:14px;font-weight:500}
 </style>
 </head>
 <body>
 
-<!-- ═══ AUTH OVERLAY ═══ -->
+<!-- ── Auth Overlay ── -->
 <div id="auth-overlay">
   <div class="auth-box">
     <div class="auth-brand">NOA &amp; ARK</div>
@@ -81,117 +378,116 @@ html,body{height:100%;font-family:'Pretendard',-apple-system,sans-serif;font-siz
       onkeydown="if(event.key==='Enter')doLogin()">
     <button class="auth-btn" onclick="doLogin()">로그인</button>
     <div class="auth-err" id="auth-err"></div>
-    <div class="auth-footer">© NOA&amp;ARK · 권한 보유자만 접근 가능합니다</div>
+    <div class="auth-footer">권한 보유자만 접근 가능합니다</div>
   </div>
 </div>
 
-<!-- ═══ PW CHANGE MODAL ═══ -->
+<!-- ── PW Change Modal ── -->
 <div id="pw-modal">
   <div class="pw-box">
-    <div class="pw-title">🔑 비밀번호 변경</div>
+    <div class="pw-title">비밀번호 변경</div>
     <div class="pw-err" id="pw-err"></div>
     <input id="pw-cur"  class="auth-field" type="password" placeholder="현재 비밀번호" style="margin-bottom:8px">
     <input id="pw-new"  class="auth-field" type="password" placeholder="새 비밀번호 (8자 이상)" style="margin-bottom:8px">
-    <input id="pw-new2" class="auth-field" type="password" placeholder="새 비밀번호 확인" style="margin-bottom:12px">
+    <input id="pw-new2" class="auth-field" type="password" placeholder="새 비밀번호 확인" style="margin-bottom:14px">
     <div style="display:flex;gap:8px">
-      <button class="auth-btn" style="background:#E5E7EB;color:#111" onclick="document.getElementById('pw-modal').classList.remove('open')">취소</button>
+      <button class="auth-btn" style="background:var(--gray100);color:var(--gray700)"
+        onclick="document.getElementById('pw-modal').classList.remove('open')">취소</button>
       <button class="auth-btn" onclick="changePw()">변경하기</button>
     </div>
   </div>
 </div>
 
-<div class="portal-wrap">
-  <nav class="portal-nav">
-    <div class="portal-nav-logo">NOA&amp;ARK</div>
+<!-- ── Nav ── -->
+<nav class="nav">
+  <div class="nav-logo">NOA&amp;ARK</div>
+  <div class="nav-right">
     <div class="user-badge"><span class="dot"></span><span id="user-name">-</span></div>
-    <button class="auth-btn" style="width:auto;padding:5px 12px;font-size:11px;margin-top:0;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2)" onclick="openPwModal()">비밀번호 변경</button>
-    <button class="btn-logout" onclick="doLogout()">로그아웃</button>
-  </nav>
-
-  <div class="portal-hero">
-    <div class="portal-hero-tag">NOA &amp; ARK Business Tools</div>
-    <div class="portal-hero-title">업무 자동화 포털</div>
-    <div class="portal-hero-sub">견적서 · 재고관리 · 자금관리를 한 곳에서</div>
+    <button class="btn-nav" onclick="openPwModal()">비밀번호 변경</button>
+    <button class="btn-nav" onclick="doLogout()">로그아웃</button>
   </div>
+</nav>
 
-  <div class="apps-grid">
-    <a class="app-card" href="견적서.html">
-      <div class="app-card-hero blue">📄</div>
-      <div class="app-card-body">
-        <div class="app-card-title">견적서</div>
-        <div class="app-card-desc">거래처 · 자사 정보 관리, 견적서 자동 생성 및 PDF 출력. 제품 DB 연동으로 빠른 견적 작성.</div>
-        <div class="app-card-footer">
-          <span class="app-card-tag">Quote Management</span>
-          <span class="app-card-arrow">→</span>
-        </div>
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-eyebrow">Business Tools</div>
+  <h1 class="hero-title">NOA&amp;ARK 업무 포털</h1>
+  <p class="hero-sub">견적서 · 재고관리 · 자금관리<br>아래 카드를 클릭하여 바로 시작하세요</p>
+</section>
+
+<!-- ── App Cards ── -->
+<div class="app-grid">
+
+  <a class="app-card" href="견적서.html">
+    <div class="card-thumb c-blue">
+      <span class="card-thumb-icon">📄</span>
+    </div>
+    <div class="card-body">
+      <div class="card-title">견적서</div>
+      <div class="card-desc">거래처·자사 DB 연동으로 빠른 견적 작성. PDF 출력 및 제품 단가 관리.</div>
+      <div class="card-footer">
+        <span class="card-tag">Quote</span>
+        <span class="card-open">열기 <span class="card-open-arrow">→</span></span>
       </div>
-    </a>
-    <a class="app-card" href="재고관리.html">
-      <div class="app-card-hero purple">📦</div>
-      <div class="app-card-body">
-        <div class="app-card-title">재고관리</div>
-        <div class="app-card-desc">IP·제품별 재고 현황, 판매 기록 관리. 부족 재고 알림 및 CSV 내보내기.</div>
-        <div class="app-card-footer">
-          <span class="app-card-tag">Inventory Management</span>
-          <span class="app-card-arrow">→</span>
-        </div>
+    </div>
+  </a>
+
+  <a class="app-card" href="재고관리.html">
+    <div class="card-thumb c-purple">
+      <span class="card-thumb-icon">📦</span>
+    </div>
+    <div class="card-body">
+      <div class="card-title">재고관리</div>
+      <div class="card-desc">IP·제품별 재고 현황과 판매 기록 관리. 부족 재고 알림 및 CSV 내보내기.</div>
+      <div class="card-footer">
+        <span class="card-tag">Inventory</span>
+        <span class="card-open">열기 <span class="card-open-arrow">→</span></span>
       </div>
-    </a>
-    <a class="app-card" href="자금관리.html">
-      <div class="app-card-hero teal">💰</div>
-      <div class="app-card-body">
-        <div class="app-card-title">자금관리</div>
-        <div class="app-card-desc">주간·월간·연간 수입/지출 현황. 고정비 관리, 목표 달성률, 구글 캘린더 연동.</div>
-        <div class="app-card-footer">
-          <span class="app-card-tag">Financial Management</span>
-          <span class="app-card-arrow">→</span>
-        </div>
+    </div>
+  </a>
+
+  <a class="app-card" href="자금관리.html">
+    <div class="card-thumb c-teal">
+      <span class="card-thumb-icon">💰</span>
+    </div>
+    <div class="card-body">
+      <div class="card-title">자금관리</div>
+      <div class="card-desc">주간·월간·연간 수입/지출 현황. 고정비 관리, 목표 달성률, 구글 캘린더 연동.</div>
+      <div class="card-footer">
+        <span class="card-tag">Finance</span>
+        <span class="card-open">열기 <span class="card-open-arrow">→</span></span>
       </div>
-    </a>
+    </div>
+  </a>
+
+</div>
+
+<!-- ── Info Strip ── -->
+<div class="info-strip">
+  <div class="info-item">
+    <span class="info-icon">💾</span>
+    <div>
+      <div class="info-text-title">로컬 저장</div>
+      <div class="info-text-sub">데이터는 이 기기 브라우저에 저장됩니다. 각 앱에서 JSON 백업을 주기적으로 받으세요.</div>
+    </div>
   </div>
-
-  <div class="info-section">
-    <div class="info-grid">
-      <div class="info-card">
-        <div class="info-card-title">💾 데이터 저장 위치</div>
-        <div class="info-card-body">
-          모든 데이터는 <strong>브라우저 로컬 스토리지</strong>에 저장됩니다.<br><br>
-          • 저장 위치: 현재 기기의 브라우저<br>
-          • 브라우저/기기가 달라지면 데이터가 공유되지 않습니다<br>
-          • 브라우저 캐시 삭제 시 <span class="warn">데이터가 사라질 수 있습니다</span>
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🔒 보안 안내</div>
-        <div class="info-card-body">
-          • 로그인 세션은 <strong>브라우저 종료 시 자동 만료</strong><br>
-          • 비밀번호는 SHA-256 해시로 저장<br>
-          • 각 앱에서 개별 비밀번호 변경 가능<br>
-          • 기본 계정: admin / david / sooyoung
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">📦 백업 방법</div>
-        <div class="info-card-body">
-          각 앱 우측 상단 <strong>💾 백업</strong> 버튼을 클릭하세요<br><br>
-          • <strong>JSON 다운로드</strong>: 날짜별 파일로 PC 저장<br>
-          • <strong>스냅샷</strong>: 브라우저 내 최근 7개 보관<br>
-          • <strong>복원</strong>: JSON 파일 불러오기로 복구<br>
-          • 7일 이상 미백업 시 자동 알림
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🔑 기본 계정 정보</div>
-        <div class="info-card-body">
-          <strong>admin</strong> — 비밀번호: noa2025!<br>
-          <strong>david</strong> — 비밀번호: ark2025!<br>
-          <strong>sooyoung</strong> — 비밀번호: noa2025!<br><br>
-          <span class="warn">⚠️ 첫 로그인 후 반드시 비밀번호를 변경하세요</span>
-        </div>
-      </div>
+  <div class="info-item">
+    <span class="info-icon">🔒</span>
+    <div>
+      <div class="info-text-title">세션 보안</div>
+      <div class="info-text-sub">브라우저 종료 시 자동 로그아웃. 비밀번호는 SHA-256으로 해시 저장됩니다.</div>
+    </div>
+  </div>
+  <div class="info-item">
+    <span class="info-icon">📦</span>
+    <div>
+      <div class="info-text-title">백업</div>
+      <div class="info-text-sub">각 앱 우측 상단 💾 백업 버튼에서 JSON 다운로드 및 스냅샷 관리.</div>
     </div>
   </div>
 </div>
+
+<footer>© 2025 NOA&amp;ARK · All rights reserved</footer>
 
 <script>
 const _AUTH_USERS_KEY = 'noa_auth_users_v1';
@@ -209,13 +505,13 @@ function _saveUsers(u) { localStorage.setItem(_AUTH_USERS_KEY, JSON.stringify(u)
 
 async function _sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
 function _getSession() { try { return JSON.parse(sessionStorage.getItem(_SESSION_KEY)); } catch(e) { return null; } }
-function _setSession(user) {
+function _setSession(u) {
   sessionStorage.setItem(_SESSION_KEY, JSON.stringify({
-    username:user.username, name:user.name, role:user.role, expires:Date.now()+_SESSION_TTL
+    username:u.username, name:u.name, role:u.role, expires:Date.now()+_SESSION_TTL
   }));
 }
 
@@ -228,11 +524,12 @@ function _showPortal(name) {
 window.doLogin = async function() {
   const username = document.getElementById('auth-user').value.trim();
   const password = document.getElementById('auth-pass').value;
-  if (!username || !password) { document.getElementById('auth-err').textContent = '아이디와 비밀번호를 입력해주세요.'; return; }
+  const errEl = document.getElementById('auth-err');
+  if (!username || !password) { errEl.textContent = '아이디와 비밀번호를 입력해주세요.'; return; }
   const hash = await _sha256(password);
   const user = _loadUsers().find(u => u.username === username && u.hash === hash);
   if (user) { _setSession(user); _showPortal(user.name); }
-  else { document.getElementById('auth-err').textContent = '아이디 또는 비밀번호가 올바르지 않습니다.'; document.getElementById('auth-pass').value = ''; }
+  else { errEl.textContent = '아이디 또는 비밀번호가 올바르지 않습니다.'; document.getElementById('auth-pass').value = ''; }
 };
 
 window.doLogout = function() {
@@ -264,7 +561,7 @@ window.changePw = async function() {
   alert('비밀번호가 변경되었습니다.');
 };
 
-// Check session on load
+// Init: check existing session
 (function() {
   const s = _getSession();
   if (s && Date.now() < s.expires) _showPortal(s.name);
