@@ -80,7 +80,7 @@ body{font-family:'Pretendard',-apple-system,'SF Pro Display',sans-serif;font-siz
 .week-col-header{padding:14px 16px 12px;border-bottom:1px solid rgba(0,0,0,.06)}
 .week-num{font-size:20px;font-weight:800;color:var(--blue);letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px;line-height:1}
 .week-dates{font-size:18px;font-weight:600;color:var(--gray700);margin-bottom:12px;letter-spacing:-.02em}
-.week-mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.week-mini-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .week-stat{background:var(--gray50);border-radius:8px;padding:7px 8px;min-height:52px;display:flex;flex-direction:column;justify-content:space-between}
 .week-stat-label{font-size:9px;font-weight:700;color:var(--gray500);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;line-height:1}
 .week-stat-val{font-size:13px;font-weight:800;letter-spacing:-0.3px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
@@ -103,17 +103,17 @@ body{font-family:'Pretendard',-apple-system,'SF Pro Display',sans-serif;font-siz
 .carry-divider{width:1px;background:rgba(0,0,0,.08);flex-shrink:0}
 
 /* ── 주차별 자금상태 알림 배너 ── */
-.week-status-bar{margin:6px 12px 0;padding:9px 12px;border-radius:9px;display:flex;align-items:flex-start;gap:8px}
+.week-status-bar{margin:6px 12px 0;padding:9px 12px;border-radius:9px;display:flex;align-items:center;gap:8px}
 .week-status-bar.deficit{background:rgba(255,45,85,.08);border:1.5px solid rgba(255,45,85,.22)}
 .week-status-bar.surplus{background:rgba(4,50,255,.055);border:1.5px solid rgba(4,50,255,.14)}
 .week-status-bar.zero{background:rgba(0,0,0,.035);border:1.5px solid rgba(0,0,0,.1)}
 .wsb-icon{font-size:15px;flex-shrink:0;line-height:1.2}
-.wsb-body{flex:1;min-width:0}
-.wsb-title{font-size:8.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin-bottom:3px}
+.wsb-body{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.wsb-title{font-size:8.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
 .wsb-title.deficit{color:#FF9999}
 .wsb-title.surplus{color:var(--blue)}
 .wsb-title.zero{color:var(--gray500)}
-.wsb-amount{font-size:14px;font-weight:900;letter-spacing:-.6px;font-variant-numeric:tabular-nums;line-height:1}
+.wsb-amount{font-size:14px;font-weight:900;letter-spacing:-.6px;font-variant-numeric:tabular-nums;line-height:1;text-align:right;margin-left:auto}
 .wsb-amount.deficit{color:#FF9999}
 .wsb-amount.surplus{color:var(--blue)}
 .wsb-amount.zero{color:var(--gray500)}
@@ -149,7 +149,7 @@ body{font-family:'Pretendard',-apple-system,'SF Pro Display',sans-serif;font-siz
 /* Fixed expense section */
 .fixed-section{border-top:1.5px solid var(--gray100);margin-top:2px}
 .fixed-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 6px}
-.fixed-header-label{font-size:18px;font-weight:800;color:#FF9999;letter-spacing:.07em;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.fixed-header-label{font-size:12px;font-weight:800;color:#FF9999;letter-spacing:.07em;text-transform:uppercase;display:flex;align-items:center;gap:5px}
 .fixed-dot{width:6px;height:6px;border-radius:50%;background:#FF9F0A;flex-shrink:0}
 .fixed-list{padding:0 0 8px}
 .fixed-item{display:flex;align-items:center;justify-content:space-between;padding:5px 16px;gap:6px}
@@ -1414,7 +1414,6 @@ function renderBoard() {
           <div class="wsb-body">
             <div class="wsb-title deficit">자금 부족</div>
             <div class="wsb-amount deficit">₩${need.toLocaleString('ko-KR')} 필요</div>
-            <div class="wsb-sub">${weekLabel} 누적 ${won(need)} 부족합니다</div>
           </div>
         </div>`;
     } else if (cumEnd > 0) {
@@ -1424,7 +1423,6 @@ function renderBoard() {
           <div class="wsb-body">
             <div class="wsb-title surplus">자금 여유</div>
             <div class="wsb-amount surplus">+₩${cumEnd.toLocaleString('ko-KR')}</div>
-            <div class="wsb-sub">${isFuture?'이 주 마감 예상':isCurrent?'현재 기준':'해당 주 마감'} 누적 여유</div>
           </div>
         </div>`;
     } else {
@@ -1434,7 +1432,6 @@ function renderBoard() {
           <div class="wsb-body">
             <div class="wsb-title zero">자금 균형</div>
             <div class="wsb-amount zero">₩0</div>
-            <div class="wsb-sub">수입과 지출이 균형을 이룹니다</div>
           </div>
         </div>`;
     }
@@ -1482,7 +1479,7 @@ function renderWeekFixed(startDay, endDay) {
     <div class="fixed-section">
       <div class="fixed-header">
         <div class="fixed-header-label"><span class="fixed-dot"></span>고정비 ${items.length}건</div>
-        <span style="font-size:10px;font-weight:800;color:#FF9F0A">${won(total)}</span>
+        <span style="font-size:14px;font-weight:800;color:#FF9999">${won(total)}</span>
       </div>
       <div class="fixed-list">
         ${items.map(f => `
