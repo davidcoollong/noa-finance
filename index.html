@@ -18,7 +18,7 @@
   --gray300:#D1D5DB;
   --gray100:#F3F4F6;
   --gray50:#F9FAFB;
-  --red:#FF3B30;
+  --red:#FF9999;
   --surface:#fff;
   --radius:14px;
   --radius-sm:9px;
@@ -98,7 +98,7 @@ body{font-family:'Pretendard',-apple-system,'SF Pro Display',sans-serif;font-siz
 .carry-label{display:block;font-size:7.5px;font-weight:800;color:var(--gray500);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
 .carry-val{font-size:11px;font-weight:900;letter-spacing:-.4px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .carry-val.pos{color:var(--blue)}
-.carry-val.neg{color:#FF2D55}
+.carry-val.neg{color:#FF9999}
 .carry-val.zero{color:var(--gray400)}
 .carry-divider{width:1px;background:rgba(0,0,0,.08);flex-shrink:0}
 
@@ -110,11 +110,11 @@ body{font-family:'Pretendard',-apple-system,'SF Pro Display',sans-serif;font-siz
 .wsb-icon{font-size:15px;flex-shrink:0;line-height:1.2}
 .wsb-body{flex:1;min-width:0}
 .wsb-title{font-size:8.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin-bottom:3px}
-.wsb-title.deficit{color:#FF2D55}
+.wsb-title.deficit{color:#FF9999}
 .wsb-title.surplus{color:var(--blue)}
 .wsb-title.zero{color:var(--gray500)}
 .wsb-amount{font-size:14px;font-weight:900;letter-spacing:-.6px;font-variant-numeric:tabular-nums;line-height:1}
-.wsb-amount.deficit{color:#FF2D55}
+.wsb-amount.deficit{color:#FF9999}
 .wsb-amount.surplus{color:var(--blue)}
 .wsb-amount.zero{color:var(--gray500)}
 .wsb-sub{font-size:9px;color:var(--gray500);margin-top:2px;line-height:1.3}
@@ -149,7 +149,7 @@ body{font-family:'Pretendard',-apple-system,'SF Pro Display',sans-serif;font-siz
 /* Fixed expense section */
 .fixed-section{border-top:1.5px solid var(--gray100);margin-top:2px}
 .fixed-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 6px}
-.fixed-header-label{font-size:9px;font-weight:800;color:var(--gray500);letter-spacing:.07em;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.fixed-header-label{font-size:18px;font-weight:800;color:#FF9999;letter-spacing:.07em;text-transform:uppercase;display:flex;align-items:center;gap:5px}
 .fixed-dot{width:6px;height:6px;border-radius:50%;background:#FF9F0A;flex-shrink:0}
 .fixed-list{padding:0 0 8px}
 .fixed-item{display:flex;align-items:center;justify-content:space-between;padding:5px 16px;gap:6px}
@@ -1371,7 +1371,7 @@ function renderBoard() {
           </div>
           <div style="display:flex;align-items:center;gap:4px">
             <input class="tx-edit-amount ${e.type}" value="${e.amount.toLocaleString('ko-KR')}" type="text" title="클릭하여 편집"
-              style="color:${e.type==='income'?'var(--blue)':'#FF2D55'}"
+              style="color:${e.type==='income'?'var(--blue)':'#FF9999'}"
               onblur="updateEntry('${e.id}','amount',this.value)"
               onkeydown="if(event.key==='Enter')this.blur()">
             <button class="tx-del" onclick="deleteEntry('${e.id}')" title="삭제">×</button>
