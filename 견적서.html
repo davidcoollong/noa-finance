@@ -473,6 +473,38 @@ body {
 .pw-title{font-size:16px;font-weight:800;margin-bottom:16px}
 .pw-err{font-size:11px;color:#FF3B30;margin-bottom:8px;min-height:14px}
 
+
+/* ── Cross-app Navigation Bar ── */
+.cross-nav{
+  background:#fff;
+  border-bottom:1px solid rgba(0,0,0,.07);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  height:38px;
+  padding:0 16px;
+  position:sticky;
+  top:0;
+  z-index:400;
+  box-shadow:0 1px 0 rgba(0,0,0,.04);
+}
+.cross-nav a{
+  font-family:'Pretendard',-apple-system,sans-serif;
+  font-size:12px;
+  font-weight:600;
+  color:#9CA3AF;
+  text-decoration:none;
+  padding:5px 11px;
+  border-radius:7px;
+  transition:color .12s,background .12s;
+  letter-spacing:-.01em;
+  white-space:nowrap;
+}
+.cross-nav a:hover{color:#0432FF;background:rgba(4,50,255,.06)}
+.cross-nav a.cn-active{color:#0432FF;background:rgba(4,50,255,.08)}
+.cross-nav .cn-sep{width:1px;height:14px;background:#E5E7EB;margin:0 4px;flex-shrink:0}
+
 </style>
 
 <!-- Firebase SDK -->
@@ -558,6 +590,13 @@ body {
 
 
 <!-- App Bar -->
+<div class="cross-nav">
+  <a href="index.html">🏠 포털</a>
+  <a href="견적서.html" class="cn-active">📄 견적서</a>
+  <a href="재고관리.html">📦 재고관리</a>
+  <a href="자금관리.html">💰 자금관리</a>
+  <a href="https://www.notion.so/35f9704e895e81c28e07f30f1219dfa3?pvs=1" target="_blank" rel="noopener">📋 할일</a>
+</div>
 <div class="app-bar">
   <div class="app-bar-logo">NOA&ARK · 견적서</div>
   <div class="app-bar-actions">
