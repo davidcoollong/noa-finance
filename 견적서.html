@@ -264,14 +264,51 @@ body {
 }
 .cell-del { text-align: center; padding: 4px 6px; }
 
-.col-no { width: 32px; }
-.col-name { width: 190px; }
+.col-no   { width: 32px; }
+.col-img  { width: 162px; }
+.col-name { width: 170px; }
 .col-desc { }
 .col-price { width: 100px; }
 .col-qty { width: 62px; }
 .col-unit { width: 54px; }
 .col-amount { width: 110px; }
 .col-del { width: 38px; }
+
+/* ── Item image cell ── */
+.item-img-cell { padding: 6px 8px !important; vertical-align: middle; }
+.item-img-wrap { position: relative; display: inline-block; }
+.item-img-thumb {
+  width: 150px; height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+  display: block;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.item-img-thumb:hover { opacity: 0.88; }
+.item-img-del {
+  position: absolute; top: 5px; right: 5px;
+  background: rgba(0,0,0,0.55); color: #fff;
+  border: none; border-radius: 50%;
+  width: 20px; height: 20px;
+  font-size: 11px; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  line-height: 1; padding: 0;
+}
+.item-img-wrap:hover .item-img-del { display: flex; }
+.item-img-placeholder {
+  width: 150px; height: 150px;
+  border: 1.5px dashed #D1D5DB; border-radius: 6px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; color: #9CA3AF;
+  font-size: 11px; gap: 5px;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.item-img-placeholder:hover { border-color: #0432FF; background: #F0F2FF; color: #0432FF; }
+.item-img-placeholder .img-plus { font-size: 24px; line-height: 1; }
+.item-img-input { display: none; }
 
 /* ── Bottom: Notes + Summary ── */
 .doc-bottom {
@@ -461,6 +498,11 @@ body {
   .items-table tbody tr td { font-size: 9px !important; }
   .cell-input  { font-size: 9px !important; padding: 6px 8px !important; }
   .cell-amount { font-size: 9px !important; padding: 6px 8px !important; }
+  /* Image column: scale down for print, hide upload UI */
+  .item-img-thumb { width: 72px !important; height: 72px !important; }
+  .item-img-del, .item-img-placeholder, .item-img-input { display: none !important; }
+  .item-img-cell { padding: 4px 6px !important; }
+  .col-img { width: 84px !important; }
 
   .notes-section { padding: 10px 20px !important; }
   .notes-textarea { font-size: 9px !important; min-height: 60px !important; line-height: 1.6 !important; }
@@ -769,6 +811,7 @@ body {
         <thead>
           <tr>
             <th class="col-no ta-center">No</th>
+            <th class="col-img ta-center">사진</th>
             <th class="col-name ta-left">항목</th>
             <th class="ta-left">설명</th>
             <th class="col-price ta-right">단가</th>
@@ -1061,8 +1104,10 @@ function saveQuote() {
   clearTimeout(window._fsQuoteTimer);
   window._fsQuoteTimer = setTimeout(function(){
     if(!window._fsDB) return;
+    // Strip base64 images before sending to Firestore (1MB doc limit)
+    const itemsNoImg = items.map(function(it){ var c = Object.assign({},it); delete c.img; return c; });
     window._fsDB.collection('noa_data').doc('quote')
-      .set({db:{companies:DB.companies,clients:DB.clients,products:DB.products},items:items},{merge:true})
+      .set({db:{companies:DB.companies,clients:DB.clients,products:DB.products},items:itemsNoImg},{merge:true})
       .catch(function(e){console.warn('Firestore saveQuote:',e);});
   },600);
 }
@@ -1091,9 +1136,23 @@ function renderItems() {
       `<option value="${p.code}"${p.code===matchedCode?' selected':''}>${p.name}</option>`
     ).join('');
 
+    const imgCell = it.img
+      ? `<div class="item-img-wrap">
+           <img class="item-img-thumb" src="${it.img}" onclick="triggerImgUpload(${i})" title="클릭하여 변경">
+           <button class="item-img-del" onclick="removeItemImg(${i})" title="삭제">✕</button>
+           <input class="item-img-input" id="img-input-${i}" type="file" accept="image/*" onchange="onImgUpload(${i},this)">
+         </div>`
+      : `<div class="item-img-wrap">
+           <label class="item-img-placeholder" for="img-input-${i}">
+             <span class="img-plus">📷</span><span>사진 추가</span>
+           </label>
+           <input class="item-img-input" id="img-input-${i}" type="file" accept="image/*" onchange="onImgUpload(${i},this)">
+         </div>`;
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="col-no" style="text-align:center;font-size:10px;color:#9CA3AF;padding:9px 6px">${i+1}</td>
+      <td class="col-img item-img-cell">${imgCell}</td>
       <td class="col-name">
         <select class="cell-select" onchange="onProductSel(${i},this.value)">
           <option value="">— 선택 —</option>
@@ -1139,8 +1198,42 @@ function upd(i, field, val) {
   saveQuote();
 }
 
-function addItem()   { items.push({name:'',desc:'',price:0,qty:1,unit:'EA'}); renderItems(); saveQuote(); }
+function addItem()   { items.push({name:'',desc:'',price:0,qty:1,unit:'EA',img:''}); renderItems(); saveQuote(); }
 function removeItem(i) { items.splice(i,1); renderItems(); saveQuote(); }
+
+// ── Item image upload ──────────────────────────────────────────────────────────
+function triggerImgUpload(i) {
+  const inp = document.getElementById('img-input-' + i);
+  if (inp) inp.click();
+}
+function removeItemImg(i) {
+  items[i].img = '';
+  renderItems(); saveQuote();
+}
+function onImgUpload(i, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // Resize to max 300px side via canvas to keep localStorage compact
+    const img = new Image();
+    img.onload = function() {
+      const MAX = 300;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+        else        { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      items[i].img = cv.toDataURL('image/jpeg', 0.75);
+      renderItems(); saveQuote();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
 // ── Dropdowns ─────────────────────────────────────────────────────────────────
 function populateSels() {
