@@ -92,7 +92,7 @@ body {
 }
 .doc-title-input {
   font-family: 'Pretendard', sans-serif;
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 700;
   color: #000;
   border: none;
@@ -1175,8 +1175,8 @@ function renderItems() {
           : ''}
       </td>
       <td><input class="cell-input desc" value="${it.desc}" placeholder="설명" oninput="upd(${i},'desc',this.value)"></td>
-      <td class="col-price"><input class="cell-input ta-right" value="${it.price.toLocaleString('ko-KR')}" oninput="upd(${i},'price',this.value)"></td>
-      <td class="col-qty"><input class="cell-input ta-center" type="number" min="0" value="${it.qty}" oninput="upd(${i},'qty',this.value)" style="text-align:center"></td>
+      <td class="col-price"><input class="cell-input ta-right" value="${it.price.toLocaleString('ko-KR')}" oninput="updPrice(${i},this.value)" onblur="renderItems();saveQuote()"></td>
+      <td class="col-qty"><input class="cell-input ta-center" type="text" inputmode="numeric" value="${it.qty}" oninput="updQty(${i},this.value)" onblur="renderItems();saveQuote()" style="text-align:center"></td>
       <td class="col-unit"><input class="cell-input ta-center" value="${it.unit}" oninput="upd(${i},'unit',this.value)"></td>
       <td class="col-amount cell-amount">${won(amt)}</td>
       <td class="col-del cell-del"><button class="btn btn-sm btn-danger" onclick="removeItem(${i})">✕</button></td>
@@ -1204,9 +1204,31 @@ function onProductSel(i, code) {
 }
 
 function upd(i, field, val) {
-  items[i][field] = (field==='price'||field==='qty') ? toNum(val) : val;
-  if (field==='price'||field==='qty') renderItems();
+  items[i][field] = val;
   saveQuote();
+}
+
+// 단가·수량: 입력 중엔 해당 행 금액+합계만 갱신, blur 시 전체 재렌더
+function updPrice(i, val) {
+  items[i].price = toNum(val);
+  _updRowAmt(i); _updTotals();
+}
+function updQty(i, val) {
+  items[i].qty = toNum(val);
+  _updRowAmt(i); _updTotals();
+}
+function _updRowAmt(i) {
+  const el = document.querySelector('#itemsBody tr:nth-child('+(i+1)+') .cell-amount');
+  if (el) el.textContent = won(items[i].price * items[i].qty);
+}
+function _updTotals() {
+  const total = items.reduce((s,it) => s + it.price * it.qty, 0);
+  const vat = total * 0.1, fin = total + vat;
+  $('itemsTotalLabel').textContent = won(total);
+  $('sumTotal').textContent  = won(total);
+  $('sumSupply').textContent = won(total);
+  $('sumVat').textContent    = won(vat);
+  $('sumFinal').textContent  = won(fin);
 }
 
 function addItem()   { items.push({name:'',desc:'',price:0,qty:1,unit:'EA',img:''}); renderItems(); saveQuote(); }
