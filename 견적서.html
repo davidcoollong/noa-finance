@@ -408,12 +408,90 @@ body {
 .add-input:focus { border-color: #0432FF; }
 
 /* ── Print ── */
+/* ═══════════════════════════════ PRINT / PDF ═══════════════════════════════ */
 @media print {
-  body { background: #fff; font-size: 11px; }
-  .app-bar, .dbm, .btn-add-row, .btn-danger, .cell-del, .party-selector { display: none !important; }
-  .page { margin: 0; padding: 0; max-width: 100%; }
-  .doc { box-shadow: none; border-radius: 0; border: none; }
-  .cell-input, .cell-select, .meta-input, .notes-textarea, .doc-title-input { pointer-events: none; }
+  /* ── A4 page & margin ── */
+  @page { size: A4 portrait; margin: 10mm 12mm; }
+
+  /* ── Render colours exactly ── */
+  html, body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: #fff !important;
+    font-size: 10px !important;
+  }
+
+  /* ── Hide every web-only element ── */
+  .app-bar, .cross-nav, .dbm, .btn-add-row, .btn-danger, .cell-del,
+  .party-selector, #qh-sidebar, #backup-panel, #auth-overlay,
+  #pw-modal, #fs-loading { display: none !important; }
+
+  /* ── Reset wrapper so sidebar doesn't bleed in ── */
+  .page-wrapper { display: block !important; max-width: 100% !important;
+                  margin: 0 !important; padding: 0 !important; }
+  .page         { margin: 0 !important; padding: 0 !important;
+                  max-width: 100% !important; }
+
+  /* ── Doc card ── */
+  .doc {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: 1px solid #E5E7EB !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* ── Tighter spacing so doc fits on one A4 page ── */
+  .doc-logos   { padding: 10px 20px 8px !important; }
+  .doc-logo-left  { height: 50px !important; }
+  .doc-logo-right { height: 56px !important; }
+
+  .doc-header  { padding: 12px 20px 10px !important; }
+  .doc-title-input { font-size: 16px !important; }
+
+  .doc-meta    { padding: 7px 20px !important; gap: 18px !important; }
+
+  .party       { padding: 10px 20px !important; }
+  .party-name  { font-size: 12px !important; margin-bottom: 5px !important; }
+  .party-row   { font-size: 9px !important; margin-bottom: 2px !important; }
+
+  .items-section { padding: 10px 20px !important; }
+  .section-label { font-size: 10px !important; margin-bottom: 6px !important; }
+  .items-table thead tr th { font-size: 9px !important; padding: 7px 8px !important; }
+  .items-table tbody tr td { font-size: 9px !important; }
+  .cell-input  { font-size: 9px !important; padding: 6px 8px !important; }
+  .cell-amount { font-size: 9px !important; padding: 6px 8px !important; }
+
+  .notes-section { padding: 10px 20px !important; }
+  .notes-textarea { font-size: 9px !important; min-height: 60px !important; line-height: 1.6 !important; }
+  .summary-section { padding: 10px 16px !important; }
+  .sum-row     { font-size: 11px !important; padding: 5px 0 !important; }
+  .sum-row.final { padding: 8px 12px !important; }
+  .sum-row.final .sum-label { font-size: 12px !important; }
+  .sum-row.final .sum-value { font-size: 13px !important; }
+  .bank-section { padding: 8px 20px !important; font-size: 9px !important; }
+
+  /* ── Remove all interactive chrome ── */
+  .cell-input, .meta-input, .doc-title-input {
+    pointer-events: none !important;
+    border: none !important;
+    border-bottom: none !important;
+    background: transparent !important;
+  }
+  .notes-textarea {
+    pointer-events: none !important;
+    border: none !important;
+    background: transparent !important;
+    resize: none !important;
+  }
+  /* Hide select arrow, show value as plain text */
+  .cell-select, select {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    pointer-events: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
 }
 
 @media (max-width: 680px) {
@@ -1421,6 +1499,36 @@ window.changePw = async function() {
   alert('비밀번호가 변경되었습니다.');
 };
 
+})();
+
+// ═══════════════ PRINT AUTO-SCALE (fit to 1 page) ═══════════════
+(function(){
+  // A4 @ 96 dpi: 297mm × 3.7795 = 1122px. Margins 10mm top+bottom → available ≈ 1046px
+  var AVAIL_H = Math.round((297 - 20) * 3.7795);  // ~1046
+  var AVAIL_W = Math.round((210 - 24) * 3.7795);  // ~700  (12mm each side)
+
+  function applyPrintScale() {
+    var doc = document.getElementById('quoteDoc');
+    if (!doc) return;
+    doc.style.zoom = '';                          // reset first
+    var h = doc.getBoundingClientRect().height;
+    var w = doc.getBoundingClientRect().width;
+    var scale = Math.min(AVAIL_H / h, AVAIL_W / w);
+    if (scale < 0.999) {
+      doc.style.zoom = scale.toFixed(4);
+    }
+  }
+  function removePrintScale() {
+    var doc = document.getElementById('quoteDoc');
+    if (doc) doc.style.zoom = '';
+  }
+
+  if (window.matchMedia) {
+    var mq = window.matchMedia('print');
+    mq.addEventListener('change', function(e){ if (e.matches) applyPrintScale(); else removePrintScale(); });
+  }
+  window.addEventListener('beforeprint', applyPrintScale);
+  window.addEventListener('afterprint',  removePrintScale);
 })();
 
 </script>
