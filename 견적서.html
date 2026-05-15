@@ -265,7 +265,7 @@ body {
 .cell-del { text-align: center; padding: 4px 6px; }
 
 .col-no   { width: 32px; }
-.col-img  { width: 162px; }
+.col-img  { width: 88px; }
 .col-name { width: 170px; }
 .col-desc { }
 .col-price { width: 100px; }
@@ -278,7 +278,7 @@ body {
 .item-img-cell { padding: 6px 8px !important; vertical-align: middle; }
 .item-img-wrap { position: relative; display: inline-block; }
 .item-img-thumb {
-  width: 150px; height: 150px;
+  width: 72px; height: 72px;
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid #E5E7EB;
@@ -298,16 +298,16 @@ body {
 }
 .item-img-wrap:hover .item-img-del { display: flex; }
 .item-img-placeholder {
-  width: 150px; height: 150px;
+  width: 72px; height: 72px;
   border: 1.5px dashed #D1D5DB; border-radius: 6px;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   cursor: pointer; color: #9CA3AF;
-  font-size: 11px; gap: 5px;
+  font-size: 9px; gap: 3px;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 .item-img-placeholder:hover { border-color: #0432FF; background: #F0F2FF; color: #0432FF; }
-.item-img-placeholder .img-plus { font-size: 24px; line-height: 1; }
+.item-img-placeholder .img-plus { font-size: 18px; line-height: 1; }
 .item-img-input { display: none; }
 
 /* ── Bottom: Notes + Summary ── */
@@ -421,6 +421,17 @@ body {
 }
 .db-table tr:last-child td { border-bottom: none; }
 .db-table tr:hover td { background: #F9FAFB; }
+.db-edit-input {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px; color: #374151;
+  background: transparent; border: none; outline: none;
+  width: 100%; min-width: 40px; padding: 0;
+}
+.db-edit-input:focus {
+  background: #EEF2FF; border-radius: 3px;
+  padding: 1px 4px; color: #0432FF;
+}
+.db-edit-input:hover { background: rgba(4,50,255,.04); border-radius: 3px; }
 
 .add-row-form {
   display: flex;
@@ -499,10 +510,10 @@ body {
   .cell-input  { font-size: 9px !important; padding: 6px 8px !important; }
   .cell-amount { font-size: 9px !important; padding: 6px 8px !important; }
   /* Image column: scale down for print, hide upload UI */
-  .item-img-thumb { width: 72px !important; height: 72px !important; }
+  .item-img-thumb { width: 56px !important; height: 56px !important; }
   .item-img-del, .item-img-placeholder, .item-img-input { display: none !important; }
   .item-img-cell { padding: 4px 6px !important; }
-  .col-img { width: 84px !important; }
+  .col-img { width: 68px !important; }
 
   .notes-section { padding: 10px 20px !important; }
   .notes-textarea { font-size: 9px !important; min-height: 60px !important; line-height: 1.6 !important; }
@@ -1264,28 +1275,49 @@ function fillReceiver(code) {
 }
 
 // ── DB Tables ─────────────────────────────────────────────────────────────────
+// HTML-attribute safe escaper
+function esc(v) { return String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
 function renderCompanyDB() {
   $('companyTbody').innerHTML = DB.companies.map((c,i)=>`
     <tr>
-      <td>${c.code}</td><td>${c.name}</td><td>${c.biz}</td><td>${c.ceo}</td>
-      <td>${c.email}</td><td>${c.tel}</td><td>${c.bank}</td><td>${c.acct}</td>
-      <td>${c.manager}</td><td>${c.mtel}</td><td>${c.memail}</td>
+      <td><input class="db-edit-input" value="${esc(c.code)}"    oninput="updCompany(${i},'code',this.value)"    title="코드"></td>
+      <td><input class="db-edit-input" value="${esc(c.name)}"    oninput="updCompany(${i},'name',this.value)"    title="회사명"></td>
+      <td><input class="db-edit-input" value="${esc(c.biz)}"     oninput="updCompany(${i},'biz',this.value)"     title="사업자번호"></td>
+      <td><input class="db-edit-input" value="${esc(c.ceo)}"     oninput="updCompany(${i},'ceo',this.value)"     title="대표자"></td>
+      <td><input class="db-edit-input" value="${esc(c.email)}"   oninput="updCompany(${i},'email',this.value)"   title="이메일"></td>
+      <td><input class="db-edit-input" value="${esc(c.tel)}"     oninput="updCompany(${i},'tel',this.value)"     title="전화"></td>
+      <td><input class="db-edit-input" value="${esc(c.bank)}"    oninput="updCompany(${i},'bank',this.value)"    title="은행"></td>
+      <td><input class="db-edit-input" value="${esc(c.acct)}"    oninput="updCompany(${i},'acct',this.value)"    title="계좌번호"></td>
+      <td><input class="db-edit-input" value="${esc(c.manager)}" oninput="updCompany(${i},'manager',this.value)" title="담당자"></td>
+      <td><input class="db-edit-input" value="${esc(c.mtel)}"    oninput="updCompany(${i},'mtel',this.value)"    title="담당자연락처"></td>
+      <td><input class="db-edit-input" value="${esc(c.memail)}"  oninput="updCompany(${i},'memail',this.value)"  title="담당자이메일"></td>
       <td><button class="btn btn-sm btn-danger" onclick="delCompany(${i})">✕</button></td>
     </tr>`).join('');
 }
 function renderClientDB() {
   $('clientTbody').innerHTML = DB.clients.map((c,i)=>`
     <tr>
-      <td>${c.code}</td><td>${c.name}</td><td>${c.biz}</td><td>${c.contact}</td>
-      <td>${c.email}</td><td>${c.tel}</td><td>${c.addr}</td><td>${c.note}</td>
+      <td><input class="db-edit-input" value="${esc(c.code)}"    oninput="updClient(${i},'code',this.value)"    title="코드"></td>
+      <td><input class="db-edit-input" value="${esc(c.name)}"    oninput="updClient(${i},'name',this.value)"    title="회사명"></td>
+      <td><input class="db-edit-input" value="${esc(c.biz)}"     oninput="updClient(${i},'biz',this.value)"     title="사업자번호"></td>
+      <td><input class="db-edit-input" value="${esc(c.contact)}" oninput="updClient(${i},'contact',this.value)" title="수신자"></td>
+      <td><input class="db-edit-input" value="${esc(c.email)}"   oninput="updClient(${i},'email',this.value)"   title="이메일"></td>
+      <td><input class="db-edit-input" value="${esc(c.tel)}"     oninput="updClient(${i},'tel',this.value)"     title="전화"></td>
+      <td><input class="db-edit-input" value="${esc(c.addr)}"    oninput="updClient(${i},'addr',this.value)"    title="주소"></td>
+      <td><input class="db-edit-input" value="${esc(c.note)}"    oninput="updClient(${i},'note',this.value)"    title="비고"></td>
       <td><button class="btn btn-sm btn-danger" onclick="delClient(${i})">✕</button></td>
     </tr>`).join('');
 }
 function renderProductDB() {
   $('productTbody').innerHTML = DB.products.map((p,i)=>`
     <tr>
-      <td>${p.code}</td><td>${p.name}</td><td>${p.desc}</td>
-      <td>${p.price.toLocaleString('ko-KR')}</td><td>${p.unit}</td><td>${p.note}</td>
+      <td><input class="db-edit-input" value="${esc(p.code)}"  oninput="updProduct(${i},'code',this.value)"  title="코드"></td>
+      <td><input class="db-edit-input" value="${esc(p.name)}"  oninput="updProduct(${i},'name',this.value)"  title="항목명"></td>
+      <td><input class="db-edit-input" value="${esc(p.desc)}"  oninput="updProduct(${i},'desc',this.value)"  title="설명"></td>
+      <td><input class="db-edit-input" value="${esc(p.price)}" oninput="updProduct(${i},'price',this.value)" title="단가" style="min-width:70px;text-align:right"></td>
+      <td><input class="db-edit-input" value="${esc(p.unit)}"  oninput="updProduct(${i},'unit',this.value)"  title="단위" style="min-width:40px"></td>
+      <td><input class="db-edit-input" value="${esc(p.note)}"  oninput="updProduct(${i},'note',this.value)"  title="비고"></td>
       <td><button class="btn btn-sm btn-danger" onclick="delProduct(${i})">✕</button></td>
     </tr>`).join('');
 }
@@ -1315,6 +1347,19 @@ function addProduct() {
     price:parseFloat(g('pr_price'))||0, unit:g('pr_unit')||'EA', note:g('pr_note') });
   ['pr_code','pr_name','pr_desc','pr_price','pr_unit','pr_note'].forEach(id=>$(id).value='');
   renderProductDB(); renderItems(); saveQuote();
+}
+
+function updCompany(i, field, val) {
+  DB.companies[i][field] = val;
+  populateSels(); saveQuote();
+}
+function updClient(i, field, val) {
+  DB.clients[i][field] = val;
+  populateSels(); saveQuote();
+}
+function updProduct(i, field, val) {
+  DB.products[i][field] = field === 'price' ? (parseFloat(String(val).replace(/,/g,'')) || 0) : val;
+  renderItems(); saveQuote();
 }
 
 function delCompany(i) { if(confirm('삭제하시겠습니까?')) { DB.companies.splice(i,1); renderCompanyDB(); populateSels(); saveQuote(); } }
