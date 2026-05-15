@@ -70,7 +70,8 @@ body {
 .btn-add-row:hover { background: #F0F2FF; border-color: #0432FF; color: #0432FF; }
 
 /* ── Page Layout ── */
-.page { max-width: 960px; margin: 28px auto; padding: 0 20px 80px; }
+.page-wrapper { display: flex; gap: 20px; max-width: 1200px; margin: 28px auto; padding: 0 20px; align-items: flex-start; }
+.page { flex: 1; min-width: 0; padding-bottom: 80px; }
 
 /* ── Quote Document ── */
 .doc {
@@ -505,6 +506,19 @@ body {
 .cross-nav a.cn-active{color:#0432FF;background:rgba(4,50,255,.08)}
 .cross-nav .cn-sep{width:1px;height:14px;background:#E5E7EB;margin:0 4px;flex-shrink:0}
 
+/* ── Quote History Sidebar ── */
+#qh-sidebar { width:188px; flex-shrink:0; position:sticky; top:60px; max-height:calc(100vh - 80px); overflow-y:auto; }
+.qh-header { font-size:11px; font-weight:700; color:#6B7280; letter-spacing:.06em; text-transform:uppercase; padding:0 4px 8px; border-bottom:1.5px solid #E5E7EB; margin-bottom:4px; }
+.qh-item { display:flex; align-items:flex-start; gap:4px; padding:7px 6px; border-radius:7px; cursor:pointer; transition:background .13s; }
+.qh-item:hover { background:#F3F4F6; }
+.qh-item.active { background:#EEF2FF; }
+.qh-info { flex:1; min-width:0; }
+.qh-title-text { font-size:12px; font-weight:700; color:#6B7280; line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; word-break:break-all; }
+.qh-date { font-size:10px; color:#9CA3AF; margin-top:2px; }
+.qh-del { background:none; border:none; cursor:pointer; color:#D1D5DB; font-size:12px; padding:0; line-height:1; flex-shrink:0; margin-top:2px; }
+.qh-del:hover { color:#EF4444; }
+.qh-empty { font-size:11px; color:#9CA3AF; padding:12px 4px; text-align:center; }
+
 </style>
 
 <!-- Firebase SDK -->
@@ -608,6 +622,7 @@ body {
   </div>
 </div>
 
+<div class="page-wrapper">
 <div class="page">
 
   <!-- ── Quote Document ── -->
@@ -817,6 +832,13 @@ body {
 
 </div><!-- /page -->
 
+<div id="qh-sidebar">
+  <div class="qh-header">📋 이전 견적서</div>
+  <div id="qh-list"><div class="qh-empty">저장된 견적서가 없습니다</div></div>
+</div>
+
+</div><!-- /page-wrapper -->
+
 <script>
 // ─────────────────── Firebase Init ───────────────────
 (function(){
@@ -880,6 +902,81 @@ const _ITEMS_DEFAULTS = [
 
 const DB = _DB_DEFAULTS;
 let items = _ITEMS_DEFAULTS;
+
+// ── Quote History ──────────────────────────────────────────────────────────────
+const HIST_KEY = 'noa_quote_hist_v1';
+const HIST_MAX = 30;
+
+function _loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch(e) { return []; }
+}
+function _saveHistory(arr) { localStorage.setItem(HIST_KEY, JSON.stringify(arr)); }
+
+function saveCurrentToHistory() {
+  const title = ($('docTitle') && $('docTitle').value) || '제목 없음';
+  const quoteDate = $('metaDate') ? $('metaDate').value : '';
+  const no = $('metaNo') ? $('metaNo').value : '';
+  const mgr = $('metaMgr') ? $('metaMgr').value : '';
+  const senderCode = $('senderSel') ? $('senderSel').value : '';
+  const receiverCode = $('receiverSel') ? $('receiverSel').value : '';
+  // Skip if completely blank
+  if (items.length === 1 && !items[0].name && title === '견적서') return;
+  const snap = {
+    id: Date.now().toString(),
+    savedAt: new Date().toISOString(),
+    title, quoteDate, no, mgr, senderCode, receiverCode,
+    items: JSON.parse(JSON.stringify(items))
+  };
+  const hist = _loadHistory();
+  hist.unshift(snap);
+  if (hist.length > HIST_MAX) hist.length = HIST_MAX;
+  _saveHistory(hist);
+  renderHistoryList();
+}
+
+function loadQuoteFromHistory(id) {
+  const snap = _loadHistory().find(h => h.id === id);
+  if (!snap) return;
+  if ($('docTitle')) $('docTitle').value = snap.title || '';
+  if ($('metaDate')) $('metaDate').value = snap.quoteDate || '';
+  if ($('metaNo'))   $('metaNo').value   = snap.no || '';
+  if ($('metaMgr'))  $('metaMgr').value  = snap.mgr || '';
+  if (snap.senderCode && $('senderSel')) {
+    $('senderSel').value = snap.senderCode; fillSender(snap.senderCode);
+  }
+  if (snap.receiverCode && $('receiverSel')) {
+    $('receiverSel').value = snap.receiverCode; fillReceiver(snap.receiverCode);
+  }
+  if (snap.items && snap.items.length > 0) {
+    items.length = 0; snap.items.forEach(x => items.push(x)); renderItems();
+  }
+  renderHistoryList(id);
+}
+
+function deleteFromHistory(id, e) {
+  e && e.stopPropagation();
+  _saveHistory(_loadHistory().filter(h => h.id !== id));
+  renderHistoryList();
+}
+
+function renderHistoryList(activeId) {
+  const container = document.getElementById('qh-list');
+  if (!container) return;
+  const hist = _loadHistory();
+  if (!hist.length) { container.innerHTML = '<div class="qh-empty">저장된 견적서가 없습니다</div>'; return; }
+  container.innerHTML = hist.map(h => {
+    const d = h.savedAt ? new Date(h.savedAt) : null;
+    const ds = d ? (d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0')) : '';
+    const ac = h.id === activeId ? ' active' : '';
+    return `<div class="qh-item${ac}" onclick="loadQuoteFromHistory('${h.id}')">
+  <div class="qh-info">
+    <div class="qh-title-text">${h.title || '제목 없음'}</div>
+    <div class="qh-date">${ds}</div>
+  </div>
+  <button class="qh-del" onclick="deleteFromHistory('${h.id}',event)" title="삭제">✕</button>
+</div>`;
+  }).join('');
+}
 
 function saveQuote() {
   localStorage.setItem(_QUOTE_KEY, JSON.stringify({ db: DB, items: items }));
@@ -1064,6 +1161,7 @@ function switchTab(btn, name) {
 // ── Reset ──────────────────────────────────────────────────────────────────────
 function resetDoc() {
   if (!confirm('새 견적서를 작성하시겠습니까? 현재 내용이 초기화됩니다.')) return;
+  saveCurrentToHistory();
   $('docTitle').value = '견적서';
   $('metaNo').value = 'NO-' + Date.now().toString().slice(-6);
   $('metaMgr').value = '';
@@ -1109,6 +1207,7 @@ setToday();
   renderProductDB();
   $('senderSel').value = 'NOA';   fillSender('NOA');
   $('receiverSel').value = 'BROSCO'; fillReceiver('BROSCO');
+  renderHistoryList();
   if(loadEl) loadEl.style.display='none';
 })();
 
