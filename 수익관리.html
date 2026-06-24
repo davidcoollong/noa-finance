@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOA&ARK · 프로젝트 수익관리</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#0432FF;--bsoft:rgba(4,50,255,.06);
+  --black:#000;--g700:#374151;--g500:#6B7280;--g300:#D1D5DB;--g200:#E5E7EB;--g100:#F3F4F6;--g50:#F9FAFB;
+  --red:#FF3B30;--green:#059669;--surface:#fff;--r:12px;
+}
+body{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;background:var(--g100);color:var(--black);-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+input,select,textarea,button{font-family:inherit;font-size:inherit;color:inherit}
+
+/* ── CROSS-NAV ── */
+.cross-nav{background:#fff;border-bottom:1px solid var(--g200);display:flex;align-items:center;justify-content:center;gap:2px;height:38px;padding:0 16px;position:sticky;top:0;z-index:400;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.cross-nav a{font-size:12px;font-weight:600;color:var(--g500);text-decoration:none;padding:5px 11px;border-radius:7px;transition:color .12s,background .12s;white-space:nowrap}
+.cross-nav a:hover{color:var(--blue);background:var(--bsoft)}
+.cross-nav a.cn-active{color:var(--blue);background:var(--bsoft)}
+
+/* ── APP BAR ── */
+.app-bar{background:var(--blue);color:#fff;padding:0 28px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:38px;z-index:300}
+.app-bar-logo{font-size:15px;font-weight:800;letter-spacing:.04em}
+.app-bar-right{display:flex;gap:8px;align-items:center}
+.user-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600}
+.dot-on{width:7px;height:7px;background:#34C759;border-radius:50%;flex-shrink:0}
+.btn-bar{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:7px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:-.01em}
+.btn-bar:hover{background:rgba(255,255,255,.22)}
+
+/* ── PROJ TABS ── */
+.proj-tabs{background:#fff;border-bottom:1px solid var(--g200);padding:0 28px;display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;position:sticky;top:90px;z-index:200}
+.proj-tabs::-webkit-scrollbar{display:none}
+.ptab{display:flex;align-items:center;gap:6px;padding:0 16px;height:44px;font-size:13px;font-weight:600;color:var(--g500);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;user-select:none;flex-shrink:0}
+.ptab:hover{color:var(--blue)}
+.ptab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.ptab-del{background:none;border:none;cursor:pointer;color:var(--g300);font-size:11px;padding:0;line-height:1;transition:color .12s}
+.ptab-del:hover{color:var(--red)}
+.ptab-add{display:flex;align-items:center;gap:5px;padding:0 16px;height:44px;font-size:13px;font-weight:700;color:var(--blue);cursor:pointer;background:none;border:none;white-space:nowrap;flex-shrink:0}
+.ptab-add:hover{background:var(--bsoft);border-radius:8px}
+
+/* ── PAGE ── */
+.page{max-width:1020px;margin:24px auto;padding:0 20px 80px}
+
+/* ── PROJ INFO ── */
+.proj-info{background:#fff;border-radius:var(--r);padding:20px 24px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:16px}
+.proj-name-inp{font-size:22px;font-weight:800;color:var(--black);border:none;border-bottom:2px solid transparent;outline:none;background:transparent;flex:1;min-width:180px;letter-spacing:-.02em;transition:border-color .15s}
+.proj-name-inp:focus{border-bottom-color:var(--blue)}
+.proj-name-inp::placeholder{color:var(--g300)}
+.proj-qty-box{display:flex;align-items:center;gap:8px;background:var(--g100);border-radius:8px;padding:8px 14px;flex-shrink:0}
+.proj-qty-box label{font-size:11px;font-weight:700;color:var(--g500);white-space:nowrap}
+.proj-qty-inp{font-size:14px;font-weight:700;border:none;background:transparent;outline:none;width:80px;text-align:right}
+.proj-qty-box span{font-size:11px;color:var(--g500)}
+
+/* ── SECTION HEAD ── */
+.sect-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sect-title{font-size:11px;font-weight:800;color:var(--g700);letter-spacing:.07em;text-transform:uppercase}
+
+/* ── COST GROUP ── */
+.cost-group{background:#fff;border-radius:var(--r);box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:10px;overflow:hidden}
+.grp-head{display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--g50);border-bottom:1px solid var(--g100)}
+.grp-name-inp{font-size:14px;font-weight:700;border:none;background:transparent;outline:none;flex:1;border-bottom:1.5px solid transparent;transition:border-color .15s;padding:1px 0;min-width:80px}
+.grp-name-inp:focus{border-bottom-color:var(--blue)}
+.grp-subt{font-size:12px;font-weight:800;color:var(--blue);white-space:nowrap;flex-shrink:0}
+.btn-del-grp{background:#FEE2E2;color:#991B1B;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.btn-del-grp:hover{background:#FECACA}
+
+/* ── GROUP TABLE ── */
+.grp-table{width:100%;border-collapse:collapse}
+.grp-table th{background:var(--g50);font-size:11px;font-weight:700;color:var(--g500);padding:7px 12px;text-align:left;border-bottom:1px solid var(--g200)}
+.grp-table th.tr{text-align:right}
+.grp-table td{border-bottom:1px solid var(--g100);vertical-align:middle}
+.grp-table tr:last-child td{border-bottom:none}
+.grp-table tr:hover td{background:var(--g50)}
+.g-inp{font-size:13px;border:none;background:transparent;outline:none;padding:8px 12px;width:100%;transition:background .1s}
+.g-inp:focus{background:#EEF2FF}
+.g-inp.tr{text-align:right}
+.g-amt{font-size:13px;font-weight:600;padding:8px 12px;text-align:right;white-space:nowrap;color:var(--black)}
+.col-n{min-width:130px}.col-p{width:130px}.col-q{width:80px}.col-a{width:120px}.col-d{width:34px;text-align:center}
+.grp-foot{padding:10px 18px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--g100)}
+.btn-add-item{background:none;border:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--blue);padding:4px 8px;border-radius:6px;letter-spacing:-.01em}
+.btn-add-item:hover{background:var(--bsoft)}
+.btn-del-item{background:none;border:none;cursor:pointer;color:var(--g300);font-size:14px;line-height:1;padding:4px 6px}
+.btn-del-item:hover{color:var(--red)}
+
+/* ── ADD GROUP ── */
+.btn-add-grp{width:100%;padding:12px;background:#fff;border:1.5px dashed var(--g300);border-radius:var(--r);color:var(--g500);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:20px;transition:all .15s;letter-spacing:-.01em}
+.btn-add-grp:hover{border-color:var(--blue);color:var(--blue);background:var(--bsoft)}
+
+/* ── SUMMARY CARDS ── */
+.sum-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.sum-card{background:#fff;border-radius:var(--r);padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.06);text-align:center}
+.sum-card-lbl{font-size:11px;font-weight:700;color:var(--g500);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.sum-card-val{font-size:26px;font-weight:900;color:var(--black);letter-spacing:-.02em;line-height:1}
+.sum-card-val.blue{color:var(--blue)}
+.sum-card-val.green{color:var(--green)}
+
+/* ── PRICING ── */
+.pricing-card{background:#fff;border-radius:var(--r);box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden}
+.pricing-head{background:var(--blue);color:#fff;padding:16px 22px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.pricing-head-title{font-size:14px;font-weight:800;letter-spacing:.04em}
+.msrp-wrap{display:flex;align-items:center;gap:8px}
+.msrp-lbl{font-size:11px;font-weight:600;opacity:.65;white-space:nowrap}
+.msrp-inp{font-size:16px;font-weight:800;color:#fff;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:8px;padding:6px 12px;outline:none;width:150px;text-align:right;transition:background .15s,border-color .15s}
+.msrp-inp::placeholder{color:rgba(255,255,255,.4)}
+.msrp-inp:focus{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.6)}
+.msrp-unit{font-size:13px;opacity:.65}
+.rates-row{padding:14px 22px;border-bottom:1px solid var(--g100);background:var(--g50);display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.rate-grp{display:flex;align-items:center;gap:6px}
+.rate-lbl{font-size:11px;font-weight:700;color:var(--g500);white-space:nowrap}
+.rate-inp{font-size:14px;font-weight:700;color:var(--blue);border:1.5px solid var(--g200);border-radius:7px;padding:5px 10px;outline:none;width:65px;text-align:center;background:#fff}
+.rate-inp:focus{border-color:var(--blue)}
+.rate-pct{font-size:12px;color:var(--g500)}
+
+/* ── PRICING TABLE ── */
+.pt{width:100%;border-collapse:collapse}
+.pt thead th{background:var(--g50);font-size:11px;font-weight:700;color:var(--g500);padding:10px 16px;text-align:center;border-bottom:1px solid var(--g200)}
+.pt thead th:first-child{text-align:left}
+.pt tbody td{padding:14px 16px;border-bottom:1px solid var(--g100);text-align:center;font-size:13px;font-weight:600}
+.pt tbody td:first-child{text-align:left;font-weight:800}
+.pt tbody tr:last-child td{border-bottom:none}
+.pt tbody tr:nth-child(odd) td{background:var(--g50)}
+.pt-pos{color:var(--green)}
+.pt-neg{color:var(--red)}
+.pt-key{color:var(--blue);font-weight:900}
+
+/* ── PROFIT SUMMARY ── */
+.profit-summary{padding:16px 22px;border-top:1px solid var(--g100);background:var(--g50)}
+.profit-summary-title{font-size:11px;font-weight:800;color:var(--g500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.profit-boxes{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:10px}
+.profit-box{background:#fff;border-radius:8px;padding:12px 16px;border:1px solid var(--g200)}
+.profit-box-lbl{font-size:10px;color:var(--g500);font-weight:700;text-transform:uppercase;margin-bottom:4px;letter-spacing:.04em}
+.profit-box-val{font-size:18px;font-weight:900}
+.profit-box.pos{background:#F0FDF4;border-color:#BBF7D0}
+.profit-box.neg{background:#FEF2F2;border-color:#FECACA}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:72px 20px;color:var(--g300)}
+.empty-icon{font-size:52px;display:block;margin-bottom:14px}
+.empty-title{font-size:16px;font-weight:700;color:var(--g700);margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--g500)}
+
+/* ── AUTH ── */
+#auth-overlay{position:fixed;inset:0;background:rgba(4,50,255,.04);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:9999;display:flex;align-items:center;justify-content:center}
+.auth-box{background:#fff;border-radius:22px;padding:44px 40px 36px;width:360px;box-shadow:0 0 0 1px rgba(0,0,0,.07),0 24px 64px rgba(0,0,0,.15);text-align:center}
+.auth-brand{font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--blue);text-transform:uppercase;opacity:.6;margin-bottom:10px}
+.auth-title{font-size:24px;font-weight:800;letter-spacing:-.8px;color:var(--black);margin-bottom:26px}
+.auth-field{width:100%;border:1.5px solid var(--g300);border-radius:10px;padding:12px 16px;font-size:14px;font-weight:500;color:#111;outline:none;transition:border-color .15s,box-shadow .15s;margin-bottom:10px;background:var(--g50)}
+.auth-field:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(4,50,255,.1)}
+.auth-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .15s}
+.auth-btn:hover{opacity:.86}
+.auth-err{font-size:12px;color:var(--red);margin-top:10px;min-height:16px;font-weight:500}
+.auth-footer{font-size:11px;color:var(--g300);margin-top:20px}
+#pw-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.36);z-index:10000;align-items:center;justify-content:center}
+#pw-modal.open{display:flex}
+.pw-box{background:#fff;border-radius:16px;padding:28px 28px 24px;width:320px;box-shadow:0 8px 40px rgba(0,0,0,.14)}
+.pw-title{font-size:16px;font-weight:800;letter-spacing:-.4px;margin-bottom:16px}
+.pw-err{font-size:11px;color:var(--red);margin-bottom:8px;min-height:14px;font-weight:500}
+
+@media(max-width:640px){.sum-cards{grid-template-columns:1fr}.proj-info{flex-direction:column;align-items:flex-start}.pricing-head{flex-direction:column;align-items:flex-start;gap:12px}.page{padding:0 12px 60px}}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-brand">NOA &amp; ARK</div>
+    <div class="auth-title">수익관리 로그인</div>
+    <input id="auth-user" class="auth-field" type="text" placeholder="아이디" autocomplete="username"
+      onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    <input id="auth-pass" class="auth-field" type="password" placeholder="비밀번호" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="auth-btn" onclick="doLogin()">로그인</button>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-footer">권한 보유자만 접근 가능합니다</div>
+  </div>
+</div>
+
+<!-- PW MODAL -->
+<div id="pw-modal">
+  <div class="pw-box">
+    <div class="pw-title">비밀번호 변경</div>
+    <div class="pw-err" id="pw-err"></div>
+    <input id="pw-cur" class="auth-field" type="password" placeholder="현재 비밀번호" style="margin-bottom:8px">
+    <input id="pw-new" class="auth-field" type="password" placeholder="새 비밀번호 (8자 이상)" style="margin-bottom:8px">
+    <input id="pw-new2" class="auth-field" type="password" placeholder="새 비밀번호 확인" style="margin-bottom:14px">
+    <div style="display:flex;gap:8px">
+      <button class="auth-btn" style="background:var(--g100);color:var(--g700)" onclick="document.getElementById('pw-modal').classList.remove('open')">취소</button>
+      <button class="auth-btn" onclick="changePw()">변경하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- CROSS-NAV -->
+<div class="cross-nav">
+  <a href="index.html">🏠 포털</a>
+  <a href="견적서.html">📄 견적서</a>
+  <a href="재고관리.html">📦 재고관리</a>
+  <a href="자금관리.html">💰 자금관리</a>
+  <a href="거래처관리.html">🏪 거래처관리</a>
+  <a href="수익관리.html" class="cn-active">📊 수익관리</a>
+  <a href="https://www.notion.so/35f9704e895e81c28e07f30f1219dfa3?pvs=1" target="_blank" rel="noopener">📋 할일</a>
+</div>
+
+<!-- APP BAR -->
+<div class="app-bar">
+  <div class="app-bar-logo">NOA&ARK · 프로젝트 수익관리</div>
+  <div class="app-bar-right">
+    <div class="user-badge"><span class="dot-on"></span><span id="user-name">-</span></div>
+    <button class="btn-bar" onclick="openPwModal()">비밀번호 변경</button>
+    <button class="btn-bar" onclick="doLogout()">로그아웃</button>
+  </div>
+</div>
+
+<!-- PROJECT TABS -->
+<div class="proj-tabs" id="proj-tabs">
+  <button class="ptab-add" onclick="addProject()">+ 새 프로젝트</button>
+</div>
+
+<!-- MAIN -->
+<div class="page" id="proj-page">
+  <div class="empty-state">
+    <span class="empty-icon">📊</span>
+    <div class="empty-title">프로젝트를 추가해주세요</div>
+    <div class="empty-sub">상단 "+ 새 프로젝트" 버튼을 클릭해 시작하세요</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════ DATA ═══════════════════
+const _PROJ_KEY = 'noa_profit_v2';
+let projects = [];
+let curId = null;
+
+function uid() { return 'x' + Math.random().toString(36).slice(2, 9); }
+function toNum(v) { return parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, '')) || 0; }
+function fmt(n) { if (n == null || isNaN(n)) return '-'; return Math.round(n).toLocaleString('ko-KR'); }
+function esc(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+function saveProjects() {
+  try { localStorage.setItem(_PROJ_KEY, JSON.stringify(projects)); } catch(e) {}
+}
+function loadProjects() {
+  try { const d = localStorage.getItem(_PROJ_KEY); if (d) projects = JSON.parse(d) || []; } catch(e) { projects = []; }
+}
+function curProj() { return projects.find(p => p.id === curId) || null; }
+
+// ═══════════════════ PROJECT CRUD ═══════════════════
+function addProject() {
+  const p = { id: uid(), name: '새 프로젝트', totalQty: 0, msrp: 0, supplyRates: [20, 50, 60], groups: [] };
+  projects.push(p);
+  saveProjects();
+  selectProject(p.id);
+  setTimeout(() => { const n = document.getElementById('proj-name-inp'); if (n) { n.focus(); n.select(); } }, 60);
+}
+
+function deleteProject(id) {
+  if (!confirm('프로젝트를 삭제하시겠습니까?')) return;
+  projects = projects.filter(p => p.id !== id);
+  saveProjects();
+  if (curId === id) curId = projects.length ? projects[projects.length - 1].id : null;
+  renderAll();
+}
+
+function selectProject(id) {
+  curId = id;
+  renderAll();
+}
+
+// ═══════════════════ GROUP / ITEM CRUD ═══════════════════
+function addGroup() {
+  const p = curProj(); if (!p) return;
+  p.groups.push({ id: uid(), name: '새 원가그룹', items: [] });
+  saveProjects(); renderEditor();
+}
+
+function deleteGroup(gid) {
+  const p = curProj(); if (!p) return;
+  p.groups = p.groups.filter(g => g.id !== gid);
+  saveProjects(); renderEditor();
+}
+
+function addItem(gid) {
+  const p = curProj(); if (!p) return;
+  const g = p.groups.find(g => g.id === gid); if (!g) return;
+  const iid = uid();
+  g.items.push({ id: iid, name: '', unitPrice: 0, qty: 1 });
+  saveProjects(); renderEditor();
+  setTimeout(() => { const el = document.getElementById('in-' + iid); if (el) el.focus(); }, 40);
+}
+
+function deleteItem(gid, iid) {
+  const p = curProj(); if (!p) return;
+  const g = p.groups.find(g => g.id === gid); if (!g) return;
+  g.items = g.items.filter(i => i.id !== iid);
+  saveProjects(); renderEditor();
+}
+
+// ═══════════════════ FIELD UPDATE ═══════════════════
+function updProj(field, val) {
+  const p = curProj(); if (!p) return;
+  p[field] = (field === 'totalQty' || field === 'msrp') ? toNum(val) : val;
+  saveProjects(); recalcDisplay();
+}
+
+function updGrpName(gid, val) {
+  const p = curProj(); if (!p) return;
+  const g = p.groups.find(g => g.id === gid); if (!g) return;
+  g.name = val; saveProjects();
+}
+
+function updItem(gid, iid, field, val) {
+  const p = curProj(); if (!p) return;
+  const g = p.groups.find(g => g.id === gid); if (!g) return;
+  const item = g.items.find(i => i.id === iid); if (!item) return;
+  item[field] = (field === 'unitPrice' || field === 'qty') ? toNum(val) : val;
+  saveProjects(); recalcDisplay();
+}
+
+function updRate(idx, val) {
+  const p = curProj(); if (!p) return;
+  p.supplyRates[idx] = toNum(val);
+  saveProjects(); updatePricingDisplay();
+}
+
+// ═══════════════════ CALCULATION ═══════════════════
+function calcProj(p) {
+  let totalCost = 0;
+  const groupData = p.groups.map(g => {
+    let gTotal = 0;
+    g.items.forEach(i => { gTotal += (i.unitPrice || 0) * (i.qty || 0); });
+    totalCost += gTotal;
+    return { ...g, total: gTotal };
+  });
+  const qty = p.totalQty || 0;
+  const unitCost = qty > 0 ? totalCost / qty : 0;
+  const msrp = p.msrp || 0;
+  const rates = p.supplyRates || [20, 50, 60];
+  const tiers = rates.map(rate => {
+    const sp = msrp * rate / 100;
+    const mu = sp - unitCost;
+    const mr = sp > 0 ? mu / sp * 100 : 0;
+    const tr = sp * qty;
+    const tp = mu * qty;
+    return { rate, sp, mu, mr, tr, tp };
+  });
+  return { totalCost, unitCost, qty, msrp, groupData, tiers, rates };
+}
+
+// ═══════════════════ RENDER ALL ═══════════════════
+function renderAll() {
+  renderTabs();
+  const p = curProj();
+  if (!p) {
+    document.getElementById('proj-page').innerHTML = `<div class="empty-state"><span class="empty-icon">📊</span><div class="empty-title">프로젝트를 추가해주세요</div><div class="empty-sub">상단 "+ 새 프로젝트" 버튼을 클릭해 시작하세요</div></div>`;
+    return;
+  }
+  renderEditor();
+}
+
+function renderTabs() {
+  let html = '';
+  projects.forEach(p => {
+    html += `<div class="ptab${p.id === curId ? ' active' : ''}" onclick="selectProject('${p.id}')">
+      <span>${esc(p.name || '프로젝트')}</span>
+      <button class="ptab-del" onclick="event.stopPropagation();deleteProject('${p.id}')" title="삭제">✕</button>
+    </div>`;
+  });
+  html += `<button class="ptab-add" onclick="addProject()">+ 새 프로젝트</button>`;
+  document.getElementById('proj-tabs').innerHTML = html;
+}
+
+function renderEditor() {
+  const p = curProj(); if (!p) return;
+  const calc = calcProj(p);
+  const pg = document.getElementById('proj-page');
+  pg.innerHTML = renderProjInfo(p) + renderGroupsSection(p, calc) + renderSummarySection(calc) + renderPricingSection(p, calc);
+}
+
+function renderProjInfo(p) {
+  return `<div class="proj-info">
+    <input class="proj-name-inp" id="proj-name-inp" value="${esc(p.name)}" placeholder="프로젝트명 입력"
+      oninput="updProj('name',this.value)" onblur="renderTabs()">
+    <div class="proj-qty-box">
+      <label>총 생산수량</label>
+      <input class="proj-qty-inp" type="text" inputmode="numeric" value="${p.totalQty || ''}" placeholder="0"
+        oninput="updProj('totalQty',this.value)">
+      <span>개</span>
+    </div>
+  </div>`;
+}
+
+function renderGroupsSection(p, calc) {
+  let html = `<div class="sect-head" style="margin-top:4px"><span class="sect-title">원가 그룹</span></div>`;
+  calc.groupData.forEach(g => { html += renderGroup(g); });
+  html += `<button class="btn-add-grp" onclick="addGroup()">+ 원가그룹 추가</button>`;
+  return html;
+}
+
+function renderGroup(g) {
+  let rows = '';
+  g.items.forEach(item => {
+    const rowAmt = (item.unitPrice || 0) * (item.qty || 0);
+    rows += `<tr>
+      <td class="col-n"><input class="g-inp" id="in-${item.id}" value="${esc(item.name)}" placeholder="항목명"
+        oninput="updItem('${g.id}','${item.id}','name',this.value)"></td>
+      <td class="col-p"><input class="g-inp tr" type="text" inputmode="numeric" value="${item.unitPrice || ''}" placeholder="0"
+        oninput="updItem('${g.id}','${item.id}','unitPrice',this.value)"></td>
+      <td class="col-q"><input class="g-inp tr" type="text" inputmode="numeric" value="${item.qty || ''}" placeholder="1"
+        oninput="updItem('${g.id}','${item.id}','qty',this.value)"></td>
+      <td class="col-a"><span class="g-amt" id="amt-${item.id}">${fmt(rowAmt)}</span></td>
+      <td class="col-d"><button class="btn-del-item" onclick="deleteItem('${g.id}','${item.id}')" title="삭제">✕</button></td>
+    </tr>`;
+  });
+  return `<div class="cost-group" data-gid="${g.id}">
+    <div class="grp-head">
+      <input class="grp-name-inp" value="${esc(g.name)}" placeholder="그룹명 (예: 금형, 패키지)"
+        oninput="updGrpName('${g.id}',this.value)">
+      <span class="grp-subt" id="gsubt-${g.id}">소계 ₩${fmt(g.total)}</span>
+      <button class="btn-del-grp" onclick="deleteGroup('${g.id}')">그룹 삭제</button>
+    </div>
+    <table class="grp-table">
+      <thead><tr>
+        <th class="col-n">항목명</th>
+        <th class="col-p tr">단가 (원)</th>
+        <th class="col-q tr">수량</th>
+        <th class="col-a tr">합계금액</th>
+        <th class="col-d"></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="grp-foot">
+      <button class="btn-add-item" onclick="addItem('${g.id}')">+ 항목 추가</button>
+      <span style="font-size:12px;font-weight:800;color:var(--blue)" id="gfoot-${g.id}">소계: ₩${fmt(g.total)}</span>
+    </div>
+  </div>`;
+}
+
+function renderSummarySection(calc) {
+  return `<div id="sum-cards-section" class="sum-cards">${renderSumInner(calc)}</div>`;
+}
+
+function renderSumInner(calc) {
+  return `<div class="sum-card">
+    <div class="sum-card-lbl">총 제조원가</div>
+    <div class="sum-card-val blue">₩${fmt(calc.totalCost)}</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-card-lbl">총 생산수량</div>
+    <div class="sum-card-val">${fmt(calc.qty)} 개</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-card-lbl">개당 제조원가 (객단가)</div>
+    <div class="sum-card-val green">₩${fmt(calc.unitCost)}</div>
+  </div>`;
+}
+
+function renderPricingSection(p, calc) {
+  const rates = p.supplyRates || [20, 50, 60];
+  const rateInputs = rates.map((r, i) =>
+    `<div class="rate-grp">
+      <span class="rate-lbl">공급율 ${i + 1}</span>
+      <input class="rate-inp" id="rate-${i}" type="text" inputmode="numeric" value="${r}"
+        oninput="updRate(${i},this.value)">
+      <span class="rate-pct">%</span>
+    </div>`
+  ).join('');
+  return `<div class="pricing-card">
+    <div class="pricing-head">
+      <span class="pricing-head-title">💰 판매가 / 수익 분석</span>
+      <div class="msrp-wrap">
+        <span class="msrp-lbl">소비자가 (MSRP)</span>
+        <input class="msrp-inp" id="msrp-inp" type="text" inputmode="numeric" value="${p.msrp || ''}" placeholder="0"
+          oninput="updProj('msrp',this.value)">
+        <span class="msrp-unit">원</span>
+      </div>
+    </div>
+    <div class="rates-row">${rateInputs}</div>
+    <table class="pt">
+      <thead><tr>
+        <th>구분</th><th>공급율</th><th>공급단가</th><th>개당 마진</th><th>마진율</th><th>총 매출</th><th>총 이익</th>
+      </tr></thead>
+      <tbody id="pricing-tbody">${renderPricingRows(calc)}</tbody>
+    </table>
+    <div id="profit-summary" class="profit-summary">
+      <div class="profit-summary-title">이익 구조 요약</div>
+      <div class="profit-boxes" id="profit-boxes">${renderProfitBoxes(p, calc)}</div>
+    </div>
+  </div>`;
+}
+
+function renderPricingRows(calc) {
+  return calc.tiers.map((t, i) => {
+    const pos = t.mu >= 0;
+    const pc = pos ? 'pt-pos' : 'pt-neg';
+    const mr = isNaN(t.mr) || !isFinite(t.mr) ? '-' : t.mr.toFixed(1) + '%';
+    return `<tr>
+      <td>공급가 ${i + 1} <span style="color:var(--g500);font-weight:600">(${t.rate}%)</span></td>
+      <td class="pt-key">₩${fmt(t.sp)}</td>
+      <td class="${pc}">₩${fmt(t.mu)}</td>
+      <td class="${pc}">${mr}</td>
+      <td>₩${fmt(t.tr)}</td>
+      <td class="${pc}" style="font-weight:900">₩${fmt(t.tp)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderProfitBoxes(p, calc) {
+  const rates = p.supplyRates || [20, 50, 60];
+  let html = `
+    <div class="profit-box">
+      <div class="profit-box-lbl">총 투입 원가</div>
+      <div class="profit-box-val" style="color:var(--black)">₩${fmt(calc.totalCost)}</div>
+    </div>
+    <div class="profit-box">
+      <div class="profit-box-lbl">개당 원가</div>
+      <div class="profit-box-val" style="color:var(--green)">₩${fmt(calc.unitCost)}</div>
+    </div>
+    <div class="profit-box">
+      <div class="profit-box-lbl">소비자가 (MSRP)</div>
+      <div class="profit-box-val" style="color:var(--blue)">₩${fmt(calc.msrp)}</div>
+    </div>`;
+  calc.tiers.forEach((t, i) => {
+    const pos = t.mu >= 0;
+    html += `<div class="profit-box ${pos ? 'pos' : 'neg'}">
+      <div class="profit-box-lbl">공급가 ${i + 1} (${rates[i]}%) 총이익</div>
+      <div class="profit-box-val" style="color:${pos ? 'var(--green)' : 'var(--red)'}">₩${fmt(t.tp)}</div>
+    </div>`;
+  });
+  return html;
+}
+
+// ═══════════════════ RECALC DISPLAY (no full re-render) ═══════════════════
+function recalcDisplay() {
+  const p = curProj(); if (!p) return;
+  const calc = calcProj(p);
+  // Item amounts + group subtotals
+  calc.groupData.forEach(g => {
+    const s = document.getElementById('gsubt-' + g.id);
+    const f = document.getElementById('gfoot-' + g.id);
+    if (s) s.textContent = '소계 ₩' + fmt(g.total);
+    if (f) f.textContent = '소계: ₩' + fmt(g.total);
+    g.items.forEach(item => {
+      const el = document.getElementById('amt-' + item.id);
+      if (el) el.textContent = fmt((item.unitPrice || 0) * (item.qty || 0));
+    });
+  });
+  // Summary cards
+  const sc = document.getElementById('sum-cards-section');
+  if (sc) sc.innerHTML = renderSumInner(calc);
+  // Pricing table + profit boxes
+  updatePricingDisplay();
+}
+
+function updatePricingDisplay() {
+  const p = curProj(); if (!p) return;
+  const calc = calcProj(p);
+  const tb = document.getElementById('pricing-tbody');
+  if (tb) tb.innerHTML = renderPricingRows(calc);
+  const pb = document.getElementById('profit-boxes');
+  if (pb) pb.innerHTML = renderProfitBoxes(p, calc);
+  // Update rate display in rows (handled via re-render above)
+}
+
+// ═══════════════════ AUTH ═══════════════════
+const _AUTH_USERS_KEY='noa_auth_users_v1',_SESSION_KEY='noa_session_v1',_SESSION_TTL=8*60*60*1000;
+const _DEFAULT_USERS=[
+  {username:'admin',    hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926',name:'관리자',role:'admin'},
+  {username:'david',    hash:'2d2a6626eb7a70813ec876ad277281379a2d0d6c6e33e67f3c20d5d66452ef5e',name:'김진욱',role:'admin'},
+  {username:'sooyoung', hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926',name:'소영',  role:'user'}
+];
+function _loadUsers(){try{return JSON.parse(localStorage.getItem(_AUTH_USERS_KEY))||_DEFAULT_USERS;}catch(e){return _DEFAULT_USERS;}}
+function _saveUsers(u){localStorage.setItem(_AUTH_USERS_KEY,JSON.stringify(u));}
+async function _sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+function _getSession(){try{return JSON.parse(sessionStorage.getItem(_SESSION_KEY));}catch(e){return null;}}
+function _setSession(u){sessionStorage.setItem(_SESSION_KEY,JSON.stringify({username:u.username,name:u.name,role:u.role,expires:Date.now()+_SESSION_TTL}));}
+function _showApp(name){
+  const ov=document.getElementById('auth-overlay');if(ov)ov.remove();
+  document.getElementById('user-name').textContent=name;
+  loadProjects(); renderAll();
+}
+window.doLogin=async function(){
+  const u=document.getElementById('auth-user').value.trim(),p=document.getElementById('auth-pass').value,e=document.getElementById('auth-err');
+  if(!u||!p){e.textContent='아이디와 비밀번호를 입력해주세요.';return;}
+  const h=await _sha256(p),user=_loadUsers().find(x=>x.username===u&&x.hash===h);
+  if(user){_setSession(user);_showApp(user.name);}
+  else{e.textContent='아이디 또는 비밀번호가 올바르지 않습니다.';document.getElementById('auth-pass').value='';}
+};
+window.doLogout=function(){if(confirm('로그아웃 하시겠습니까?')){sessionStorage.removeItem(_SESSION_KEY);location.reload();}};
+window.openPwModal=function(){['pw-cur','pw-new','pw-new2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('pw-err').textContent='';document.getElementById('pw-modal').classList.add('open');};
+window.changePw=async function(){
+  const cur=document.getElementById('pw-cur').value,nw=document.getElementById('pw-new').value,nw2=document.getElementById('pw-new2').value,err=document.getElementById('pw-err');
+  if(!cur||!nw||!nw2){err.textContent='모든 항목을 입력해주세요.';return;}
+  if(nw.length<8){err.textContent='새 비밀번호는 8자 이상이어야 합니다.';return;}
+  if(nw!==nw2){err.textContent='새 비밀번호가 일치하지 않습니다.';return;}
+  const s=_getSession();if(!s)return;
+  const curH=await _sha256(cur),users=_loadUsers(),user=users.find(x=>x.username===s.username&&x.hash===curH);
+  if(!user){err.textContent='현재 비밀번호가 올바르지 않습니다.';return;}
+  user.hash=await _sha256(nw);_saveUsers(users);
+  document.getElementById('pw-modal').classList.remove('open');alert('비밀번호가 변경되었습니다.');
+};
+(function(){const s=_getSession();if(s&&Date.now()<s.expires){_showApp(s.name);}})();
+</script>
+</body>
+</html>

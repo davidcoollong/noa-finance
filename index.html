@@ -28,7 +28,7 @@ html,body{height:100%;font-family:'Pretendard',-apple-system,sans-serif;font-siz
 .hero-title{font-size:40px;font-weight:800;letter-spacing:-2px;line-height:1.08;color:var(--black);margin-bottom:12px}
 .hero-sub{font-size:14px;color:var(--gray500);font-weight:500;line-height:1.6;max-width:380px;margin:0 auto}
 
-.app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:0 36px 56px;max-width:1120px;margin:0 auto;width:100%}
+.app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 36px 56px;max-width:1120px;margin:0 auto;width:100%}
 @media(max-width:900px){.app-grid{grid-template-columns:repeat(2,1fr);padding:0 20px 40px}}
 @media(max-width:520px){.app-grid{grid-template-columns:1fr}}
 @media(max-width:800px){.hero{padding:32px 20px 28px}.hero-title{font-size:30px}}
@@ -42,6 +42,8 @@ html,body{height:100%;font-family:'Pretendard',-apple-system,sans-serif;font-siz
 .card-thumb.c-purple{background:linear-gradient(145deg,#5856D6 0%,#BF5AF2 100%)}
 .card-thumb.c-teal{background:linear-gradient(145deg,#00C7BE 0%,#30D158 100%)}
 .card-thumb.c-notion{background:linear-gradient(145deg,#1a1a1a 0%,#3d3d3d 100%)}
+.card-thumb.c-navy{background:linear-gradient(145deg,#1a1a2e 0%,#e94560 100%)}
+.card-thumb.c-emerald{background:linear-gradient(145deg,#059669 0%,#10B981 100%)}
 .card-body{padding:18px 20px 16px;flex:1;display:flex;flex-direction:column}
 .card-title{font-size:16px;font-weight:800;letter-spacing:-.4px;margin-bottom:5px}
 .card-desc{font-size:11.5px;color:var(--gray500);font-weight:500;line-height:1.6;flex:1}
@@ -168,6 +170,30 @@ footer{text-align:center;padding:18px;font-size:11px;color:var(--gray300);font-w
       <div class="card-footer">
         <span class="card-tag">Notion</span>
         <span class="card-open notion-open">열기 →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="app-card" href="거래처관리.html">
+    <div class="card-thumb c-navy"><span class="card-thumb-icon">🏪</span></div>
+    <div class="card-body">
+      <div class="card-title">거래처관리</div>
+      <div class="card-desc">영업 거래처 DB, 입점 현황, 프로모션 현황 관리. 메모·히스토리 추적.</div>
+      <div class="card-footer">
+        <span class="card-tag">CRM</span>
+        <span class="card-open">열기 →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="app-card" href="수익관리.html">
+    <div class="card-thumb c-emerald"><span class="card-thumb-icon">📊</span></div>
+    <div class="card-body">
+      <div class="card-title">프로젝트 수익관리</div>
+      <div class="card-desc">원가 그룹별 제조원가 분석, 소비자가·납품가 대비 공급율별 마진 자동계산.</div>
+      <div class="card-footer">
+        <span class="card-tag">Profit</span>
+        <span class="card-open">열기 →</span>
       </div>
     </div>
   </a>

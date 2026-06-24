@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>노아&아크 거래처 관리</title>
+<style>
+:root {
+  --navy: #1a1a2e;
+  --navy2: #16213e;
+  --navy3: #0f3460;
+  --red: #e94560;
+  --red2: #c73652;
+  --green: #1a7f5a;
+  --green2: #0d5c40;
+  --blue: #3b5bdb;
+  --blue2: #2f4bc7;
+  --orange: #e67e22;
+  --orange2: #d35400;
+  --purple: #7c3aed;
+  --gray: #f0f2f5;
+  --border: #e8e8e8;
+  --text: #1a1a2e;
+  --text2: #555;
+  --text3: #999;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif; background: var(--gray); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+.header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 60%, var(--navy3) 100%); color: #fff; padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 16px rgba(0,0,0,.35); position: sticky; top: 38px; z-index: 100; }
+.logo { font-size: 20px; font-weight: 900; letter-spacing: -.5px; }
+.logo span { color: var(--red); }
+.logo-sub { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 2px; }
+.header-stats { display: flex; gap: 28px; }
+.hstat { text-align: center; }
+.hstat-n { font-size: 22px; font-weight: 800; color: var(--red); line-height: 1; }
+.hstat-l { font-size: 10px; color: rgba(255,255,255,.45); margin-top: 3px; }
+
+/* ── TABS ── */
+.tabs { background: #fff; border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+.tab { padding: 14px 22px; font-size: 13px; font-weight: 700; color: #aaa; cursor: pointer; border-bottom: 3px solid transparent; transition: all .2s; white-space: nowrap; }
+.tab:hover { color: var(--navy); }
+.tab.active { color: var(--red); border-bottom-color: var(--red); }
+
+/* ── TOOLBAR ── */
+.toolbar { background: #fff; padding: 12px 32px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eee; flex-wrap: wrap; }
+.search-box { display: flex; align-items: center; gap: 8px; background: var(--gray); border-radius: 8px; padding: 8px 14px; flex: 1; min-width: 180px; max-width: 300px; }
+.search-box input { border: none; background: none; outline: none; font-size: 13px; width: 100%; }
+.fselect { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #444; background: #fff; outline: none; cursor: pointer; }
+.btn { padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: all .2s; white-space: nowrap; }
+.btn-primary { background: var(--red); color: #fff; }
+.btn-primary:hover { background: var(--red2); }
+.btn-outline { background: #fff; color: var(--navy); border: 1.5px solid var(--navy); }
+.btn-outline:hover { background: var(--navy); color: #fff; }
+.btn-green { background: var(--green); color: #fff; }
+.btn-green:hover { background: var(--green2); }
+.ml-auto { margin-left: auto; }
+
+/* ── CONTENT ── */
+.content { padding: 20px 32px; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── SUMMARY CARDS (fully colored) ── */
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+.card { border-radius: 14px; padding: 20px 22px; color: #fff; position: relative; overflow: hidden; box-shadow: 0 4px 18px rgba(0,0,0,.15); }
+.card::before { content:''; position:absolute; right:-20px; top:-20px; width:90px; height:90px; border-radius:50%; background:rgba(255,255,255,.1); }
+.card::after { content:''; position:absolute; right:10px; bottom:-30px; width:70px; height:70px; border-radius:50%; background:rgba(255,255,255,.07); }
+.card-navy { background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%); }
+.card-red { background: linear-gradient(135deg, #e94560 0%, #c73652 100%); }
+.card-green { background: linear-gradient(135deg, #1a7f5a 0%, #0d5c40 100%); }
+.card-blue { background: linear-gradient(135deg, #3b5bdb 0%, #2f4bc7 100%); }
+.card-orange { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); }
+.card-purple { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); }
+.card-title { font-size: 11px; font-weight: 700; opacity: .7; text-transform: uppercase; letter-spacing: .5px; }
+.card-value { font-size: 32px; font-weight: 900; margin: 6px 0 4px; line-height: 1; }
+.card-sub { font-size: 11px; opacity: .65; }
+
+/* ── TABLE ── */
+.table-wrapper { background: #fff; border-radius: 14px; box-shadow: 0 2px 14px rgba(0,0,0,.07); overflow: hidden; }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { background: var(--navy); color: #fff; padding: 12px 14px; text-align: left; font-weight: 600; white-space: nowrap; font-size: 12px; }
+thead th:first-child { width: 40px; text-align: center; }
+tbody tr { border-bottom: 1px solid #f5f5f5; transition: background .1s; cursor: default; }
+tbody tr:hover { background: #f7f9ff; }
+tbody td { padding: 10px 14px; vertical-align: middle; }
+tbody td:first-child { text-align: center; color: var(--text3); font-size: 12px; }
+.clickable-name { color: var(--navy3); font-weight: 700; cursor: pointer; text-decoration: none; border-bottom: 1px dashed rgba(15,52,96,.3); }
+.clickable-name:hover { color: var(--red); border-bottom-color: var(--red); }
+
+/* ── BADGES ── */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.b-active { background: #e6f9f0; color: #1a7f5a; }
+.b-done { background: #e6f9f0; color: #1a7f5a; }
+.b-pending { background: #fff7e6; color: #d4730a; }
+.b-plan { background: #edf2ff; color: #3b5bdb; }
+.b-inactive { background: #f5f5f5; color: #888; }
+.b-new { background: #fff0f6; color: #c2255c; }
+.b-hold { background: #f3f0ff; color: #6741d9; }
+.b-consign { background: #e8f5e9; color: #2e7d32; }
+.b-direct { background: #e3f2fd; color: #1565c0; }
+.b-popup { background: #fce4ec; color: #c62828; }
+.b-none { background: #f5f5f5; color: #999; }
+
+/* Inline status dropdown */
+.status-wrap { position: relative; display: inline-block; }
+.status-badge-btn { cursor: pointer; user-select: none; }
+.status-badge-btn:after { content: ' ▾'; font-size: 9px; opacity: .6; }
+.status-dropdown { display: none; position: absolute; top: calc(100% + 4px); left: 0; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.15); z-index: 200; min-width: 130px; overflow: hidden; }
+.status-dropdown.open { display: block; }
+.status-option { padding: 9px 14px; font-size: 12px; cursor: pointer; font-weight: 600; transition: background .1s; }
+.status-option:hover { background: var(--gray); }
+
+/* Priority */
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; flex-shrink: 0; }
+.dot-h { background: var(--red); }
+.dot-m { background: #f7b731; }
+.dot-l { background: #20c997; }
+
+/* Action btns */
+.act-btns { display: flex; gap: 4px; }
+.btn-sm { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; border: none; }
+.btn-edit-sm { background: #edf2ff; color: #3b5bdb; }
+.btn-edit-sm:hover { background: #dbe4ff; }
+.btn-del-sm { background: #fff0f6; color: #c2255c; }
+.btn-del-sm:hover { background: #ffdeeb; }
+.btn-detail-sm { background: #f0f2f5; color: var(--navy); }
+.btn-detail-sm:hover { background: var(--navy); color: #fff; }
+
+/* Memo short */
+.memo-short { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #888; font-size: 12px; }
+
+/* ── PAGINATION ── */
+.pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-top: 1px solid #f0f0f0; }
+.page-info { font-size: 12px; color: #aaa; }
+.page-btns { display: flex; gap: 3px; }
+.page-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid #e0e0e0; background: #fff; font-size: 12px; cursor: pointer; }
+.page-btn.cur { background: var(--red); color: #fff; border-color: var(--red); }
+.page-btn:hover:not(.cur) { background: var(--gray); }
+.page-btn:disabled { opacity: .4; cursor: default; }
+
+/* ── MODAL (ADD/EDIT) ── */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 500; align-items: center; justify-content: center; }
+.overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 18px; width: 700px; max-width: 96vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,.3); }
+.modal-hd { background: linear-gradient(135deg, var(--navy), var(--navy3)); color: #fff; padding: 20px 28px; border-radius: 18px 18px 0 0; display: flex; align-items: center; justify-content: space-between; }
+.modal-hd h3 { font-size: 16px; font-weight: 800; }
+.modal-x { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; line-height: 1; }
+.modal-bd { padding: 24px 28px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fg.full { grid-column: 1/-1; }
+.fg label { font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: .4px; }
+.fg input, .fg select, .fg textarea { border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 13px; outline: none; transition: border .2s; font-family: inherit; color: var(--text); }
+.fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(233,69,96,.1); }
+.fg textarea { resize: vertical; min-height: 72px; }
+.modal-ft { padding: 14px 28px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
+
+/* ── DETAIL PANEL ── */
+.detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 600; }
+.detail-overlay.open { display: block; }
+.detail-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 600px; max-width: 98vw; background: #fff; box-shadow: -8px 0 40px rgba(0,0,0,.2); display: flex; flex-direction: column; transform: translateX(100%); transition: transform .3s cubic-bezier(.4,0,.2,1); z-index: 700; overflow: hidden; }
+.detail-panel.open { transform: translateX(0); }
+
+.dp-header { background: linear-gradient(135deg, var(--navy), var(--navy3)); color: #fff; padding: 20px 24px; flex-shrink: 0; }
+.dp-header-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.dp-name { font-size: 22px; font-weight: 900; }
+.dp-category { font-size: 12px; opacity: .6; margin-top: 3px; }
+.dp-close { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; line-height: 1; }
+.dp-status-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+.dp-body { flex: 1; overflow-y: auto; padding: 0; }
+
+.dp-section { padding: 20px 24px; border-bottom: 1px solid #f0f0f0; }
+.dp-section:last-child { border-bottom: none; }
+.dp-section-title { font-size: 11px; font-weight: 800; color: var(--red); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+.dp-section-title::before { content:''; display:inline-block; width:3px; height:14px; background:var(--red); border-radius:2px; }
+
+.dp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dp-field { display: flex; flex-direction: column; gap: 4px; }
+.dp-field.full { grid-column: 1/-1; }
+.dp-field-label { font-size: 10px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: .4px; }
+.dp-field-val { font-size: 13px; color: var(--text); font-weight: 500; padding: 6px 10px; border-radius: 8px; background: var(--gray); cursor: pointer; min-height: 34px; display: flex; align-items: center; gap: 6px; transition: background .1s; }
+.dp-field-val:hover { background: #e8eaed; }
+.dp-field-val.editing { background: #fff; border: 1.5px solid var(--red); padding: 5px 9px; }
+.dp-field-input { border: none; background: none; outline: none; font-size: 13px; width: 100%; font-family: inherit; color: var(--text); }
+.dp-field-select { border: none; background: none; outline: none; font-size: 13px; width: 100%; font-family: inherit; color: var(--text); cursor: pointer; }
+.dp-edit-hint { font-size: 10px; color: #ccc; margin-top: 2px; }
+
+/* Detail status change */
+.dp-status-select { background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.3); border-radius: 8px; padding: 6px 12px; color: #fff; font-size: 13px; font-weight: 700; outline: none; cursor: pointer; font-family: inherit; }
+.dp-status-select option { color: var(--text); background: #fff; }
+
+/* ── MEMO / HISTORY ── */
+.memo-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.memo-item { display: flex; gap: 10px; }
+.memo-dot-col { display: flex; flex-direction: column; align-items: center; }
+.memo-dot2 { width: 10px; height: 10px; border-radius: 50%; background: var(--red); flex-shrink: 0; margin-top: 3px; }
+.memo-line { width: 2px; flex: 1; background: #f0f0f0; margin-top: 3px; }
+.memo-content { flex: 1; padding-bottom: 8px; }
+.memo-meta { font-size: 11px; color: #aaa; margin-bottom: 3px; }
+.memo-text { font-size: 13px; color: var(--text); background: var(--gray); border-radius: 8px; padding: 8px 12px; line-height: 1.5; }
+.memo-add-area { display: flex; flex-direction: column; gap: 8px; }
+.memo-add-input { border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 13px; resize: none; outline: none; font-family: inherit; min-height: 70px; transition: border .2s; }
+.memo-add-input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(233,69,96,.1); }
+.memo-add-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.memo-type-select { border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 12px; font-family: inherit; outline: none; }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 700; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all .3s; box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+@media (max-width: 768px) {
+  .header { padding: 12px 16px; }
+  .header-stats { display: none; }
+  .toolbar, .content { padding: 10px 14px; }
+  .cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .tabs { padding: 0 14px; overflow-x: auto; }
+  .detail-panel { width: 100%; }
+  .dp-fields { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+/* ── CROSS-NAV ── */
+.cross-nav{background:var(--navy);border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;gap:2px;height:38px;padding:0 16px;position:sticky;top:0;z-index:500;}
+.cross-nav a{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;font-size:12px;font-weight:600;color:rgba(255,255,255,.45);text-decoration:none;padding:5px 11px;border-radius:7px;transition:color .12s,background .12s;letter-spacing:-.01em;white-space:nowrap;}
+.cross-nav a:hover{color:#fff;background:rgba(255,255,255,.12);}
+.cross-nav a.cn-active{color:var(--red);background:rgba(233,69,96,.18);}
+/* ── AUTH ── */
+#auth-overlay{position:fixed;inset:0;background:rgba(26,26,46,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.auth-box{background:var(--navy2);border-radius:22px;padding:44px 40px 36px;width:360px;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 24px 64px rgba(0,0,0,.6);text-align:center;border:1px solid rgba(255,255,255,.08);}
+.auth-brand{font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--red);text-transform:uppercase;opacity:.85;margin-bottom:10px;}
+.auth-title{font-size:24px;font-weight:800;letter-spacing:-.8px;color:#fff;margin-bottom:26px;}
+.auth-field{width:100%;border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:12px 16px;font-family:'Pretendard',sans-serif;font-size:14px;font-weight:500;color:#fff;outline:none;transition:border-color .15s;margin-bottom:10px;background:rgba(255,255,255,.07);}
+.auth-field::placeholder{color:rgba(255,255,255,.3);}
+.auth-field:focus{border-color:var(--red);background:rgba(255,255,255,.1);}
+.auth-btn{width:100%;background:var(--red);color:#fff;border:none;border-radius:10px;padding:13px;font-family:'Pretendard',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .15s;}
+.auth-btn:hover{opacity:.86;}
+.auth-err{font-size:12px;color:#FF6B6B;margin-top:10px;min-height:16px;font-weight:500;}
+.auth-footer{font-size:11px;color:rgba(255,255,255,.25);margin-top:20px;}
+#pw-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;align-items:center;justify-content:center;}
+#pw-modal.open{display:flex;}
+.pw-box{background:var(--navy2);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:28px 28px 24px;width:320px;box-shadow:0 8px 40px rgba(0,0,0,.5);}
+.pw-title{font-size:16px;font-weight:800;letter-spacing:-.4px;margin-bottom:16px;color:#fff;}
+.pw-err{font-size:11px;color:#FF6B6B;margin-bottom:8px;min-height:14px;font-weight:500;}
+
+</style>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-brand">NOA &amp; ARK</div>
+    <div class="auth-title">거래처 관리 로그인</div>
+    <input id="auth-user" class="auth-field" type="text" placeholder="아이디" autocomplete="username"
+      onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    <input id="auth-pass" class="auth-field" type="password" placeholder="비밀번호" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="auth-btn" onclick="doLogin()">로그인</button>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-footer">권한 보유자만 접근 가능합니다</div>
+  </div>
+</div>
+<div id="pw-modal">
+  <div class="pw-box">
+    <div class="pw-title">비밀번호 변경</div>
+    <div class="pw-err" id="pw-err"></div>
+    <input id="pw-cur" class="auth-field" type="password" placeholder="현재 비밀번호" style="margin-bottom:8px">
+    <input id="pw-new" class="auth-field" type="password" placeholder="새 비밀번호 (8자 이상)" style="margin-bottom:8px">
+    <input id="pw-new2" class="auth-field" type="password" placeholder="새 비밀번호 확인" style="margin-bottom:14px">
+    <div style="display:flex;gap:8px">
+      <button class="auth-btn" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)" onclick="document.getElementById('pw-modal').classList.remove('open')">취소</button>
+      <button class="auth-btn" onclick="changePw()">변경하기</button>
+    </div>
+  </div>
+</div>
+<div class="cross-nav">
+  <a href="index.html">🏠 포털</a>
+  <a href="견적서.html">📄 견적서</a>
+  <a href="재고관리.html">📦 재고관리</a>
+  <a href="자금관리.html">💰 자금관리</a>
+  <a href="거래처관리.html" class="cn-active">🏪 거래처관리</a>
+  <a href="수익관리.html">📊 수익관리</a>
+  <a href="https://www.notion.so/35f9704e895e81c28e07f30f1219dfa3?pvs=1" target="_blank" rel="noopener">📋 할일</a>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="logo">NOAH<span>&</span>ARC</div>
+    <div class="logo-sub">재고영업 거래처 관리 시스템</div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><div class="hstat-n" id="h-total">0</div><div class="hstat-l">전체 거래처</div></div>
+    <div class="hstat"><div class="hstat-n" id="h-active">0</div><div class="hstat-l">활성 거래처</div></div>
+    <div class="hstat"><div class="hstat-n" id="h-promo">0</div><div class="hstat-l">프로모션 중</div></div>
+    <div class="hstat"><div class="hstat-n" id="h-pending">0</div><div class="hstat-l">영업 진행 중</div></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('sales')">📋 영업 거래처 DB</div>
+  <div class="tab" onclick="switchTab('entry')">🏪 입점 현황</div>
+  <div class="tab" onclick="switchTab('promo')">🎯 프로모션 현황</div>
+</div>
+
+<!-- ===================== TAB 1 ===================== -->
+<div id="tab-sales" class="tab-content active">
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="sq" placeholder="상호명, 주소, 담당자 검색..." oninput="fSales()">
+    </div>
+    <select class="fselect" id="fa" onchange="fSales()">
+      <option value="">전체 지역</option>
+      <option>홍대</option><option>연남동</option><option>합정</option>
+      <option>망원</option><option>상수</option><option>신촌</option><option>기타</option>
+    </select>
+    <select class="fselect" id="fst" onchange="fSales()">
+      <option value="">전체 상태</option>
+      <option>영업중</option><option>영업 예정</option><option>협의중</option>
+      <option>입점완료</option><option>미접촉</option><option>보류</option>
+    </select>
+    <select class="fselect" id="fc" onchange="fSales()">
+      <option value="">전체 업종</option>
+      <option>소품샵</option><option>편집샵</option><option>카페</option>
+      <option>서점</option><option>문구</option><option>기타</option>
+    </select>
+    <button class="btn btn-primary ml-auto" onclick="openAdd('sales')">+ 거래처 추가</button>
+    <button class="btn btn-green" onclick="doExport('sales')">↓ CSV</button>
+  </div>
+  <div class="content">
+    <div class="cards" id="sales-cards"></div>
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table><thead><tr>
+          <th>#</th><th>상호명</th><th>업종</th><th>지역</th><th>주소</th>
+          <th>매장 전화</th><th>담당자</th><th>연락처</th><th>SNS</th>
+          <th>영업 상태</th><th>우선순위</th><th>최근 접촉</th><th>메모</th><th>관리</th>
+        </tr></thead>
+        <tbody id="sales-tbody"></tbody></table>
+      </div>
+      <div class="pagination" id="sales-pg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB 2 ===================== -->
+<div id="tab-entry" class="tab-content">
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="eq" placeholder="거래처명, 상품 검색..." oninput="fEntry()">
+    </div>
+    <select class="fselect" id="eft" onchange="fEntry()">
+      <option value="">전체 입점 형태</option>
+      <option>위탁</option><option>직납</option><option>팝업</option><option>위탁+직납</option>
+    </select>
+    <select class="fselect" id="est" onchange="fEntry()">
+      <option value="">전체 상태</option>
+      <option>입점중</option><option>입점 예정</option><option>협의중</option><option>종료</option>
+    </select>
+    <button class="btn btn-primary ml-auto" onclick="openAdd('entry')">+ 입점 추가</button>
+    <button class="btn btn-green" onclick="doExport('entry')">↓ CSV</button>
+  </div>
+  <div class="content">
+    <div class="cards" id="entry-cards"></div>
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table><thead><tr>
+          <th>#</th><th>거래처명</th><th>지역</th><th>입점 형태</th><th>취급 상품</th>
+          <th>수수료율</th><th>입점일</th><th>만료일</th><th>담당자</th><th>연락처</th>
+          <th>입점 상태</th><th>월 매출</th><th>메모</th><th>관리</th>
+        </tr></thead>
+        <tbody id="entry-tbody"></tbody></table>
+      </div>
+      <div class="pagination" id="entry-pg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB 3 ===================== -->
+<div id="tab-promo" class="tab-content">
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="pq" placeholder="거래처명, 프로모션명 검색..." oninput="fPromo()">
+    </div>
+    <select class="fselect" id="pst" onchange="fPromo()">
+      <option value="">전체 상태</option>
+      <option>진행중</option><option>예정</option><option>완료</option><option>취소</option>
+    </select>
+    <select class="fselect" id="pt" onchange="fPromo()">
+      <option value="">전체 유형</option>
+      <option>할인 행사</option><option>팝업스토어</option><option>콜라보</option>
+      <option>시즌 기획</option><option>SNS 이벤트</option>
+    </select>
+    <button class="btn btn-primary ml-auto" onclick="openAdd('promo')">+ 프로모션 추가</button>
+    <button class="btn btn-green" onclick="doExport('promo')">↓ CSV</button>
+  </div>
+  <div class="content">
+    <div class="cards" id="promo-cards"></div>
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table><thead><tr>
+          <th>#</th><th>거래처명</th><th>프로모션명</th><th>유형</th><th>시작일</th>
+          <th>종료일</th><th>조건</th><th>참여 상품</th><th>담당자</th>
+          <th>예산</th><th>진행 상태</th><th>성과</th><th>관리</th>
+        </tr></thead>
+        <tbody id="promo-tbody"></tbody></table>
+      </div>
+      <div class="pagination" id="promo-pg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="modal-ov">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="modal-title">추가</h3><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="modal-bd"><div class="form-grid" id="modal-form"></div></div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveModal()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-overlay" id="dp-ov" onclick="closeDetail()"></div>
+<div class="detail-panel" id="dp">
+  <div class="dp-header">
+    <div class="dp-header-top">
+      <div>
+        <div class="dp-name" id="dp-name">-</div>
+        <div class="dp-category" id="dp-category">-</div>
+      </div>
+      <button class="dp-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="dp-status-row">
+      <select class="dp-status-select" id="dp-status-sel" onchange="dpChangeStatus()">
+        <option>미접촉</option><option>영업 예정</option><option>영업중</option>
+        <option>협의중</option><option>입점완료</option><option>보류</option>
+      </select>
+      <span id="dp-area-badge" style="background:rgba(255,255,255,.15);border-radius:6px;padding:4px 10px;font-size:12px;color:#fff;font-weight:700;"></span>
+      <span id="dp-priority-badge" style="font-size:12px;color:rgba(255,255,255,.7);"></span>
+    </div>
+  </div>
+  <div class="dp-body" id="dp-body"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== DATA =====================
+let salesData = [
+  {id:1,name:'버터핑거 판타스틱',category:'소품샵',area:'연남동',address:'서울 마포구 연남동 227-7',phone:'02-333-1234',contact:'이지은',contactPhone:'010-1234-5678',sns:'@butterfinger.f',status:'영업중',priority:'high',lastContact:'2024-11-15',memo:[{dt:'2024-11-15',type:'미팅',text:'입점 관심 있음. 위탁 조건 협의 필요. 담당자 이지은 씨 매우 적극적'},{dt:'2024-10-20',type:'전화',text:'초기 컨택. 굿즈 상품 라인 소개. 추후 미팅 요청'}]},
+  {id:2,name:'오브젝트',category:'편집샵',area:'홍대',address:'서울 마포구 서교동 394-31',phone:'02-322-2345',contact:'박민준',contactPhone:'010-2345-6789',sns:'@object.kr',status:'입점완료',priority:'high',lastContact:'2024-11-20',memo:[{dt:'2024-11-20',type:'미팅',text:'현재 위탁 입점 중. 재계약 11월 말 논의 예정. 매출 호조'},{dt:'2024-01-15',type:'계약',text:'위탁 입점 계약 체결. 수수료 30%. 키링, 엽서, 스티커팩 우선 입고'}]},
+  {id:3,name:'유어마인드',category:'서점',area:'홍대',address:'서울 마포구 동교동 198-23',phone:'02-333-3456',contact:'김수현',contactPhone:'010-3456-7890',sns:'@your_mind_',status:'영업중',priority:'high',lastContact:'2024-10-30',memo:[{dt:'2024-10-30',type:'미팅',text:'굿즈 특화 서점. 독립 아티스트 콜라보 제안 검토 중. 11월 내 답변 예정'},{dt:'2024-09-10',type:'방문',text:'매장 방문. 상품 라인업 설명. 좋은 반응'}]},
+  {id:4,name:'스탠다드에이',category:'편집샵',area:'연남동',address:'서울 마포구 연남동 241-15',phone:'02-334-4567',contact:'최예진',contactPhone:'010-4567-8901',sns:'@standard.a',status:'협의중',priority:'mid',lastContact:'2024-11-05',memo:[{dt:'2024-11-05',type:'이메일',text:'시즌 기획 상품 제안 완료. 가격 조율 중. 답변 대기'}]},
+  {id:5,name:'프롬에이',category:'소품샵',area:'합정',address:'서울 마포구 합정동 404-5',phone:'02-335-5678',contact:'이현우',contactPhone:'010-5678-9012',sns:'@from.a_kr',status:'미접촉',priority:'mid',lastContact:'',memo:[{dt:'2024-11-01',type:'메모',text:'SNS 팔로워 3만+. 굿즈 특화. 12월 중 접촉 예정'}]},
+  {id:6,name:'반스앤카페',category:'카페',area:'연남동',address:'서울 마포구 연남동 253-4',phone:'02-336-6789',contact:'정가은',contactPhone:'010-6789-0123',sns:'@vans_cafe',status:'보류',priority:'low',lastContact:'2024-09-15',memo:[{dt:'2024-09-15',type:'방문',text:'카페 내 소품 디스플레이 요청. 공간 협소로 보류. 리뉴얼 후 재검토'}]},
+  {id:7,name:'플리마켓 홍대',category:'기타',area:'홍대',address:'서울 마포구 와우산로 일대',phone:'',contact:'담당자 미상',contactPhone:'010-7890-1234',sns:'@fleamarket.hd',status:'영업 예정',priority:'mid',lastContact:'2024-11-01',memo:[{dt:'2024-11-01',type:'메모',text:'주말 팝업 부스 운영 가능 여부 문의. 12월 첫째 주 예정'}]},
+  {id:8,name:'모노컬렉션',category:'소품샵',area:'연남동',address:'서울 마포구 연남동 228-15',phone:'02-337-7890',contact:'김태현',contactPhone:'010-8901-2345',sns:'@monocollect',status:'영업중',priority:'high',lastContact:'2024-11-18',memo:[{dt:'2024-11-18',type:'미팅',text:'캐릭터 굿즈 라인 강한 관심 표명. 연내 입점 희망'},{dt:'2024-11-05',type:'전화',text:'초기 컨택 완료. 미팅 일정 조율'}]},
+  {id:9,name:'더메리골드',category:'소품샵',area:'망원',address:'서울 마포구 망원동 420-8',phone:'02-338-8901',contact:'박소연',contactPhone:'010-9012-3456',sns:'@themarigold',status:'미접촉',priority:'low',lastContact:'',memo:[]},
+  {id:10,name:'북바이북',category:'서점',area:'망원',address:'서울 마포구 망원동 472-3',phone:'02-339-9012',contact:'윤재호',contactPhone:'010-0123-4567',sns:'@bookbybook',status:'협의중',priority:'mid',lastContact:'2024-10-25',memo:[{dt:'2024-10-25',type:'미팅',text:'독립출판 굿즈 연계 관심. 소량 위탁 가능성 논의 중'}]},
+  {id:11,name:'이스트인디고',category:'편집샵',area:'상수',address:'서울 마포구 상수동 318-5',phone:'02-340-0123',contact:'한지민',contactPhone:'010-1111-2222',sns:'@eastindigo',status:'입점완료',priority:'high',lastContact:'2024-11-22',memo:[{dt:'2024-11-22',type:'전화',text:'재주문 요청. 에코백 20개, 파우치 15개. 다음 주 납품'},{dt:'2024-03-20',type:'계약',text:'직납 입점 계약. 수수료 20%. 에코백, 파우치 우선'}]},
+  {id:12,name:'오아시스 스토어',category:'소품샵',area:'홍대',address:'서울 마포구 서교동 355-2',phone:'02-341-1234',contact:'조민혁',contactPhone:'010-2222-3333',sns:'@oasis.store',status:'영업중',priority:'mid',lastContact:'2024-11-10',memo:[{dt:'2024-11-10',type:'방문',text:'여름 시즌 기획 관심. 상품 라인업 카탈로그 전달'}]},
+  {id:13,name:'카모마일',category:'카페',area:'연남동',address:'서울 마포구 연남동 230-9',phone:'02-342-2345',contact:'이서윤',contactPhone:'010-3333-4444',sns:'@camomile.cafe',status:'미접촉',priority:'low',lastContact:'',memo:[]},
+  {id:14,name:'더그레이스',category:'편집샵',area:'신촌',address:'서울 서대문구 신촌동 134-5',phone:'02-343-3456',contact:'강도현',contactPhone:'010-4444-5555',sns:'@thegrace.shop',status:'보류',priority:'low',lastContact:'2024-08-20',memo:[{dt:'2024-08-20',type:'미팅',text:'수익 구조 맞지 않음. 수수료율 과다 요구. 재검토 필요'}]},
+  {id:15,name:'포레스트 라이프',category:'소품샵',area:'합정',address:'서울 마포구 합정동 407-12',phone:'02-344-4567',contact:'유민지',contactPhone:'010-5555-6666',sns:'@forest.life',status:'영업 예정',priority:'mid',lastContact:'2024-11-08',memo:[{dt:'2024-11-08',type:'방문',text:'자연 테마 소품 전문. 우리 상품 라인과 잘 매칭됨. 1월 입점 목표'}]},
+];
+
+let entryData = [
+  {id:1,name:'오브젝트',area:'홍대',type:'위탁',products:'캐릭터 키링, 엽서, 스티커팩',commission:'30%',entryDate:'2024-01-15',expireDate:'2025-01-14',contact:'박민준',contactPhone:'010-2345-6789',status:'입점중',revenue:'120만원',memo:[{dt:'2024-11-20',type:'정산',text:'11월 정산 완료. 키링 판매 호조'},{dt:'2024-01-15',type:'계약',text:'위탁 입점 계약 체결'}]},
+  {id:2,name:'이스트인디고',area:'상수',type:'직납',products:'캐릭터 에코백, 파우치',commission:'20%',entryDate:'2024-03-20',expireDate:'2025-03-19',contact:'한지민',contactPhone:'010-1111-2222',status:'입점중',revenue:'85만원',memo:[{dt:'2024-11-22',type:'발주',text:'재주문 접수. 에코백 20, 파우치 15개'}]},
+  {id:3,name:'유어마인드',area:'홍대',type:'위탁+직납',products:'아트북, 굿즈 세트',commission:'25%',entryDate:'2024-06-01',expireDate:'2025-05-31',contact:'김수현',contactPhone:'010-3456-7890',status:'입점중',revenue:'60만원',memo:[{dt:'2024-10-30',type:'미팅',text:'콜라보 한정 에디션 논의'}]},
+  {id:4,name:'버터핑거 판타스틱',area:'연남동',type:'위탁',products:'엽서, 스티커, 마스킹테이프',commission:'35%',entryDate:'2025-01-01',expireDate:'2025-06-30',contact:'이지은',contactPhone:'010-1234-5678',status:'입점 예정',revenue:'-',memo:[{dt:'2024-11-15',type:'계약',text:'계약서 검토 중. 1월 1일 입점 예정'}]},
+  {id:5,name:'스탠다드에이',area:'연남동',type:'직납',products:'캐릭터 인형, 피규어',commission:'22%',entryDate:'2024-09-10',expireDate:'2025-09-09',contact:'최예진',contactPhone:'010-4567-8901',status:'협의중',revenue:'협의중',memo:[{dt:'2024-11-05',type:'이메일',text:'가격 협상 중. 최소 발주 수량 조율'}]},
+  {id:6,name:'모노컬렉션',area:'연남동',type:'위탁',products:'캐릭터 굿즈 전 라인',commission:'30%',entryDate:'2024-10-05',expireDate:'2025-04-04',contact:'김태현',contactPhone:'010-8901-2345',status:'입점중',revenue:'45만원',memo:[{dt:'2024-11-18',type:'방문',text:'신규 상품 추가 입고 요청'}]},
+  {id:7,name:'북바이북',area:'망원',type:'팝업',products:'독립 굿즈, 아트북',commission:'15%',entryDate:'2024-11-01',expireDate:'2024-11-30',contact:'윤재호',contactPhone:'010-0123-4567',status:'종료',revenue:'28만원',memo:[{dt:'2024-11-30',type:'정산',text:'팝업 종료. 매출 28만원. 정식 입점 논의 예정'},{dt:'2024-11-01',type:'계약',text:'1개월 팝업 계약'}]},
+];
+
+let promoData = [
+  {id:1,name:'오브젝트',promoName:'2024 연말 기프트 특가',type:'할인 행사',startDate:'2024-12-01',endDate:'2024-12-31',condition:'전 상품 15% 할인',products:'전 라인',contact:'박민준',budget:'50만원',status:'진행중',result:'목표 대비 120% 달성 예상'},
+  {id:2,name:'이스트인디고',promoName:'겨울 신상 팝업',type:'팝업스토어',startDate:'2024-12-15',endDate:'2024-12-22',condition:'신규 입고 상품 우선 전시',products:'캐릭터 에코백 신상 3종',contact:'한지민',budget:'30만원',status:'예정',result:''},
+  {id:3,name:'유어마인드',promoName:'독립 아티스트 콜라보',type:'콜라보',startDate:'2024-11-01',endDate:'2024-11-30',condition:'한정 에디션 50개',products:'아트북 콜라보 굿즈',contact:'김수현',budget:'80만원',status:'완료',result:'완판. SNS 노출 3.2만 도달'},
+  {id:4,name:'모노컬렉션',promoName:'크리스마스 굿즈 기획전',type:'시즌 기획',startDate:'2024-12-20',endDate:'2024-12-26',condition:'크리스마스 기간 한정',products:'캐릭터 오너먼트, 선물세트',contact:'김태현',budget:'40만원',status:'예정',result:''},
+  {id:5,name:'버터핑거 판타스틱',promoName:'오픈 기념 SNS 이벤트',type:'SNS 이벤트',startDate:'2025-01-10',endDate:'2025-01-20',condition:'인스타 팔로우+공유',products:'스티커팩 증정',contact:'이지은',budget:'15만원',status:'예정',result:''},
+  {id:6,name:'오아시스 스토어',promoName:'봄 시즌 신상 기획',type:'시즌 기획',startDate:'2025-03-01',endDate:'2025-03-31',condition:'봄 기획 상품 전시',products:'봄 테마 굿즈 5종',contact:'조민혁',budget:'35만원',status:'예정',result:''},
+];
+
+// ===================== PAGINATION & FILTER =====================
+const PS = 10;
+let pg = {sales:1,entry:1,promo:1};
+let filt = {sales:[...salesData],entry:[...entryData],promo:[...promoData]};
+
+function fSales(){
+  const q=document.getElementById('sq').value.toLowerCase(),a=document.getElementById('fa').value,s=document.getElementById('fst').value,c=document.getElementById('fc').value;
+  filt.sales=salesData.filter(r=>(!q||(r.name+r.address+r.contact).toLowerCase().includes(q))&&(!a||r.area===a)&&(!s||r.status===s)&&(!c||r.category===c));
+  pg.sales=1; renderSales();
+}
+function fEntry(){
+  const q=document.getElementById('eq').value.toLowerCase(),t=document.getElementById('eft').value,s=document.getElementById('est').value;
+  filt.entry=entryData.filter(r=>(!q||(r.name+r.products).toLowerCase().includes(q))&&(!t||r.type===t)&&(!s||r.status===s));
+  pg.entry=1; renderEntry();
+}
+function fPromo(){
+  const q=document.getElementById('pq').value.toLowerCase(),s=document.getElementById('pst').value,t=document.getElementById('pt').value;
+  filt.promo=promoData.filter(r=>(!q||(r.name+r.promoName).toLowerCase().includes(q))&&(!s||r.status===s)&&(!t||r.type===t));
+  pg.promo=1; renderPromo();
+}
+
+// ===================== BADGE HELPERS =====================
+const statusClass = {
+  '영업중':'b-active','입점완료':'b-done','입점중':'b-done','진행중':'b-active','완료':'b-done',
+  '협의중':'b-pending','영업 예정':'b-plan','입점 예정':'b-plan','예정':'b-plan',
+  '미접촉':'b-none','보류':'b-hold','종료':'b-inactive','취소':'b-inactive',
+  '위탁':'b-consign','직납':'b-direct','팝업':'b-popup','위탁+직납':'b-consign',
+  '할인 행사':'b-pending','팝업스토어':'b-popup','콜라보':'b-active','시즌 기획':'b-plan','SNS 이벤트':'b-new'
+};
+function badge(s){return `<span class="badge ${statusClass[s]||'b-none'}">${s}</span>`;}
+function priorityStr(p){return p==='high'?'<span class="dot dot-h"></span>높음':p==='mid'?'<span class="dot dot-m"></span>보통':'<span class="dot dot-l"></span>낮음';}
+function memoPreview(memo){if(!memo||!memo.length)return '<span style="color:#ccc">-</span>';return `<span style="font-size:11px;color:#888">${memo[0].text.slice(0,25)}${memo[0].text.length>25?'…':''}</span>`;}
+
+// ===================== INLINE STATUS DROPDOWN =====================
+function statusDropdownHtml(id, type, currentStatus) {
+  const opts = type==='sales'
+    ? ['미접촉','영업 예정','영업중','협의중','입점완료','보류']
+    : type==='entry'
+    ? ['협의중','입점 예정','입점중','종료']
+    : ['예정','진행중','완료','취소'];
+  return `<div class="status-wrap" id="sw-${type}-${id}">
+    <span class="badge ${statusClass[currentStatus]||'b-none'} status-badge-btn" onclick="toggleStat(event,'${type}',${id})">${currentStatus}</span>
+    <div class="status-dropdown" id="sd-${type}-${id}">
+      ${opts.map(o=>`<div class="status-option" onclick="setStat('${type}',${id},'${o}')">${o}</div>`).join('')}
+    </div>
+  </div>`;
+}
+function toggleStat(e,type,id){e.stopPropagation();const el=document.getElementById(`sd-${type}-${id}`);const wasOpen=el.classList.contains('open');closeAllDropdowns();if(!wasOpen)el.classList.add('open');}
+function setStat(type,id,val){
+  const ds={sales:salesData,entry:entryData,promo:promoData};
+  const r=ds[type].find(x=>x.id===id); if(r){r.status=val;}
+  closeAllDropdowns();saveClientData();
+  if(type==='sales'){filt.sales=[...salesData];renderSales();}
+  else if(type==='entry'){filt.entry=[...entryData];renderEntry();}
+  else{filt.promo=[...promoData];renderPromo();}
+  showToast(`✅ 상태 변경: ${val}`);
+}
+function closeAllDropdowns(){document.querySelectorAll('.status-dropdown').forEach(el=>el.classList.remove('open'));}
+document.addEventListener('click', closeAllDropdowns);
+
+// ===================== RENDER: SALES =====================
+function renderSalesCards(){
+  const total=salesData.length,active=salesData.filter(r=>r.status==='영업중'||r.status==='입점완료').length;
+  const pend=salesData.filter(r=>r.status==='협의중'||r.status==='영업 예정').length,none=salesData.filter(r=>r.status==='미접촉').length;
+  document.getElementById('sales-cards').innerHTML=`
+    <div class="card card-navy"><div class="card-title">전체 거래처</div><div class="card-value">${total}</div><div class="card-sub">홍대·연남동 일대</div></div>
+    <div class="card card-green"><div class="card-title">활성 (영업중/입점)</div><div class="card-value">${active}</div><div class="card-sub">전체의 ${Math.round(active/total*100)}%</div></div>
+    <div class="card card-blue"><div class="card-title">진행·예정</div><div class="card-value">${pend}</div><div class="card-sub">협의중 + 영업 예정</div></div>
+    <div class="card card-orange"><div class="card-title">미접촉</div><div class="card-value">${none}</div><div class="card-sub">신규 영업 대상</div></div>`;
+  document.getElementById('h-total').textContent=total;
+  document.getElementById('h-active').textContent=active;
+  document.getElementById('h-pending').textContent=pend;
+}
+function renderSales(){
+  renderSalesCards();
+  const tbody=document.getElementById('sales-tbody');
+  const start=(pg.sales-1)*PS;
+  const rows=filt.sales.slice(start,start+PS);
+  tbody.innerHTML=rows.map((r,i)=>`<tr>
+    <td>${start+i+1}</td>
+    <td><span class="clickable-name" onclick="openDetail('sales',${r.id})">${r.name}</span></td>
+    <td>${badge(r.category)}</td>
+    <td>${r.area}</td>
+    <td style="font-size:12px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.address}</td>
+    <td style="font-size:12px">${r.phone||'-'}</td>
+    <td>${r.contact}</td>
+    <td style="font-size:12px">${r.contactPhone}</td>
+    <td style="font-size:12px;color:var(--blue)">${r.sns||'-'}</td>
+    <td>${statusDropdownHtml(r.id,'sales',r.status)}</td>
+    <td>${priorityStr(r.priority)}</td>
+    <td style="font-size:12px">${r.lastContact||'-'}</td>
+    <td>${memoPreview(r.memo)}</td>
+    <td><div class="act-btns">
+      <button class="btn-sm btn-detail-sm" onclick="openDetail('sales',${r.id})">상세</button>
+      <button class="btn-sm btn-edit-sm" onclick="openEdit('sales',${r.id})">수정</button>
+      <button class="btn-sm btn-del-sm" onclick="delRow('sales',${r.id})">삭제</button>
+    </div></td>
+  </tr>`).join('');
+  renderPg('sales',filt.sales.length);
+}
+
+// ===================== RENDER: ENTRY =====================
+function renderEntryCards(){
+  const total=entryData.length;
+  const active=entryData.filter(r=>r.status==='입점중').length;
+  const pend=entryData.filter(r=>r.status==='입점 예정'||r.status==='협의중').length;
+  const ended=entryData.filter(r=>r.status==='종료').length;
+  document.getElementById('entry-cards').innerHTML=`
+    <div class="card card-green"><div class="card-title">입점 중</div><div class="card-value">${active}</div><div class="card-sub">현재 활성 거래처</div></div>
+    <div class="card card-blue"><div class="card-title">입점 예정/협의중</div><div class="card-value">${pend}</div><div class="card-sub">진행 중인 입점 건</div></div>
+    <div class="card card-orange"><div class="card-title">종료</div><div class="card-value">${ended}</div><div class="card-sub">계약 종료 거래처</div></div>
+    <div class="card card-navy"><div class="card-title">전체 입점 건수</div><div class="card-value">${total}</div><div class="card-sub">누적</div></div>`;
+  document.getElementById('h-promo').textContent=promoData.filter(r=>r.status==='진행중').length;
+}
+function renderEntry(){
+  renderEntryCards();
+  const tbody=document.getElementById('entry-tbody');
+  const start=(pg.entry-1)*PS;
+  const rows=filt.entry.slice(start,start+PS);
+  tbody.innerHTML=rows.map((r,i)=>`<tr>
+    <td>${start+i+1}</td>
+    <td><span class="clickable-name" onclick="openDetail('entry',${r.id})">${r.name}</span></td>
+    <td>${r.area}</td>
+    <td>${badge(r.type)}</td>
+    <td style="font-size:12px">${r.products}</td>
+    <td style="font-weight:800;color:var(--red)">${r.commission}</td>
+    <td style="font-size:12px">${r.entryDate}</td>
+    <td style="font-size:12px">${r.expireDate}</td>
+    <td>${r.contact}</td>
+    <td style="font-size:12px">${r.contactPhone}</td>
+    <td>${statusDropdownHtml(r.id,'entry',r.status)}</td>
+    <td style="font-weight:800;color:var(--green)">${r.revenue}</td>
+    <td>${memoPreview(r.memo)}</td>
+    <td><div class="act-btns">
+      <button class="btn-sm btn-detail-sm" onclick="openDetail('entry',${r.id})">상세</button>
+      <button class="btn-sm btn-edit-sm" onclick="openEdit('entry',${r.id})">수정</button>
+      <button class="btn-sm btn-del-sm" onclick="delRow('entry',${r.id})">삭제</button>
+    </div></td>
+  </tr>`).join('');
+  renderPg('entry',filt.entry.length);
+}
+
+// ===================== RENDER: PROMO =====================
+function renderPromoCards(){
+  const total=promoData.length;
+  const ongoing=promoData.filter(r=>r.status==='진행중').length;
+  const planned=promoData.filter(r=>r.status==='예정').length;
+  const done=promoData.filter(r=>r.status==='완료').length;
+  document.getElementById('promo-cards').innerHTML=`
+    <div class="card card-red"><div class="card-title">진행중</div><div class="card-value">${ongoing}</div><div class="card-sub">현재 진행 중인 프로모션</div></div>
+    <div class="card card-blue"><div class="card-title">예정</div><div class="card-value">${planned}</div><div class="card-sub">향후 예정 프로모션</div></div>
+    <div class="card card-green"><div class="card-title">완료</div><div class="card-value">${done}</div><div class="card-sub">완료된 프로모션</div></div>
+    <div class="card card-purple"><div class="card-title">총 프로모션</div><div class="card-value">${total}</div><div class="card-sub">전체 건수</div></div>`;
+}
+function renderPromo(){
+  renderPromoCards();
+  const tbody=document.getElementById('promo-tbody');
+  const start=(pg.promo-1)*PS;
+  const rows=filt.promo.slice(start,start+PS);
+  tbody.innerHTML=rows.map((r,i)=>`<tr>
+    <td>${start+i+1}</td>
+    <td><span class="clickable-name" onclick="openDetail('promo',${r.id})">${r.name}</span></td>
+    <td><strong>${r.promoName}</strong></td>
+    <td>${badge(r.type)}</td>
+    <td style="font-size:12px">${r.startDate}</td>
+    <td style="font-size:12px">${r.endDate}</td>
+    <td style="font-size:12px">${r.condition}</td>
+    <td style="font-size:12px">${r.products}</td>
+    <td>${r.contact}</td>
+    <td style="font-weight:800">${r.budget}</td>
+    <td>${statusDropdownHtml(r.id,'promo',r.status)}</td>
+    <td style="font-size:12px;color:var(--green);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.result||'-'}</td>
+    <td><div class="act-btns">
+      <button class="btn-sm btn-detail-sm" onclick="openDetail('promo',${r.id})">상세</button>
+      <button class="btn-sm btn-edit-sm" onclick="openEdit('promo',${r.id})">수정</button>
+      <button class="btn-sm btn-del-sm" onclick="delRow('promo',${r.id})">삭제</button>
+    </div></td>
+  </tr>`).join('');
+  renderPg('promo',filt.promo.length);
+}
+
+// ===================== PAGINATION =====================
+function renderPg(type,total){
+  const totalP=Math.ceil(total/PS)||1, cur=pg[type];
+  let html=`<div class="page-info">총 ${total}건 &nbsp;/&nbsp; ${cur}/${totalP} 페이지</div><div class="page-btns">`;
+  html+=`<button class="page-btn" onclick="goPg('${type}',${cur-1})" ${cur===1?'disabled':''}>◀</button>`;
+  for(let p=Math.max(1,cur-2);p<=Math.min(totalP,cur+2);p++) html+=`<button class="page-btn ${p===cur?'cur':''}" onclick="goPg('${type}',${p})">${p}</button>`;
+  html+=`<button class="page-btn" onclick="goPg('${type}',${cur+1})" ${cur===totalP?'disabled':''}>▶</button></div>`;
+  document.getElementById(type+'-pg').innerHTML=html;
+}
+function goPg(type,p){const max=Math.ceil(filt[type].length/PS)||1;if(p<1||p>max)return;pg[type]=p;if(type==='sales')renderSales();else if(type==='entry')renderEntry();else renderPromo();}
+
+// ===================== TABS =====================
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['sales','entry','promo'][i]===t));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+}
+
+// ===================== ADD/EDIT MODAL =====================
+const FIELDS = {
+  sales:[
+    ['name','상호명','text',true],['category','업종','sel-cat',false],
+    ['area','지역','sel-area',false],['address','주소','text',false],
+    ['phone','매장 전화','text',false],['contact','담당자명','text',false],
+    ['contactPhone','담당자 연락처','text',false],['sns','SNS/인스타','text',false],
+    ['status','영업 상태','sel-sstatus',false],['priority','우선순위','sel-pri',false],
+    ['lastContact','최근 접촉일','date',false],
+  ],
+  entry:[
+    ['name','거래처명','text',true],['area','지역','sel-area',false],
+    ['type','입점 형태','sel-etype',false],['products','취급 상품','text',false],
+    ['commission','수수료율','text',false],['entryDate','입점일','date',false],
+    ['expireDate','계약 만료일','date',false],['contact','담당자','text',false],
+    ['contactPhone','담당자 연락처','text',false],['status','입점 상태','sel-estatus',false],
+    ['revenue','월 매출(추정)','text',false],
+  ],
+  promo:[
+    ['name','거래처명','text',true],['promoName','프로모션명','text',false],
+    ['type','유형','sel-ptype',false],['startDate','시작일','date',false],
+    ['endDate','종료일','date',false],['condition','할인율/조건','text',false],
+    ['products','참여 상품','text',false],['contact','담당자','text',false],
+    ['budget','예산','text',false],['status','진행 상태','sel-pstatus',false],
+    ['result','성과/비고','textarea',false],
+  ]
+};
+const SEL_OPTS = {
+  'sel-cat':['소품샵','편집샵','카페','서점','문구','기타'],
+  'sel-area':['홍대','연남동','합정','망원','상수','신촌','기타'],
+  'sel-sstatus':['미접촉','영업 예정','영업중','협의중','입점완료','보류'],
+  'sel-pri':['high','mid','low'],
+  'sel-etype':['위탁','직납','팝업','위탁+직납'],
+  'sel-estatus':['협의중','입점 예정','입점중','종료'],
+  'sel-ptype':['할인 행사','팝업스토어','콜라보','시즌 기획','SNS 이벤트'],
+  'sel-pstatus':['예정','진행중','완료','취소'],
+};
+const PRI_LABEL = {high:'높음',mid:'보통',low:'낮음'};
+
+let mMode='',mType='',mEditId=null;
+function openAdd(type){mMode='add';mType=type;mEditId=null;buildModal(type,null);document.getElementById('modal-title').textContent={sales:'거래처 추가',entry:'입점 추가',promo:'프로모션 추가'}[type];document.getElementById('modal-ov').classList.add('open');}
+function openEdit(type,id){
+  const ds={sales:salesData,entry:entryData,promo:promoData};
+  const r=ds[type].find(x=>x.id===id);if(!r)return;
+  mMode='edit';mType=type;mEditId=id;buildModal(type,r);
+  document.getElementById('modal-title').textContent={sales:'거래처 수정',entry:'입점 수정',promo:'프로모션 수정'}[type];
+  document.getElementById('modal-ov').classList.add('open');
+}
+function buildModal(type,data){
+  const fds=FIELDS[type];
+  let html='<div class="form-grid">';
+  fds.forEach(([key,label,inputType,req])=>{
+    const val=data?(data[key]||''):'';
+    const isTA=inputType==='textarea';
+    const isSel=inputType.startsWith('sel-');
+    html+=`<div class="fg${isTA?' full':''}"><label>${label}${req?' *':''}</label>`;
+    if(isTA) html+=`<textarea id="mf_${key}" rows="3">${val}</textarea>`;
+    else if(isSel){
+      const opts=SEL_OPTS[inputType]||[];
+      html+=`<select id="mf_${key}"><option value="">선택...</option>${opts.map(o=>`<option value="${o}" ${val===o?'selected':''}>${PRI_LABEL[o]||o}</option>`).join('')}</select>`;
+    } else html+=`<input type="${inputType==='date'?'date':'text'}" id="mf_${key}" value="${val}" placeholder="${label}">`;
+    html+='</div>';
+  });
+  html+='</div>';
+  document.getElementById('modal-form').innerHTML=html;
+}
+function saveModal(){
+  const fds=FIELDS[mType];
+  const nameEl=document.getElementById('mf_name');
+  if(!nameEl||!nameEl.value.trim()){showToast('⚠️ 이름을 입력해주세요.');return;}
+  const obj={};
+  fds.forEach(([key])=>{const el=document.getElementById('mf_'+key);if(el)obj[key]=el.value;});
+  const ds={sales:salesData,entry:entryData,promo:promoData};
+  if(mMode==='add'){obj.id=Math.max(0,...ds[mType].map(r=>r.id))+1;obj.memo=[];ds[mType].push(obj);}
+  else{const idx=ds[mType].findIndex(r=>r.id===mEditId);if(idx>=0){const old=ds[mType][idx];obj.id=mEditId;obj.memo=old.memo||[];ds[mType][idx]=obj;}}
+  filt[mType]=[...ds[mType]];saveClientData();closeModal();
+  if(mType==='sales')renderSales();else if(mType==='entry')renderEntry();else renderPromo();
+  showToast('✅ 저장 완료');
+}
+function closeModal(){document.getElementById('modal-ov').classList.remove('open');}
+document.getElementById('modal-ov').addEventListener('click',e=>{if(e.target===document.getElementById('modal-ov'))closeModal();});
+
+// ===================== DELETE =====================
+function delRow(type,id){
+  if(!confirm('삭제하시겠습니까?'))return;
+  const ds={sales:salesData,entry:entryData,promo:promoData};
+  const arr=ds[type].filter(r=>r.id!==id);
+  if(type==='sales'){salesData.length=0;salesData.push(...arr);filt.sales=[...salesData];renderSales();}
+  else if(type==='entry'){entryData.length=0;entryData.push(...arr);filt.entry=[...entryData];renderEntry();}
+  else{promoData.length=0;promoData.push(...arr);filt.promo=[...promoData];renderPromo();}
+  saveClientData();showToast('🗑️ 삭제 완료');
+}
+
+// ===================== DETAIL PANEL =====================
+let dpType='', dpId=0;
+function openDetail(type, id){
+  dpType=type; dpId=id;
+  const ds={sales:salesData,entry:entryData,promo:promoData};
+  const r=ds[type].find(x=>x.id===id); if(!r)return;
+  document.getElementById('dp-name').textContent=r.name;
+  document.getElementById('dp-category').textContent=r.category||r.type||'';
+  document.getElementById('dp-area-badge').textContent=r.area||'';
+  document.getElementById('dp-priority-badge').textContent=r.priority?`우선순위: ${PRI_LABEL[r.priority]||r.priority}`:'';
+  const sel=document.getElementById('dp-status-sel');
+  const opts=type==='sales'?['미접촉','영업 예정','영업중','협의중','입점완료','보류']:type==='entry'?['협의중','입점 예정','입점중','종료']:['예정','진행중','완료','취소'];
+  sel.innerHTML=opts.map(o=>`<option ${r.status===o?'selected':''}>${o}</option>`).join('');
+
+  document.getElementById('dp-body').innerHTML=buildDetailBody(type,r);
+  document.getElementById('dp-ov').classList.add('open');
+  document.getElementById('dp').classList.add('open');
+}
+function closeDetail(){document.getElementById('dp-ov').classList.remove('open');document.getElementById('dp').classList.remove('open');}
+
+function buildDetailBody(type,r){
+  let html='';
+  // 기본 정보
+  const fields = type==='sales' ? [
+    ['name','상호명'],['category','업종'],['area','지역'],['address','주소','full'],
+    ['phone','매장 전화'],['contact','담당자명'],['contactPhone','담당자 연락처'],
+    ['sns','SNS/인스타'],['status','영업 상태'],['priority','우선순위'],['lastContact','최근 접촉일'],
+  ] : type==='entry' ? [
+    ['name','거래처명'],['area','지역'],['type','입점 형태'],['products','취급 상품','full'],
+    ['commission','수수료율'],['entryDate','입점일'],['expireDate','계약 만료일'],
+    ['contact','담당자'],['contactPhone','담당자 연락처'],['status','입점 상태'],['revenue','월 매출'],
+  ] : [
+    ['name','거래처명'],['promoName','프로모션명','full'],['type','유형'],
+    ['startDate','시작일'],['endDate','종료일'],['condition','할인율/조건','full'],
+    ['products','참여 상품','full'],['contact','담당자'],['budget','예산'],['status','진행 상태'],
+    ['result','성과/비고','full'],
+  ];
+
+  html+=`<div class="dp-section"><div class="dp-section-title">기본 정보 <span style="font-size:10px;font-weight:500;color:#aaa;text-transform:none;letter-spacing:0;">(클릭하여 수정)</span></div>`;
+  html+=`<div class="dp-fields">`;
+  fields.forEach(([key,label,span])=>{
+    const val=key==='priority'?(PRI_LABEL[r[key]]||r[key]||'-'):(r[key]||'-');
+    html+=`<div class="dp-field${span==='full'?' full':''}">
+      <div class="dp-field-label">${label}</div>
+      <div class="dp-field-val" id="dpf-${key}" onclick="dpStartEdit('${key}','${label}')">
+        <span id="dpfv-${key}">${val}</span>
+      </div>
+      <div class="dp-edit-hint" id="dpfh-${key}"></div>
+    </div>`;
+  });
+  html+=`</div></div>`;
+
+  // 메모/히스토리
+  html+=buildMemoSection(r);
+  return html;
+}
+
+function dpStartEdit(key, label){
+  const ds={sales:salesData,entry:entryData,promo:promoData};
+  const r=ds[dpType].find(x=>x.id===dpId); if(!r)return;
+  const el=document.getElementById(`dpf-${key}`);
+  const valEl=document.getElementById(`dpfv-${key}`);
+  const hintEl=document.getElementById(`dpfh-${key}`);
+  if(!el||el.classList.contains('editing'))return;
+
+  const selectFields = {
+    category:['소품샵','편집샵','카페','서점','문구','기타'],
+    area:['홍대','연남동','합정','망원','상수','신촌','기타'],
+    status: dpType==='sales'?['미접촉','영업 예정','영업중','협의중','입점완료','보류']:dpType==='entry'?['협의중','입점 예정','입점중','종료']:['예정','진행중','완료','취소'],
+    priority:['high','mid','low'],
+    type: dpType==='entry'?['위탁','직납','팝업','위탁+직납']:['할인 행사','팝업스토어','콜라보','시즌 기획','SNS 이벤트'],
+  };
+
+  const curVal = key==='priority'?r[key]:(r[key]||'');
+  el.classList.add('editing');
+
+  if(selectFields[key]){
+    el.innerHTML=`<select class="dp-field-select" id="dpe-${key}" onchange="dpSaveEdit('${key}')" onblur="dpSaveEdit('${key}')">
+      ${selectFields[key].map(o=>`<option value="${o}" ${curVal===o?'selected':''}>${PRI_LABEL[o]||o}</option>`).join('')}
+    </select>`;
+  } else {
+    el.innerHTML=`<input class="dp-field-input" id="dpe-${key}" value="${curVal}" onblur="dpSaveEdit('${key}')" onkeydown="if(event.key==='Enter')dpSaveEdit('${key}')">`;
+  }
+  const inp=document.getElementById(`dpe-${key}`);
+  if(inp){inp.focus();if(inp.select)inp.select();}
+  if(hintEl) hintEl.textContent='Enter 또는 바깥 클릭으로 저장';
+}
+
+function dpSaveEdit(key){
+  const ds={sales:salesData,entry:entryData,promo:promoData};
+  const r=ds[dpType].find(x=>x.id===dpId); if(!r)return;
+  const inp=document.getElementById(`dpe-${key}`); if(!inp)return;
+  const newVal=inp.value.trim();
+  r[key]=newVal;
+
+  const el=document.getElementById(`dpf-${key}`);
+  const hintEl=document.getElementById(`dpfh-${key}`);
+  el.classList.remove('editing');
+  const displayVal=key==='priority'?(PRI_LABEL[newVal]||newVal||'-'):(newVal||'-');
+  el.innerHTML=`<span id="dpfv-${key}">${displayVal}</span>`;
+  el.onclick=()=>dpStartEdit(key,key);
+  if(hintEl)hintEl.textContent='';
+
+  // Sync status select in header if status changed
+  if(key==='status'){
+    const sel=document.getElementById('dp-status-sel');
+    if(sel) sel.value=newVal;
+  }
+  if(key==='name') document.getElementById('dp-name').textContent=newVal;
+
+  filt[dpType]=[...ds[dpType]];
+  if(dpType==='sales')renderSales();else if(dpType==='entry')renderEntry();else renderPromo();
+  saveClientData();showToast('✅ 수정 완료');
+}
+
+function dpChangeStatus(){
+  const sel=document.getElementById('dp-status-sel');
+  const ds={sales:salesData,entry:entryData,promo:promoData};
+  const r=ds[dpType].find(x=>x.id===dpId); if(!r)return;
+  r.status=sel.value;
+  filt[dpType]=[...ds[dpType]];
+  if(dpType==='sales')renderSales();else if(dpType==='entry')renderEntry();else renderPromo();
+  saveClientData();showToast(`✅ 상태 변경: ${sel.value}`);
+}
+
+// ===================== MEMO HISTORY =====================
+function buildMemoSection(r){
+  const memos=(r.memo||[]).slice().reverse();
+  let html=`<div class="dp-section"><div class="dp-section-title">영업 히스토리 / 메모</div>`;
+  if(memos.length){
+    html+=`<div class="memo-list">`;
+    memos.forEach((m,i)=>{
+      html+=`<div class="memo-item">
+        <div class="memo-dot-col"><div class="memo-dot2"></div>${i<memos.length-1?'<div class="memo-line"></div>':''}</div>
+        <div class="memo-content">
+          <div class="memo-meta">${m.dt} &nbsp;·&nbsp; <span class="badge ${statusClass[m.type]||'b-none'}" style="font-size:10px;padding:2px 8px">${m.type}</span></div>
+          <div class="memo-text">${m.text}</div>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  } else {
+    html+=`<div style="color:#ccc;font-size:13px;padding:10px 0">아직 기록된 히스토리가 없습니다.</div>`;
+  }
+  html+=`<div class="memo-add-area">
+    <textarea class="memo-add-input" id="memo-input" placeholder="새 메모/히스토리 내용 입력..."></textarea>
+    <div class="memo-add-row">
+      <select class="memo-type-select" id="memo-type">
+        <option>메모</option><option>전화</option><option>방문</option><option>미팅</option>
+        <option>이메일</option><option>계약</option><option>발주</option><option>정산</option>
+      </select>
+      <button class="btn btn-primary" onclick="addMemo()" style="padding:7px 18px">+ 메모 추가</button>
+    </div>
+  </div></div>`;
+  return html;
+}
+
+function addMemo(){
+  const text=document.getElementById('memo-input')?.value.trim();
+  if(!text){showToast('⚠️ 메모 내용을 입력해주세요.');return;}
+  const type=document.getElementById('memo-type')?.value||'메모';
+  const ds={sales:salesData,entry:entryData,promo:promoData};
+  const r=ds[dpType].find(x=>x.id===dpId); if(!r)return;
+  if(!r.memo)r.memo=[];
+  const today=new Date().toISOString().slice(0,10);
+  r.memo.push({dt:today,type,text});
+  // Re-render memo section
+  const body=document.getElementById('dp-body');
+  body.innerHTML=buildDetailBody(dpType,r);
+  saveClientData();showToast('📝 메모 추가 완료');
+}
+
+// ===================== EXPORT =====================
+function doExport(type){
+  const ds={sales:salesData,entry:entryData,promo:promoData};
+  const hdrs={sales:['#','상호명','업종','지역','주소','전화','담당자','연락처','SNS','상태','우선순위','최근접촉일'],entry:['#','거래처명','지역','입점형태','취급상품','수수료','입점일','만료일','담당자','연락처','상태','월매출'],promo:['#','거래처명','프로모션명','유형','시작일','종료일','조건','참여상품','담당자','예산','상태','성과']};
+  const keys={sales:['name','category','area','address','phone','contact','contactPhone','sns','status','priority','lastContact'],entry:['name','area','type','products','commission','entryDate','expireDate','contact','contactPhone','status','revenue'],promo:['name','promoName','type','startDate','endDate','condition','products','contact','budget','status','result']};
+  let csv='﻿'+hdrs[type].join(',')+'\n';
+  ds[type].forEach((r,i)=>{csv+=[i+1,...keys[type].map(k=>`"${(r[k]||'').replace(/"/g,'""')}\"`)].join(',')+'\n';});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=`노아아크_${type==='sales'?'영업거래처':type==='entry'?'입점현황':'프로모션'}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); showToast('📥 CSV 다운로드 완료');
+}
+
+// ===================== TOAST =====================
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// ===================== INIT (auth-gated) =====================
+const _CLIENT_KEY='noa_clients_v2';
+function saveClientData(){try{localStorage.setItem(_CLIENT_KEY,JSON.stringify({s:salesData,e:entryData,p:promoData}));}catch(e){}}
+function loadClientData(){try{const d=JSON.parse(localStorage.getItem(_CLIENT_KEY));if(d&&d.s&&d.e&&d.p){salesData.length=0;salesData.push(...d.s);entryData.length=0;entryData.push(...d.e);promoData.length=0;promoData.push(...d.p);filt.sales=[...salesData];filt.entry=[...entryData];filt.promo=[...promoData];}}catch(e){}}
+function _showApp(){
+  const ov=document.getElementById('auth-overlay');if(ov)ov.remove();
+  loadClientData();filt.sales=[...salesData];filt.entry=[...entryData];filt.promo=[...promoData];
+  renderSales();renderEntry();renderPromo();
+  document.getElementById('h-pending').textContent=salesData.filter(r=>r.status==='협의중'||r.status==='영업 예정').length;
+  const hdr=document.querySelector('.header');
+  if(hdr&&!document.getElementById('hdr-btns')){
+    const d=document.createElement('div');d.id='hdr-btns';d.style='display:flex;gap:8px;align-items:center;margin-left:24px';
+    d.innerHTML=`<button onclick="document.getElementById('pw-modal').classList.add('open')" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">비밀번호 변경</button>
+    <button onclick="if(confirm('로그아웃?')){sessionStorage.removeItem('noa_session_v1');location.reload()}" style="background:rgba(233,69,96,.2);color:#fff;border:1px solid rgba(233,69,96,.5);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">로그아웃</button>`;
+    hdr.appendChild(d);
+  }
+}
+const _AUTH_USERS_KEY='noa_auth_users_v1',_SESSION_KEY='noa_session_v1',_SESSION_TTL=8*60*60*1000;
+const _DEFAULT_USERS=[{username:'admin',hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926',name:'관리자',role:'admin'},{username:'david',hash:'2d2a6626eb7a70813ec876ad277281379a2d0d6c6e33e67f3c20d5d66452ef5e',name:'김진욱',role:'admin'},{username:'sooyoung',hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926',name:'소영',role:'user'}];
+function _loadUsers(){try{return JSON.parse(localStorage.getItem(_AUTH_USERS_KEY))||_DEFAULT_USERS;}catch(e){return _DEFAULT_USERS;}}
+function _saveUsers(u){localStorage.setItem(_AUTH_USERS_KEY,JSON.stringify(u));}
+async function _sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+function _getSession(){try{return JSON.parse(sessionStorage.getItem(_SESSION_KEY));}catch(e){return null;}}
+function _setSession(u){sessionStorage.setItem(_SESSION_KEY,JSON.stringify({username:u.username,name:u.name,role:u.role,expires:Date.now()+_SESSION_TTL}));}
+window.doLogin=async function(){const u=document.getElementById('auth-user').value.trim(),p=document.getElementById('auth-pass').value,e=document.getElementById('auth-err');if(!u||!p){e.textContent='아이디와 비밀번호를 입력해주세요.';return;}const h=await _sha256(p),user=_loadUsers().find(x=>x.username===u&&x.hash===h);if(user){_setSession(user);_showApp();}else{e.textContent='아이디 또는 비밀번호가 올바르지 않습니다.';document.getElementById('auth-pass').value='';}};
+window.changePw=async function(){const cur=document.getElementById('pw-cur').value,nw=document.getElementById('pw-new').value,nw2=document.getElementById('pw-new2').value,err=document.getElementById('pw-err');if(!cur||!nw||!nw2){err.textContent='모든 항목을 입력해주세요.';return;}if(nw.length<8){err.textContent='새 비밀번호는 8자 이상이어야 합니다.';return;}if(nw!==nw2){err.textContent='새 비밀번호가 일치하지 않습니다.';return;}const s=_getSession();if(!s)return;const curH=await _sha256(cur),users=_loadUsers(),user=users.find(x=>x.username===s.username&&x.hash===curH);if(!user){err.textContent='현재 비밀번호가 올바르지 않습니다.';return;}user.hash=await _sha256(nw);_saveUsers(users);document.getElementById('pw-modal').classList.remove('open');alert('비밀번호가 변경되었습니다.');};
+(function(){const s=_getSession();if(s&&Date.now()<s.expires){_showApp();}})();
+</script>
+</body>
+</html>
