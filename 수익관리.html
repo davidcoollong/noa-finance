@@ -53,8 +53,10 @@ input,select,textarea,button{font-family:inherit;font-size:inherit;color:inherit
 .psb-item.active{background:var(--bsoft);border-color:rgba(4,50,255,.18)}
 .psb-item-name{font-size:13px;font-weight:700;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:18px}
 .psb-item-meta{font-size:11px;color:var(--g500);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.psb-del{position:absolute;top:7px;right:7px;background:none;border:none;cursor:pointer;color:var(--g300);font-size:12px;line-height:1;padding:2px 4px;border-radius:4px}
+.psb-actions{position:absolute;top:7px;right:7px;display:flex;gap:2px}
+.psb-del,.psb-copy{background:none;border:none;cursor:pointer;font-size:11px;line-height:1;padding:2px 4px;border-radius:4px;color:var(--g300)}
 .psb-del:hover{color:var(--red);background:#FEE2E2}
+.psb-copy:hover{color:var(--blue);background:var(--bsoft)}
 .psb-new{width:100%;padding:8px;background:none;border:1.5px dashed var(--g300);border-radius:8px;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;margin-top:4px;transition:all .15s}
 .psb-new:hover{background:var(--bsoft);border-color:var(--blue)}
 .psb-empty{font-size:12px;color:var(--g300);text-align:center;padding:16px 0}
@@ -304,6 +306,23 @@ function deleteProject(id, e) {
   renderAll();
 }
 
+function duplicateProject(id, e) {
+  if (e) e.stopPropagation();
+  const src = projects.find(p => p.id === id);
+  if (!src) return;
+  const copy = JSON.parse(JSON.stringify(src));
+  copy.id = uid();
+  copy.name = src.name + ' (복사)';
+  copy.groups.forEach(g => {
+    g.id = uid();
+    g.items.forEach(i => { i.id = uid(); });
+  });
+  const idx = projects.findIndex(p => p.id === id);
+  projects.splice(idx + 1, 0, copy);
+  saveProjects();
+  selectProject(copy.id);
+}
+
 function selectProject(id) {
   curId = id;
   renderAll();
@@ -436,7 +455,10 @@ function renderSidebar() {
         <div class="psb-item-name">${esc(p.name || '프로젝트')}</div>
         <div class="psb-item-meta">원가 ₩${fmt(calc.totalCost)}</div>
         <div class="psb-item-meta">수량 ${fmt(calc.qty)}개 · 객단가 ₩${fmt(calc.unitCost)}</div>
-        <button class="psb-del" onclick="deleteProject('${p.id}',event)" title="삭제">✕</button>
+        <div class="psb-actions">
+          <button class="psb-copy" onclick="duplicateProject('${p.id}',event)" title="복사">⧉</button>
+          <button class="psb-del" onclick="deleteProject('${p.id}',event)" title="삭제">✕</button>
+        </div>
       </div>`;
     });
   }
