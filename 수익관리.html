@@ -356,8 +356,9 @@ function updGrpQty(gid, val) {
   const p = curProj(); if (!p) return;
   const g = p.groups.find(g => g.id === gid); if (!g) return;
   g.qty = toNum(val); saveProjects();
+  const gTotal = g.items.reduce((s, i) => s + (i.unitPrice || 0) * (i.qty || 0), 0);
   const el = document.getElementById('gobjdan-' + gid);
-  if (el) el.innerHTML = '단가 <b>' + (g.qty > 0 ? '₩' + fmt(g.total / g.qty) : '-') + '</b>';
+  if (el) el.innerHTML = '단가 <b>' + (g.qty > 0 ? '₩' + fmt(gTotal / g.qty) : '-') + '</b>';
 }
 
 function updItem(gid, iid, field, val) {
