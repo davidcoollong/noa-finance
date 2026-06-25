@@ -98,6 +98,8 @@ input,select,textarea,button{font-family:inherit;font-size:inherit;color:inherit
 .grp-foot{padding:9px 18px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--g100)}
 .grp-foot-stat{font-size:11px;color:var(--g500);font-weight:600}
 .grp-foot-stat b{color:var(--black);font-weight:800}
+.grp-qty-inp{font-size:12px;font-weight:700;border:1.5px solid var(--g200);border-radius:6px;padding:3px 7px;outline:none;width:62px;text-align:right;background:#fff}
+.grp-qty-inp:focus{border-color:var(--blue)}
 .btn-add-item{background:none;border:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--blue);padding:4px 8px;border-radius:6px}
 .btn-add-item:hover{background:var(--bsoft)}
 .btn-del-item{background:none;border:none;cursor:pointer;color:var(--g300);font-size:14px;line-height:1;padding:4px 5px}
@@ -310,7 +312,7 @@ function selectProject(id) {
 // ═══════════════════ GROUP / ITEM CRUD ═══════════════════
 function addGroup() {
   const p = curProj(); if (!p) return;
-  p.groups.push({ id: uid(), name: '새 원가그룹', items: [] });
+  p.groups.push({ id: uid(), name: '새 원가그룹', qty: 0, items: [] });
   saveProjects(); renderEditor(); renderSidebar();
 }
 
@@ -348,6 +350,14 @@ function updGrpName(gid, val) {
   const p = curProj(); if (!p) return;
   const g = p.groups.find(g => g.id === gid); if (!g) return;
   g.name = val; saveProjects();
+}
+
+function updGrpQty(gid, val) {
+  const p = curProj(); if (!p) return;
+  const g = p.groups.find(g => g.id === gid); if (!g) return;
+  g.qty = toNum(val); saveProjects();
+  const el = document.getElementById('gobjdan-' + gid);
+  if (el) el.innerHTML = '단가 <b>' + (g.qty > 0 ? '₩' + fmt(g.total / g.qty) : '-') + '</b>';
 }
 
 function updItem(gid, iid, field, val) {
@@ -479,7 +489,8 @@ function renderGroup(g, totalQty) {
       <td class="col-d"><button class="btn-del-item" onclick="deleteItem('${g.id}','${item.id}')" title="삭제">✕</button></td>
     </tr>`;
   });
-  const objDan = totalQty > 0 ? '₩'+fmt(g.total / totalQty) : '-';
+  const gQty = g.qty || 0;
+  const objDan = gQty > 0 ? '₩'+fmt(g.total / gQty) : '-';
   return `<div class="cost-group" data-gid="${g.id}">
     <div class="grp-head">
       <input class="grp-name-inp" value="${esc(g.name)}" placeholder="그룹명 (예: 금형, 패키지)"
@@ -500,9 +511,11 @@ function renderGroup(g, totalQty) {
     </table>
     <div class="grp-foot">
       <button class="btn-add-item" onclick="addItem('${g.id}')">+ 항목 추가</button>
-      <div style="display:flex;align-items:center;gap:14px">
-        <span class="grp-foot-stat" id="gqty-${g.id}">수량 <b>${fmt(groupQty)}</b>개</span>
-        <span class="grp-foot-stat" id="gobjdan-${g.id}">객단가 <b>${objDan}</b></span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="grp-foot-stat">수량</span>
+        <input class="grp-qty-inp" id="gqty-${g.id}" type="text" inputmode="numeric" value="${gQty || ''}" placeholder="0"
+          oninput="updGrpQty('${g.id}',this.value)"><span class="grp-foot-stat">개</span>
+        <span class="grp-foot-stat" id="gobjdan-${g.id}">단가 <b>${objDan}</b></span>
         <span style="font-size:12px;font-weight:800;color:var(--blue)" id="gfoot-${g.id}">소계: ₩${fmt(g.total)}</span>
       </div>
     </div>
@@ -596,21 +609,17 @@ function recalcDisplay() {
   calc.groupData.forEach(g => {
     const s = document.getElementById('gsubt-' + g.id);
     const f = document.getElementById('gfoot-' + g.id);
-    const qEl = document.getElementById('gqty-' + g.id);
     const odEl = document.getElementById('gobjdan-' + g.id);
     if (s) s.textContent = '소계 ₩' + fmt(g.total);
     if (f) f.textContent = '소계: ₩' + fmt(g.total);
-    let groupQty = 0;
     g.items.forEach(item => {
       const rowAmt = (item.unitPrice || 0) * (item.qty || 0);
       const amtEl = document.getElementById('amt-' + item.id);
       if (amtEl) amtEl.textContent = fmt(rowAmt);
       const costEl = document.getElementById('cost-' + item.id);
       if (costEl) costEl.textContent = p.totalQty > 0 ? '₩' + fmt(rowAmt / p.totalQty) : '-';
-      groupQty += (item.qty || 0);
     });
-    if (qEl) qEl.innerHTML = '수량 <b>' + fmt(groupQty) + '</b>개';
-    if (odEl) odEl.innerHTML = '객단가 <b>' + (p.totalQty > 0 ? '₩' + fmt(g.total / p.totalQty) : '-') + '</b>';
+    if (odEl) odEl.innerHTML = '단가 <b>' + (g.qty > 0 ? '₩' + fmt(g.total / g.qty) : '-') + '</b>';
   });
   const sc = document.getElementById('sum-cards-section');
   if (sc) sc.innerHTML = renderSumInner(calc);
