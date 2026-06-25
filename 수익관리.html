@@ -499,12 +499,12 @@ function renderGroup(g, totalQty) {
       <tbody>${rows}</tbody>
     </table>
     <div class="grp-foot">
+      <button class="btn-add-item" onclick="addItem('${g.id}')">+ 항목 추가</button>
       <div style="display:flex;align-items:center;gap:14px">
-        <button class="btn-add-item" onclick="addItem('${g.id}')">+ 항목 추가</button>
         <span class="grp-foot-stat" id="gqty-${g.id}">수량 <b>${fmt(groupQty)}</b>개</span>
         <span class="grp-foot-stat" id="gobjdan-${g.id}">객단가 <b>${objDan}</b></span>
+        <span style="font-size:12px;font-weight:800;color:var(--blue)" id="gfoot-${g.id}">소계: ₩${fmt(g.total)}</span>
       </div>
-      <span style="font-size:12px;font-weight:800;color:var(--blue)" id="gfoot-${g.id}">소계: ₩${fmt(g.total)}</span>
     </div>
   </div>`;
 }
