@@ -119,14 +119,19 @@ input,select,textarea,button{font-family:inherit;font-size:inherit;color:inherit
 
 /* ── PRICING ── */
 .pricing-card{background:#fff;border-radius:var(--r);box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden}
-.pricing-head{background:var(--blue);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.pricing-head{background:var(--blue);color:#fff;padding:14px 22px 12px;display:flex;flex-direction:column;gap:10px}
+.ph-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .pricing-head-title{font-size:14px;font-weight:800;letter-spacing:.04em}
-.msrp-wrap{display:flex;align-items:center;gap:8px}
-.msrp-lbl{font-size:11px;font-weight:600;opacity:.65;white-space:nowrap}
-.msrp-inp{font-size:16px;font-weight:800;color:#fff;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:8px;padding:6px 12px;outline:none;width:150px;text-align:right}
-.msrp-inp::placeholder{color:rgba(255,255,255,.4)}
-.msrp-inp:focus{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.6)}
-.msrp-unit{font-size:13px;opacity:.65}
+.msrp-chips-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.msrp-chip{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.28);border-radius:9px;padding:5px 8px 5px 10px}
+.msrp-chip-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.85);background:transparent;border:none;outline:none;width:54px}
+.msrp-chip-sep{font-size:11px;color:rgba(255,255,255,.45);margin:0 1px}
+.msrp-chip-price{font-size:14px;font-weight:800;color:#fff;background:transparent;border:none;outline:none;width:96px;text-align:right}
+.msrp-chip-price::placeholder{color:rgba(255,255,255,.35)}
+.msrp-chip-del{background:rgba(255,255,255,.12);border:none;border-radius:5px;color:rgba(255,255,255,.65);cursor:pointer;padding:2px 5px;font-size:11px;line-height:1.4;margin-left:2px}
+.msrp-chip-del:hover{background:rgba(220,38,38,.45);color:#fff}
+.msrp-add-btn{background:rgba(255,255,255,.12);border:1.5px dashed rgba(255,255,255,.4);border-radius:9px;color:rgba(255,255,255,.85);padding:5px 13px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.6}
+.msrp-add-btn:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.7)}
 .rates-row{padding:12px 22px;border-bottom:1px solid var(--g100);background:var(--g50);display:flex;gap:20px;align-items:center;flex-wrap:wrap}
 .rate-grp{display:flex;align-items:center;gap:6px}
 .rate-lbl{font-size:11px;font-weight:700;color:var(--g500);white-space:nowrap}
@@ -145,6 +150,22 @@ input,select,textarea,button{font-family:inherit;font-size:inherit;color:inherit
 .pt-pos{color:var(--green)}
 .pt-neg{color:var(--red)}
 .pt-key{color:var(--blue);font-weight:900}
+.pt-section-hd td{background:var(--g100);padding:7px 14px;font-size:12px;font-weight:800;color:var(--g700);border-top:2px solid var(--g200);border-bottom:1px solid var(--g200)}
+
+/* ── COMPARISON MATRIX ── */
+.cmp-wrap{overflow-x:auto;margin-top:2px}
+.cmp-table{width:100%;border-collapse:collapse;font-size:13px}
+.cmp-table thead th{background:var(--g100);padding:9px 16px;font-size:11px;font-weight:700;color:var(--g700);text-align:center;border-bottom:2px solid var(--g200);white-space:nowrap;line-height:1.5}
+.cmp-table thead th:first-child{text-align:left;width:130px}
+.cmp-table tbody td{border-bottom:1px solid var(--g100)}
+.cmp-table tbody tr:nth-child(odd) td{background:rgba(0,0,0,.015)}
+.cmp-rate{padding:11px 16px;font-size:12px;font-weight:700;color:var(--g700);white-space:nowrap}
+.cmp-rate span{color:var(--g500);font-weight:500}
+.cmp-cell{padding:11px 16px;text-align:center}
+.cmp-profit{font-size:16px;font-weight:900}
+.cmp-sub{font-size:10px;font-weight:600;opacity:.7;margin-top:2px}
+.cmp-pos{color:var(--green)}
+.cmp-neg{color:var(--red)}
 
 /* ── PROFIT SUMMARY ── */
 .profit-summary{padding:16px 22px;border-top:1px solid var(--g100);background:var(--g50)}
@@ -285,12 +306,19 @@ function saveProjects() {
 }
 function loadProjects() {
   try { const d = localStorage.getItem(_PROJ_KEY); if (d) projects = JSON.parse(d) || []; } catch(e) { projects = []; }
+  // migrate old single msrp → msrps array
+  projects.forEach(p => {
+    if (!p.msrps) {
+      p.msrps = [{ id: uid(), label: '판매가 A', price: p.msrp || 0 }];
+      delete p.msrp;
+    }
+  });
 }
 function curProj() { return projects.find(p => p.id === curId) || null; }
 
 // ═══════════════════ PROJECT CRUD ═══════════════════
 function addProject() {
-  const p = { id: uid(), name: '새 프로젝트', totalQty: 0, msrp: 0, supplyRates: [20, 50, 60], groups: [] };
+  const p = { id: uid(), name: '새 프로젝트', totalQty: 0, msrps: [{ id: uid(), label: '판매가 A', price: 0 }], supplyRates: [20, 50, 60], groups: [] };
   projects.push(p);
   saveProjects();
   selectProject(p.id);
@@ -360,9 +388,9 @@ function deleteItem(gid, iid) {
 // ═══════════════════ FIELD UPDATE ═══════════════════
 function updProj(field, val) {
   const p = curProj(); if (!p) return;
-  p[field] = (field === 'totalQty' || field === 'msrp') ? toNum(val) : val;
+  p[field] = (field === 'totalQty') ? toNum(val) : val;
   saveProjects(); recalcDisplay();
-  if (field !== 'msrp') renderSidebar();
+  renderSidebar();
 }
 
 function updGrpName(gid, val) {
@@ -394,6 +422,33 @@ function updRate(idx, val) {
   saveProjects(); updatePricingDisplay();
 }
 
+function addMsrp() {
+  const p = curProj(); if (!p) return;
+  const labels = ['A','B','C','D','E','F'];
+  const label = '판매가 ' + (labels[p.msrps.length] || (p.msrps.length + 1));
+  p.msrps.push({ id: uid(), label, price: 0 });
+  saveProjects(); renderEditor();
+}
+
+function removeMsrp(mid) {
+  const p = curProj(); if (!p) return;
+  if (p.msrps.length <= 1) return;
+  p.msrps = p.msrps.filter(m => m.id !== mid);
+  saveProjects(); renderEditor();
+}
+
+function updMsrpLabel(mid, val) {
+  const p = curProj(); if (!p) return;
+  const m = p.msrps.find(m => m.id === mid); if (!m) return;
+  m.label = val; saveProjects();
+}
+
+function updMsrpPrice(mid, val) {
+  const p = curProj(); if (!p) return;
+  const m = p.msrps.find(m => m.id === mid); if (!m) return;
+  m.price = toNum(val); saveProjects(); updatePricingDisplay();
+}
+
 // ═══════════════════ CALCULATION ═══════════════════
 function calcProj(p) {
   let totalCost = 0;
@@ -405,17 +460,20 @@ function calcProj(p) {
   });
   const qty = p.totalQty || 0;
   const unitCost = qty > 0 ? totalCost / qty : 0;
-  const msrp = p.msrp || 0;
   const rates = p.supplyRates || [20, 50, 60];
-  const tiers = rates.map(rate => {
-    const sp = msrp * rate / 100;
-    const mu = sp - unitCost;
-    const mr = sp > 0 ? mu / sp * 100 : 0;
-    const tr = sp * qty;
-    const tp = mu * qty;
-    return { rate, sp, mu, mr, tr, tp };
+  const msrps = p.msrps || [{ id: '_', label: '판매가 A', price: p.msrp || 0 }];
+  const scenarios = msrps.map(m => {
+    const tiers = rates.map(rate => {
+      const sp = m.price * rate / 100;
+      const mu = sp - unitCost;
+      const mr = sp > 0 ? mu / sp * 100 : 0;
+      const tr = sp * qty;
+      const tp = mu * qty;
+      return { rate, sp, mu, mr, tr, tp };
+    });
+    return { id: m.id, label: m.label, price: m.price, tiers };
   });
-  return { totalCost, unitCost, qty, msrp, groupData, tiers, rates };
+  return { totalCost, unitCost, qty, groupData, scenarios, rates };
 }
 
 // ═══════════════════ RENDER ALL ═══════════════════
@@ -565,15 +623,22 @@ function renderPricingSection(p, calc) {
       <span class="rate-pct">%</span>
     </div>`
   ).join('');
+  const chips = (p.msrps || []).map(m =>
+    `<div class="msrp-chip">
+      <input class="msrp-chip-label" value="${esc(m.label)}" oninput="updMsrpLabel('${m.id}',this.value)">
+      <span class="msrp-chip-sep">₩</span>
+      <input class="msrp-chip-price" type="text" inputmode="numeric" value="${m.price || ''}" placeholder="0"
+        oninput="updMsrpPrice('${m.id}',this.value)">
+      ${(p.msrps.length > 1) ? `<button class="msrp-chip-del" onclick="removeMsrp('${m.id}')">×</button>` : ''}
+    </div>`
+  ).join('');
   return `<div class="pricing-card">
     <div class="pricing-head">
-      <span class="pricing-head-title">💰 판매가 / 수익 분석</span>
-      <div class="msrp-wrap">
-        <span class="msrp-lbl">소비자가 (MSRP)</span>
-        <input class="msrp-inp" id="msrp-inp" type="text" inputmode="numeric" value="${p.msrp || ''}" placeholder="0"
-          oninput="updProj('msrp',this.value)">
-        <span class="msrp-unit">원</span>
+      <div class="ph-top">
+        <span class="pricing-head-title">💰 판매가 / 수익 분석</span>
+        <button class="msrp-add-btn" onclick="addMsrp()">+ 판매가 추가</button>
       </div>
+      <div class="msrp-chips-row">${chips}</div>
     </div>
     <div class="rates-row">${rateInputs}</div>
     <table class="pt">
@@ -590,39 +655,79 @@ function renderPricingSection(p, calc) {
 }
 
 function renderPricingRows(calc) {
-  return calc.tiers.map((t, i) => {
-    const pos = t.mu >= 0;
-    const pc = pos ? 'pt-pos' : 'pt-neg';
-    const mr = isNaN(t.mr) || !isFinite(t.mr) ? '-' : t.mr.toFixed(1) + '%';
-    return `<tr>
-      <td>공급가 ${i + 1} <span style="color:var(--g500);font-weight:600">(${t.rate}%)</span></td>
-      <td class="pt-key">₩${fmt(t.sp)}</td>
-      <td class="${pc}">₩${fmt(t.mu)}</td>
-      <td class="${pc}">${mr}</td>
-      <td>₩${fmt(t.tr)}</td>
-      <td class="${pc}" style="font-weight:900">₩${fmt(t.tp)}</td>
-    </tr>`;
+  if (calc.scenarios.length === 1) {
+    return calc.scenarios[0].tiers.map((t, i) => {
+      const pos = t.mu >= 0, pc = pos ? 'pt-pos' : 'pt-neg';
+      const mr = isNaN(t.mr) || !isFinite(t.mr) ? '-' : t.mr.toFixed(1) + '%';
+      return `<tr>
+        <td>공급가 ${i+1} <span style="color:var(--g500);font-weight:600">(${t.rate}%)</span></td>
+        <td class="pt-key">₩${fmt(t.sp)}</td>
+        <td class="${pc}">₩${fmt(t.mu)}</td>
+        <td class="${pc}">${mr}</td>
+        <td>₩${fmt(t.tr)}</td>
+        <td class="${pc}" style="font-weight:900">₩${fmt(t.tp)}</td>
+      </tr>`;
+    }).join('');
+  }
+  return calc.scenarios.map(sc => {
+    const hdr = `<tr class="pt-section-hd"><td colspan="6">${esc(sc.label)} &nbsp;—&nbsp; ₩${fmt(sc.price)}</td></tr>`;
+    const rows = sc.tiers.map((t, i) => {
+      const pos = t.mu >= 0, pc = pos ? 'pt-pos' : 'pt-neg';
+      const mr = isNaN(t.mr) || !isFinite(t.mr) ? '-' : t.mr.toFixed(1) + '%';
+      return `<tr>
+        <td>공급가 ${i+1} <span style="color:var(--g500);font-weight:600">(${t.rate}%)</span></td>
+        <td class="pt-key">₩${fmt(t.sp)}</td>
+        <td class="${pc}">₩${fmt(t.mu)}</td>
+        <td class="${pc}">${mr}</td>
+        <td>₩${fmt(t.tr)}</td>
+        <td class="${pc}" style="font-weight:900">₩${fmt(t.tp)}</td>
+      </tr>`;
+    }).join('');
+    return hdr + rows;
   }).join('');
 }
 
 function renderProfitBoxes(p, calc) {
   const rates = p.supplyRates || [20, 50, 60];
-  // Row 1: cost / unit cost / MSRP
-  const row1 = `<div class="profit-row">
+  const costRow = `<div class="profit-row">
     <div class="profit-box"><div class="profit-box-lbl">총 투입 원가</div><div class="profit-box-val" style="color:var(--black)">₩${fmt(calc.totalCost)}</div></div>
     <div class="profit-box"><div class="profit-box-lbl">개당 원가</div><div class="profit-box-val" style="color:var(--green)">₩${fmt(calc.unitCost)}</div></div>
-    <div class="profit-box"><div class="profit-box-lbl">소비자가 (MSRP)</div><div class="profit-box-val" style="color:var(--blue)">₩${fmt(calc.msrp)}</div></div>
+    ${calc.scenarios.length === 1
+      ? `<div class="profit-box"><div class="profit-box-lbl">소비자가</div><div class="profit-box-val" style="color:var(--blue)">₩${fmt(calc.scenarios[0].price)}</div></div>`
+      : `<div class="profit-box" style="background:transparent;border-color:transparent"></div>`}
   </div>`;
-  // Row 2: per-tier profit
-  const row2Items = calc.tiers.map((t, i) => {
-    const pos = t.mu >= 0;
-    return `<div class="profit-box ${pos ? 'pos' : 'neg'}">
-      <div class="profit-box-lbl">공급가 ${i + 1} (${rates[i]}%) 총이익</div>
-      <div class="profit-box-val" style="color:${pos ? 'var(--green)' : 'var(--red)'}">₩${fmt(t.tp)}</div>
-    </div>`;
+  if (calc.scenarios.length === 1) {
+    const row2 = calc.scenarios[0].tiers.map((t, i) => {
+      const pos = t.mu >= 0;
+      return `<div class="profit-box ${pos ? 'pos' : 'neg'}">
+        <div class="profit-box-lbl">공급가 ${i+1} (${rates[i]}%) 총이익</div>
+        <div class="profit-box-val" style="color:${pos ? 'var(--green)' : 'var(--red)'}">₩${fmt(t.tp)}</div>
+      </div>`;
+    }).join('');
+    return costRow + `<div class="profit-divider"></div><div class="profit-row-label">공급가별 총이익</div><div class="profit-row">${row2}</div>`;
+  }
+  // 비교 매트릭스
+  const scHeaders = calc.scenarios.map(sc =>
+    `<th>${esc(sc.label)}<br><span style="font-weight:700;color:var(--blue)">₩${fmt(sc.price)}</span></th>`
+  ).join('');
+  const matrixRows = rates.map((rate, i) => {
+    const cells = calc.scenarios.map(sc => {
+      const t = sc.tiers[i], pos = t.mu >= 0;
+      const mr = isNaN(t.mr) || !isFinite(t.mr) ? '-' : t.mr.toFixed(1) + '%';
+      return `<td class="cmp-cell ${pos ? 'cmp-pos' : 'cmp-neg'}">
+        <div class="cmp-profit">₩${fmt(t.tp)}</div>
+        <div class="cmp-sub">공급단가 ₩${fmt(t.sp)} · 마진율 ${mr}</div>
+      </td>`;
+    }).join('');
+    return `<tr><td class="cmp-rate">공급가 ${i+1} <span>(${rate}%)</span></td>${cells}</tr>`;
   }).join('');
-  const row2 = `<div class="profit-divider"></div><div class="profit-row-label">공급가별 총이익</div><div class="profit-row">${row2Items}</div>`;
-  return row1 + row2;
+  const matrix = `<div class="profit-divider"></div>
+    <div class="profit-row-label">판매가별 이익 구조 비교</div>
+    <div class="cmp-wrap"><table class="cmp-table">
+      <thead><tr><th>구분</th>${scHeaders}</tr></thead>
+      <tbody>${matrixRows}</tbody>
+    </table></div>`;
+  return costRow + matrix;
 }
 
 // ═══════════════════ RECALC (no focus loss) ═══════════════════
