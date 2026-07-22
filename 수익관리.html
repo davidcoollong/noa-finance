@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NOA&ARK · 프로젝트 수익관리</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -301,18 +303,29 @@ function toNum(v) { return parseFloat(String(v == null ? '' : v).replace(/[^0-9.
 function fmt(n) { if (n == null || isNaN(n)) return '-'; return Math.round(n).toLocaleString('ko-KR'); }
 function esc(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
+let _fsSaveTimer = null;
 function saveProjects() {
   try { localStorage.setItem(_PROJ_KEY, JSON.stringify(projects)); } catch(e) {}
+  if (_fsSaveTimer) clearTimeout(_fsSaveTimer);
+  _fsSaveTimer = setTimeout(function() {
+    if (window._fsDB) {
+      window._fsDB.collection('noa_data').doc('profit_projects')
+        .set({ projects: JSON.stringify(projects), updatedAt: Date.now() })
+        .catch(function(e) { console.warn('Firestore save:', e); });
+    }
+  }, 1500);
 }
-function loadProjects() {
-  try { const d = localStorage.getItem(_PROJ_KEY); if (d) projects = JSON.parse(d) || []; } catch(e) { projects = []; }
-  // migrate old single msrp → msrps array
+function _migrateProjects() {
   projects.forEach(p => {
     if (!p.msrps) {
       p.msrps = [{ id: uid(), label: '판매가 A', price: p.msrp || 0 }];
       delete p.msrp;
     }
   });
+}
+function loadProjects() {
+  try { const d = localStorage.getItem(_PROJ_KEY); if (d) projects = JSON.parse(d) || []; } catch(e) { projects = []; }
+  _migrateProjects();
 }
 function curProj() { return projects.find(p => p.id === curId) || null; }
 
@@ -763,6 +776,15 @@ function updatePricingDisplay() {
   if (ps) ps.innerHTML = `<div class="profit-summary-title">이익 구조 요약</div>` + renderProfitBoxes(p, calc);
 }
 
+// ═══════════════════ FIREBASE ═══════════════════
+(function(){
+  var cfg={apiKey:"AIzaSyBvLd4BtsmxTe2P0ZTNTBLmYTQPQGtCwYg",authDomain:"noaark-f8f75.firebaseapp.com",
+    projectId:"noaark-f8f75",storageBucket:"noaark-f8f75.firebasestorage.app",
+    messagingSenderId:"497213476251",appId:"1:497213476251:web:64b118a76adb76f7ff653e"};
+  if(!firebase.apps.length) firebase.initializeApp(cfg);
+  window._fsDB=firebase.firestore();
+})();
+
 // ═══════════════════ AUTH ═══════════════════
 const _AUTH_USERS_KEY='noa_auth_users_v1',_SESSION_KEY='noa_session_v1',_SESSION_TTL=8*60*60*1000;
 const _DEFAULT_USERS=[
@@ -775,10 +797,29 @@ function _saveUsers(u){localStorage.setItem(_AUTH_USERS_KEY,JSON.stringify(u));}
 async function _sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(b=>b.toString(16).padStart(2,'0')).join('');}
 function _getSession(){try{return JSON.parse(sessionStorage.getItem(_SESSION_KEY));}catch(e){return null;}}
 function _setSession(u){sessionStorage.setItem(_SESSION_KEY,JSON.stringify({username:u.username,name:u.name,role:u.role,expires:Date.now()+_SESSION_TTL}));}
-function _showApp(name){
+async function _showApp(name){
   const ov=document.getElementById('auth-overlay');if(ov)ov.remove();
   document.getElementById('user-name').textContent=name;
-  loadProjects(); renderAll();
+  document.getElementById('proj-page').innerHTML=`<div class="empty-state"><span class="empty-icon" style="font-size:32px;animation:spin 1s linear infinite;display:inline-block">⏳</span><div class="empty-title" style="margin-top:12px">데이터 불러오는 중...</div></div>`;
+  try {
+    const snap=await window._fsDB.collection('noa_data').doc('profit_projects').get();
+    if(snap.exists&&snap.data().projects){
+      projects=JSON.parse(snap.data().projects)||[];
+      _migrateProjects();
+      try{localStorage.setItem(_PROJ_KEY,JSON.stringify(projects));}catch(e){}
+    } else {
+      loadProjects();
+      if(projects.length>0){
+        window._fsDB.collection('noa_data').doc('profit_projects')
+          .set({projects:JSON.stringify(projects),updatedAt:Date.now()})
+          .catch(e=>console.warn('Firestore init save:',e));
+      }
+    }
+  } catch(e){
+    console.warn('Firestore load failed, using localStorage:',e);
+    loadProjects();
+  }
+  renderAll();
 }
 window.doLogin=async function(){
   const u=document.getElementById('auth-user').value.trim(),p=document.getElementById('auth-pass').value,e=document.getElementById('auth-err');
