@@ -606,6 +606,11 @@ body {
 .pw-err{font-size:11px;color:#FF3B30;margin-bottom:8px;min-height:14px}
 
 
+/* ── Currency Toggle ── */
+.currency-toggle{display:flex;background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:8px;overflow:hidden}
+.cur-btn{padding:5px 10px;font-size:12px;font-weight:700;border:none;background:transparent;cursor:pointer;color:#6B7280;font-family:inherit;transition:all .15s;letter-spacing:.02em}
+.cur-btn.active{background:#0432FF;color:#fff}
+.cur-btn:hover:not(.active){background:#E5E7EB;color:#374151}
 /* ── Cross-app Navigation Bar ── */
 .cross-nav{
   background:#fff;
@@ -750,6 +755,15 @@ body {
     <div class="user-badge" style="background:rgba(4,50,255,.06);border-color:#E5E7EB;color:#374151"><span class="dot-online"></span><span class="auth-user-name" style="color:#374151">-</span></div>
     <button onclick="openBackup()" class="btn btn-outline" style="background:#F3F4F6;border-color:#E5E7EB;color:#374151">💾 백업</button>
     <button onclick="doLogout()" class="btn" style="background:#F3F4F6;border:1.5px solid #E5E7EB;color:#374151;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px">로그아웃</button>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="currency-toggle" id="currencyToggle">
+        <button id="btn-krw" class="cur-btn active" onclick="setCurrency('KRW')">₩ KRW</button>
+        <button id="btn-usd" class="cur-btn" onclick="setCurrency('USD')">$ USD</button>
+      </div>
+      <div id="exrate-wrap" style="display:none;align-items:center;gap:4px;font-size:12px;color:#374151">
+        1 USD = <input id="exrateInp" type="text" inputmode="numeric" value="1350" oninput="setExRate(this.value)" style="width:65px;padding:4px 6px;border:1.5px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit"> ₩
+      </div>
+    </div>
     <button class="btn btn-outline" onclick="window.print()">인쇄 / PDF</button>
     <button class="btn btn-white" onclick="resetDoc()">새 견적서</button>
   </div>
@@ -870,8 +884,8 @@ body {
           <span class="sum-label">공급가액</span>
           <span class="sum-value" id="sumSupply">₩0</span>
         </div>
-        <div class="sum-row">
-          <span class="sum-label">VAT (10%)</span>
+        <div class="sum-row" id="vatRow">
+          <span class="sum-label" id="vatLabel">VAT (10%)</span>
           <span class="sum-value" id="sumVat">₩0</span>
         </div>
         <div class="sum-row final" style="margin-top:12px">
@@ -1113,7 +1127,7 @@ function renderHistoryList(activeId) {
 }
 
 function saveQuote() {
-  localStorage.setItem(_QUOTE_KEY, JSON.stringify({ db: DB, items: items }));
+  localStorage.setItem(_QUOTE_KEY, JSON.stringify({ db: DB, items: items, currency: currency, exchangeRate: exchangeRate }));
   clearTimeout(window._fsQuoteTimer);
   window._fsQuoteTimer = setTimeout(function(){
     if(!window._fsDB) return;
@@ -1125,8 +1139,57 @@ function saveQuote() {
   },600);
 }
 
+// ── Currency State ─────────────────────────────────────────────────────────────
+let currency = 'KRW';
+let exchangeRate = 1350;
+(function _loadCurrencyPref() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
+    if (saved && saved.currency) currency = saved.currency;
+    if (saved && saved.exchangeRate) exchangeRate = saved.exchangeRate;
+  } catch(e) {}
+})();
+
+function setCurrency(c) {
+  currency = c;
+  const btnKrw = document.getElementById('btn-krw');
+  const btnUsd = document.getElementById('btn-usd');
+  if (btnKrw) btnKrw.classList.toggle('active', c === 'KRW');
+  if (btnUsd) btnUsd.classList.toggle('active', c === 'USD');
+  const wrap = document.getElementById('exrate-wrap');
+  if (wrap) wrap.style.display = c === 'USD' ? 'flex' : 'none';
+  const vatRow = document.getElementById('vatRow');
+  if (vatRow) vatRow.style.display = c === 'USD' ? 'none' : '';
+  saveQuote();
+  renderItems();
+}
+
+function setExRate(val) {
+  const n = parseFloat(String(val).replace(/,/g,''));
+  if (n > 0) { exchangeRate = n; saveQuote(); renderItems(); }
+}
+
+function _applyInitialCurrency() {
+  if (currency === 'USD') {
+    const btnKrw = document.getElementById('btn-krw');
+    const btnUsd = document.getElementById('btn-usd');
+    if (btnKrw) btnKrw.classList.remove('active');
+    if (btnUsd) btnUsd.classList.add('active');
+    const wrap = document.getElementById('exrate-wrap');
+    if (wrap) wrap.style.display = 'flex';
+    const inp = document.getElementById('exrateInp');
+    if (inp) inp.value = exchangeRate;
+    const vatRow = document.getElementById('vatRow');
+    if (vatRow) vatRow.style.display = 'none';
+  }
+}
+
 // ── Utils ──────────────────────────────────────────────────────────────────────
 const won = n => '₩' + Math.round(n).toLocaleString('ko-KR');
+const fmtMoney = n => {
+  if (currency === 'USD') return '$' + (n / exchangeRate).toFixed(2);
+  return '₩' + Math.round(n).toLocaleString('ko-KR');
+};
 const toNum = s => parseFloat(String(s).replace(/,/g,'')) || 0;
 const $ = id => document.getElementById(id);
 
@@ -1180,19 +1243,19 @@ function renderItems() {
       <td class="col-price"><input class="cell-input ta-right" value="${it.price.toLocaleString('ko-KR')}" oninput="updPrice(${i},this.value)" onblur="renderItems();saveQuote()"></td>
       <td class="col-qty"><input class="cell-input ta-center" type="text" inputmode="numeric" value="${it.qty}" oninput="updQty(${i},this.value)" onblur="renderItems();saveQuote()" style="text-align:center"></td>
       <td class="col-unit"><input class="cell-input ta-center" value="${it.unit}" oninput="upd(${i},'unit',this.value)"></td>
-      <td class="col-amount cell-amount">${won(amt)}</td>
+      <td class="col-amount cell-amount">${fmtMoney(amt)}</td>
       <td class="col-del cell-del"><button class="btn btn-sm btn-danger" onclick="removeItem(${i})">✕</button></td>
     `;
     tbody.appendChild(tr);
   });
 
-  const vat = total * 0.1;
+  const vat = currency === 'USD' ? 0 : total * 0.1;
   const final = total + vat;
-  $('itemsTotalLabel').textContent = won(total);
-  $('sumTotal').textContent = won(total);
-  $('sumSupply').textContent = won(total);
-  $('sumVat').textContent = won(vat);
-  $('sumFinal').textContent = won(final);
+  $('itemsTotalLabel').textContent = fmtMoney(total);
+  $('sumTotal').textContent = fmtMoney(total);
+  $('sumSupply').textContent = fmtMoney(total);
+  $('sumVat').textContent = fmtMoney(vat);
+  $('sumFinal').textContent = fmtMoney(final);
 }
 
 function onProductSel(i, code) {
@@ -1221,16 +1284,17 @@ function updQty(i, val) {
 }
 function _updRowAmt(i) {
   const el = document.querySelector('#itemsBody tr:nth-child('+(i+1)+') .cell-amount');
-  if (el) el.textContent = won(items[i].price * items[i].qty);
+  if (el) el.textContent = fmtMoney(items[i].price * items[i].qty);
 }
 function _updTotals() {
   const total = items.reduce((s,it) => s + it.price * it.qty, 0);
-  const vat = total * 0.1, fin = total + vat;
-  $('itemsTotalLabel').textContent = won(total);
-  $('sumTotal').textContent  = won(total);
-  $('sumSupply').textContent = won(total);
-  $('sumVat').textContent    = won(vat);
-  $('sumFinal').textContent  = won(fin);
+  const vat = currency === 'USD' ? 0 : total * 0.1;
+  const fin = total + vat;
+  $('itemsTotalLabel').textContent = fmtMoney(total);
+  $('sumTotal').textContent  = fmtMoney(total);
+  $('sumSupply').textContent = fmtMoney(total);
+  $('sumVat').textContent    = fmtMoney(vat);
+  $('sumFinal').textContent  = fmtMoney(fin);
 }
 
 function addItem()   { items.push({name:'',desc:'',price:0,qty:1,unit:'EA',img:''}); renderItems(); saveQuote(); }
@@ -1431,7 +1495,7 @@ setToday();
           items.length = 0;
           d.items.forEach(function(x){ items.push(x); });
         }
-        localStorage.setItem(_QUOTE_KEY, JSON.stringify({db:DB, items:items}));
+        localStorage.setItem(_QUOTE_KEY, JSON.stringify({db:DB, items:items, currency:currency, exchangeRate:exchangeRate}));
       } else {
         await window._fsDB.collection('noa_data').doc('quote').set({
           db:{companies:DB.companies,clients:DB.clients,products:DB.products},
@@ -1441,6 +1505,7 @@ setToday();
     }
   } catch(e){ console.warn('Firestore init failed, using local cache:',e); }
   populateSels();
+  _applyInitialCurrency();
   renderItems();
   renderCompanyDB();
   renderClientDB();
