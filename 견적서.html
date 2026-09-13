@@ -1240,7 +1240,7 @@ function renderItems() {
           : ''}
       </td>
       <td><input class="cell-input desc" value="${it.desc}" placeholder="설명" oninput="upd(${i},'desc',this.value)"></td>
-      <td class="col-price"><input class="cell-input ta-right" value="${it.price.toLocaleString('ko-KR')}" oninput="updPrice(${i},this.value)" onblur="renderItems();saveQuote()"></td>
+      <td class="col-price"><input class="cell-input ta-right" value="${currency==='USD'?(it.price/exchangeRate).toFixed(2):it.price.toLocaleString('ko-KR')}" oninput="updPrice(${i},this.value)" onblur="renderItems();saveQuote()"></td>
       <td class="col-qty"><input class="cell-input ta-center" type="text" inputmode="numeric" value="${it.qty}" oninput="updQty(${i},this.value)" onblur="renderItems();saveQuote()" style="text-align:center"></td>
       <td class="col-unit"><input class="cell-input ta-center" value="${it.unit}" oninput="upd(${i},'unit',this.value)"></td>
       <td class="col-amount cell-amount">${fmtMoney(amt)}</td>
@@ -1275,7 +1275,8 @@ function upd(i, field, val) {
 
 // 단가·수량: 입력 중엔 해당 행 금액+합계만 갱신, blur 시 전체 재렌더
 function updPrice(i, val) {
-  items[i].price = toNum(val);
+  const raw = toNum(val);
+  items[i].price = currency === 'USD' ? raw * exchangeRate : raw;
   _updRowAmt(i); _updTotals();
 }
 function updQty(i, val) {
