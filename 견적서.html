@@ -516,7 +516,9 @@ body {
   .col-img { width: 68px !important; }
 
   .notes-section { padding: 10px 20px !important; }
-  .notes-textarea { font-size: 9px !important; min-height: 60px !important; line-height: 1.6 !important; }
+  .notes-textarea { font-size: 9px !important; min-height: unset !important; height: auto !important; overflow: visible !important; line-height: 1.6 !important; }
+  .notes-content { font-size: 9px !important; min-height: unset !important; line-height: 1.6 !important; }
+  .text-toolbar { display: none !important; }
   .summary-section { padding: 10px 16px !important; }
   .sum-row     { font-size: 11px !important; padding: 5px 0 !important; }
   .sum-row.final { padding: 8px 12px !important; }
@@ -531,11 +533,14 @@ body {
     border-bottom: none !important;
     background: transparent !important;
   }
-  .notes-textarea {
+  .notes-textarea, .notes-content {
     pointer-events: none !important;
     border: none !important;
     background: transparent !important;
     resize: none !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: unset !important;
   }
   /* Hide select arrow, show value as plain text */
   .cell-select, select {
@@ -606,6 +611,28 @@ body {
 .pw-err{font-size:11px;color:#FF3B30;margin-bottom:8px;min-height:14px}
 
 
+/* ── Text Toolbar (참고사항/입금정보 서식) ── */
+.text-toolbar{display:flex;align-items:center;gap:5px;margin-bottom:6px;flex-wrap:wrap}
+.tt-sel{font-size:10px;font-family:inherit;border:1px solid #E5E7EB;border-radius:5px;padding:2px 5px;background:#fff;cursor:pointer;color:#374151;outline:none}
+.tt-sel:focus{border-color:#0432FF}
+.tt-label{font-size:10px;color:#9CA3AF}
+.tt-btn{width:24px;height:24px;border:1px solid #E5E7EB;border-radius:5px;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;display:flex;align-items:center;justify-content:center;color:#374151;padding:0}
+.tt-btn.active{background:#0432FF;color:#fff;border-color:#0432FF}
+.tt-btn:hover:not(.active){background:#F3F4F6}
+.notes-content{
+  font-family:'Pretendard',sans-serif;font-size:11px;color:#374151;
+  line-height:1.75;background:transparent;border:none;outline:none;
+  width:100%;min-height:80px;white-space:pre-wrap;word-break:break-word;
+  letter-spacing:-0.01em;cursor:text;
+}
+.notes-content:focus{background:#FAFBFF}
+.notes-content.bank{min-height:unset;font-weight:500;color:#000;margin-top:4px}
+.notes-content.bank-note{min-height:unset;color:#6B7280;margin-top:3px;font-weight:400}
+.cell-input.desc{color:#6B7280;overflow:hidden;resize:none;height:auto;min-height:0;vertical-align:top;line-height:1.5}
+/* 직접입력 선택 시 select 숨김 */
+.col-name .custom-mode select{display:none}
+.btn-reset-sel{background:none;border:none;cursor:pointer;font-size:11px;color:#9CA3AF;padding:0 2px;flex-shrink:0}
+.btn-reset-sel:hover{color:#0432FF}
 /* ── Currency Toggle ── */
 .currency-toggle{display:flex;background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:8px;overflow:hidden}
 .cur-btn{padding:5px 10px;font-size:12px;font-weight:700;border:none;background:transparent;cursor:pointer;color:#6B7280;font-family:inherit;transition:all .15s;letter-spacing:.02em}
@@ -858,18 +885,50 @@ body {
       <!-- Notes -->
       <div class="notes-section">
         <div class="section-label"><span class="bullet">●</span> 참고사항</div>
-        <textarea class="notes-textarea" id="notesArea">1. 본 견적은 최종 확정된, 디자인과 사양을 반영하였습니다.
+        <div class="text-toolbar" id="notesToolbar">
+          <select class="tt-sel" id="notesFontFamily" onchange="updNotesStyle()">
+            <option value="'Pretendard',sans-serif">Pretendard</option>
+            <option value="Arial,sans-serif">Arial</option>
+            <option value="'Times New Roman',serif">Times NR</option>
+            <option value="'Malgun Gothic',sans-serif">맑은고딕</option>
+          </select>
+          <select class="tt-sel" id="notesFontSize" onchange="updNotesStyle()">
+            <option value="8px">8</option><option value="9px">9</option><option value="10px">10</option>
+            <option value="11px" selected>11</option><option value="12px">12</option>
+            <option value="13px">13</option><option value="14px">14</option>
+          </select>
+          <span class="tt-label">px</span>
+          <button class="tt-btn" id="notesBoldBtn" onclick="toggleNotesStyle('bold')" title="굵게"><b>B</b></button>
+          <button class="tt-btn" id="notesItalicBtn" onclick="toggleNotesStyle('italic')" title="기울임"><i>I</i></button>
+        </div>
+        <div class="notes-content" id="notesArea" contenteditable="true" oninput="saveQuote()" spellcheck="false">1. 본 견적은 최종 확정된, 디자인과 사양을 반영하였습니다.
 2. 사양변경에 따른 일정변경과 견적추가는 발주사에 책임이 있습니다.
 3. 디자인 수정 요청은 1회까지 무료 제공되며, 이후 요청은 추가 비용이 발생할 수 있습니다.
 4. 납품장소는 1회, 지정된 장소로 입고합니다.
 5. 사양 : 상기 기재 내용 기준.
 6. 관세8% 적용, 14세 이상 KC인증 제외 기준입니다.
-7. 3일 운송 기준 물류비입니다. 에어물류 시, 추가비용 발생입니다.</textarea>
+7. 3일 운송 기준 물류비입니다. 에어물류 시, 추가비용 발생입니다.</div>
 
         <div style="margin-top:20px">
           <div class="section-label"><span class="bullet">●</span> 입금정보</div>
-          <div style="font-size:11px; color:#000; font-weight:500; margin-top:4px" id="bankDisplay">-</div>
-          <div style="font-size:11px; color:#6B7280; margin-top:3px">견적 유효기간 이내에 납부 부탁드립니다. :)</div>
+          <div class="text-toolbar" id="bankToolbar">
+            <select class="tt-sel" id="bankFontFamily" onchange="updBankStyle()">
+              <option value="'Pretendard',sans-serif">Pretendard</option>
+              <option value="Arial,sans-serif">Arial</option>
+              <option value="'Times New Roman',serif">Times NR</option>
+              <option value="'Malgun Gothic',sans-serif">맑은고딕</option>
+            </select>
+            <select class="tt-sel" id="bankFontSize" onchange="updBankStyle()">
+              <option value="8px">8</option><option value="9px">9</option><option value="10px">10</option>
+              <option value="11px" selected>11</option><option value="12px">12</option>
+              <option value="13px">13</option><option value="14px">14</option>
+            </select>
+            <span class="tt-label">px</span>
+            <button class="tt-btn active" id="bankBoldBtn" onclick="toggleBankStyle('bold')" title="굵게"><b>B</b></button>
+            <button class="tt-btn" id="bankItalicBtn" onclick="toggleBankStyle('italic')" title="기울임"><i>I</i></button>
+          </div>
+          <div class="notes-content bank" id="bankDisplay" contenteditable="true" oninput="saveQuote()" spellcheck="false">-</div>
+          <div class="notes-content bank-note" id="bankNote" contenteditable="true" oninput="saveQuote()" spellcheck="false">견적 유효기간 이내에 납부 부탁드립니다. :)</div>
         </div>
       </div>
 
@@ -1038,12 +1097,18 @@ const _ITEMS_DEFAULTS = [
   { name:'물류/관세 8% (디트로이트 ZOO)', desc:'관세 8%, 물류비(3일 운송)',price:1920000, qty:1,   unit:'EA' }
 ];
 
+let _savedNotes = null, _savedBankText = null, _savedBankNoteText = null;
 (function _loadQuoteStorage() {
   try {
     const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
     if (saved) {
       if (saved.db) { Object.assign(_DB_DEFAULTS, saved.db); }
       if (saved.items) { _ITEMS_DEFAULTS.length = 0; saved.items.forEach(x => _ITEMS_DEFAULTS.push(x)); }
+      if (saved.notesStyle) Object.assign(notesStyle, saved.notesStyle);
+      if (saved.bankStyle)  Object.assign(bankStyle,  saved.bankStyle);
+      if (saved.notesText != null)    _savedNotes       = saved.notesText;
+      if (saved.bankText != null)     _savedBankText    = saved.bankText;
+      if (saved.bankNoteText != null) _savedBankNoteText = saved.bankNoteText;
     }
   } catch(e) {}
 })();
@@ -1127,7 +1192,14 @@ function renderHistoryList(activeId) {
 }
 
 function saveQuote() {
-  localStorage.setItem(_QUOTE_KEY, JSON.stringify({ db: DB, items: items, currency: currency, exchangeRate: exchangeRate }));
+  const notesEl = $('notesArea'), bankEl = $('bankDisplay'), bankNoteEl = $('bankNote');
+  localStorage.setItem(_QUOTE_KEY, JSON.stringify({
+    db: DB, items: items, currency: currency, exchangeRate: exchangeRate,
+    notesText: notesEl ? notesEl.innerText : '',
+    bankText: bankEl ? bankEl.innerText : '',
+    bankNoteText: bankNoteEl ? bankNoteEl.innerText : '',
+    notesStyle: notesStyle, bankStyle: bankStyle
+  }));
   clearTimeout(window._fsQuoteTimer);
   window._fsQuoteTimer = setTimeout(function(){
     if(!window._fsDB) return;
@@ -1137,6 +1209,56 @@ function saveQuote() {
       .set({db:{companies:DB.companies,clients:DB.clients,products:DB.products},items:itemsNoImg},{merge:true})
       .catch(function(e){console.warn('Firestore saveQuote:',e);});
   },600);
+}
+
+// ── Notes / Bank Style ────────────────────────────────────────────────────────
+let notesStyle = { fontFamily:"'Pretendard',sans-serif", fontSize:"11px", fontWeight:"400", fontStyle:"normal" };
+let bankStyle  = { fontFamily:"'Pretendard',sans-serif", fontSize:"11px", fontWeight:"500", fontStyle:"normal" };
+
+function _applyTextStyle(elId, style) {
+  const el = $(elId); if (!el) return;
+  el.style.fontFamily  = style.fontFamily;
+  el.style.fontSize    = style.fontSize;
+  el.style.fontWeight  = style.fontWeight;
+  el.style.fontStyle   = style.fontStyle;
+}
+function _applyToolbarUI(prefix, style) {
+  const ff = $(prefix+'FontFamily'); if(ff) ff.value = style.fontFamily;
+  const fs = $(prefix+'FontSize');   if(fs) fs.value = style.fontSize;
+  const bb = $(prefix+'BoldBtn');    if(bb) bb.classList.toggle('active', style.fontWeight === '700');
+  const ib = $(prefix+'ItalicBtn'); if(ib) ib.classList.toggle('active', style.fontStyle === 'italic');
+}
+function updNotesStyle() {
+  notesStyle.fontFamily = $('notesFontFamily').value;
+  notesStyle.fontSize   = $('notesFontSize').value;
+  _applyTextStyle('notesArea', notesStyle);
+  saveQuote();
+}
+function updBankStyle() {
+  bankStyle.fontFamily = $('bankFontFamily').value;
+  bankStyle.fontSize   = $('bankFontSize').value;
+  _applyTextStyle('bankDisplay', bankStyle);
+  _applyTextStyle('bankNote', { ...bankStyle, fontWeight:'400' });
+  saveQuote();
+}
+function toggleNotesStyle(type) {
+  if (type === 'bold')   notesStyle.fontWeight = notesStyle.fontWeight==='700' ? '400' : '700';
+  if (type === 'italic') notesStyle.fontStyle  = notesStyle.fontStyle==='italic' ? 'normal' : 'italic';
+  _applyTextStyle('notesArea', notesStyle);
+  _applyToolbarUI('notes', notesStyle);
+  saveQuote();
+}
+function toggleBankStyle(type) {
+  if (type === 'bold')   bankStyle.fontWeight = bankStyle.fontWeight==='700' ? '400' : '700';
+  if (type === 'italic') bankStyle.fontStyle  = bankStyle.fontStyle==='italic' ? 'normal' : 'italic';
+  _applyTextStyle('bankDisplay', bankStyle);
+  _applyTextStyle('bankNote', { ...bankStyle, fontWeight: type==='bold' ? bankStyle.fontWeight : '400' });
+  _applyToolbarUI('bank', bankStyle);
+  saveQuote();
+}
+function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+function resetItemSel(i) {
+  items[i].name = ''; saveQuote(); renderItems();
 }
 
 // ── Currency State ─────────────────────────────────────────────────────────────
@@ -1230,16 +1352,18 @@ function renderItems() {
       <td class="col-no" style="text-align:center;font-size:10px;color:#9CA3AF;padding:9px 6px">${i+1}</td>
       <td class="col-img item-img-cell">${imgCell}</td>
       <td class="col-name">
-        <select class="cell-select" onchange="onProductSel(${i},this.value)">
-          <option value="">— 선택 —</option>
-          ${opts}
-          <option value="__custom__"${matchedCode==='__custom__'?' selected':''}>직접입력</option>
-        </select>
         ${matchedCode==='__custom__'
-          ? `<input class="cell-input name" value="${it.name}" placeholder="항목명" oninput="upd(${i},'name',this.value)" style="border-top:1px solid #F0F2FF">`
-          : ''}
+          ? `<div style="display:flex;align-items:flex-start;gap:3px">
+               <button class="btn-reset-sel" onclick="resetItemSel(${i})" title="품목 선택으로 돌아가기">↩</button>
+               <input class="cell-input name" value="${it.name}" placeholder="항목명" oninput="upd(${i},'name',this.value)" style="flex:1;border-top:1px solid #F0F2FF">
+             </div>`
+          : `<select class="cell-select" onchange="onProductSel(${i},this.value)">
+               <option value="">— 선택 —</option>
+               ${opts}
+               <option value="__custom__">직접입력</option>
+             </select>`}
       </td>
-      <td><input class="cell-input desc" value="${it.desc}" placeholder="설명" oninput="upd(${i},'desc',this.value)"></td>
+      <td><textarea class="cell-input desc" rows="1" placeholder="설명" oninput="upd(${i},'desc',this.value);autoResize(this)" style="overflow:hidden;resize:none;display:block">${it.desc}</textarea></td>
       <td class="col-price"><input class="cell-input ta-right" value="${currency==='USD'?(it.price/exchangeRate).toFixed(2):it.price.toLocaleString('ko-KR')}" oninput="updPrice(${i},this.value)" onblur="renderItems();saveQuote()"></td>
       <td class="col-qty"><input class="cell-input ta-center" type="text" inputmode="numeric" value="${it.qty}" oninput="updQty(${i},this.value)" onblur="renderItems();saveQuote()" style="text-align:center"></td>
       <td class="col-unit"><input class="cell-input ta-center" value="${it.unit}" oninput="upd(${i},'unit',this.value)"></td>
@@ -1247,6 +1371,9 @@ function renderItems() {
       <td class="col-del cell-del"><button class="btn btn-sm btn-danger" onclick="removeItem(${i})">✕</button></td>
     `;
     tbody.appendChild(tr);
+    // auto-resize desc textarea
+    const descEl = tr.querySelector('.cell-input.desc');
+    if (descEl) setTimeout(function(){ autoResize(descEl); }, 0);
   });
 
   const vat = currency === 'USD' ? 0 : total * 0.1;
@@ -1351,7 +1478,7 @@ function fillSender(code) {
   $('sEmail').textContent = c.email;
   $('sAddr').textContent  = c.addr;
   $('metaMgr').value      = `${c.manager} (${c.mtel}, ${c.memail})`;
-  $('bankDisplay').textContent = `${c.bank} ${c.acct} · ${c.holder}`;
+  const bd = $('bankDisplay'); if(bd) bd.innerText = `${c.bank} ${c.acct} · ${c.holder}`;
 }
 
 function fillReceiver(code) {
@@ -1473,7 +1600,7 @@ function resetDoc() {
   $('senderSel').value = ''; $('receiverSel').value = '';
   ['sName','sBiz','sCeo','sEmail','sAddr','rName','rBiz','rContact','rEmail','rAddr']
     .forEach(id=>$(id).textContent='-');
-  $('bankDisplay').textContent = '-';
+  const bd2 = $('bankDisplay'); if(bd2) bd2.innerText = '-';
   items = [{ name:'', desc:'', price:0, qty:1, unit:'EA' }];
   renderItems(); setToday();
 }
@@ -1507,7 +1634,18 @@ setToday();
   } catch(e){ console.warn('Firestore init failed, using local cache:',e); }
   populateSels();
   _applyInitialCurrency();
+  // Restore notes/bank styles and text
+  if (_savedNotes != null) { const el = $('notesArea'); if(el) el.innerText = _savedNotes; }
+  if (_savedBankText != null) { const el = $('bankDisplay'); if(el) el.innerText = _savedBankText; }
+  if (_savedBankNoteText != null) { const el = $('bankNote'); if(el) el.innerText = _savedBankNoteText; }
+  _applyTextStyle('notesArea', notesStyle);
+  _applyTextStyle('bankDisplay', bankStyle);
+  _applyTextStyle('bankNote', { ...bankStyle, fontWeight:'400' });
+  _applyToolbarUI('notes', notesStyle);
+  _applyToolbarUI('bank', bankStyle);
   renderItems();
+  // Auto-resize all desc textareas after render
+  setTimeout(function(){ document.querySelectorAll('.cell-input.desc').forEach(function(el){ autoResize(el); }); }, 0);
   renderCompanyDB();
   renderClientDB();
   renderProductDB();
