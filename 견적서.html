@@ -550,6 +550,7 @@ body {
     border: none !important;
     background: transparent !important;
   }
+  .btn-show-sel, .name-db-sel { display: none !important; }
 }
 
 @media (max-width: 680px) {
@@ -629,10 +630,13 @@ body {
 .notes-content.bank{min-height:unset;font-weight:500;color:#000;margin-top:4px}
 .notes-content.bank-note{min-height:unset;color:#6B7280;margin-top:3px;font-weight:400}
 .cell-input.desc{color:#6B7280;overflow:hidden;resize:none;height:auto;min-height:0;vertical-align:top;line-height:1.5}
-/* 직접입력 선택 시 select 숨김 */
-.col-name .custom-mode select{display:none}
-.btn-reset-sel{background:none;border:none;cursor:pointer;font-size:11px;color:#9CA3AF;padding:0 2px;flex-shrink:0}
-.btn-reset-sel:hover{color:#0432FF}
+/* 항목명 입력 + 품목DB 선택 버튼 */
+.name-wrap{display:flex;flex-direction:column;gap:2px}
+.name-input-row{display:flex;align-items:center;gap:2px}
+.name-input-row .cell-input.name{flex:1;min-width:0}
+.btn-show-sel{flex-shrink:0;background:#F3F4F6;border:1px solid #E5E7EB;border-radius:4px;cursor:pointer;font-size:9px;color:#6B7280;padding:2px 5px;font-family:inherit;line-height:1;transition:all .12s}
+.btn-show-sel:hover{background:#E5E7EB;color:#374151}
+.name-db-sel{width:100%;font-size:10px}
 /* ── Currency Toggle ── */
 .currency-toggle{display:flex;background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:8px;overflow:hidden}
 .cur-btn{padding:5px 10px;font-size:12px;font-weight:700;border:none;background:transparent;cursor:pointer;color:#6B7280;font-family:inherit;transition:all .15s;letter-spacing:.02em}
@@ -1257,8 +1261,10 @@ function toggleBankStyle(type) {
   saveQuote();
 }
 function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-function resetItemSel(i) {
-  items[i].name = ''; saveQuote(); renderItems();
+function toggleItemSel(i) {
+  const sel = document.getElementById('nameSel-' + i);
+  if (!sel) return;
+  sel.style.display = sel.style.display === 'none' ? 'block' : 'none';
 }
 
 // ── Currency State ─────────────────────────────────────────────────────────────
@@ -1333,6 +1339,8 @@ function renderItems() {
     const opts = DB.products.map(p =>
       `<option value="${p.code}"${p.code===matchedCode?' selected':''}>${p.name}</option>`
     ).join('');
+    // escape for HTML attribute value
+    const safeName = it.name.replace(/"/g,'&quot;').replace(/</g,'&lt;');
 
     const imgCell = it.img
       ? `<div class="item-img-wrap">
@@ -1352,16 +1360,16 @@ function renderItems() {
       <td class="col-no" style="text-align:center;font-size:10px;color:#9CA3AF;padding:9px 6px">${i+1}</td>
       <td class="col-img item-img-cell">${imgCell}</td>
       <td class="col-name">
-        ${matchedCode==='__custom__'
-          ? `<div style="display:flex;align-items:flex-start;gap:3px">
-               <button class="btn-reset-sel" onclick="resetItemSel(${i})" title="품목 선택으로 돌아가기">↩</button>
-               <input class="cell-input name" value="${it.name}" placeholder="항목명" oninput="upd(${i},'name',this.value)" style="flex:1;border-top:1px solid #F0F2FF">
-             </div>`
-          : `<select class="cell-select" onchange="onProductSel(${i},this.value)">
-               <option value="">— 선택 —</option>
-               ${opts}
-               <option value="__custom__">직접입력</option>
-             </select>`}
+        <div class="name-wrap">
+          <div class="name-input-row">
+            <input class="cell-input name" value="${safeName}" placeholder="항목명 입력" oninput="upd(${i},'name',this.value)">
+            <button class="btn-show-sel" onclick="toggleItemSel(${i})" title="품목DB에서 선택">▼</button>
+          </div>
+          <select class="cell-select name-db-sel" id="nameSel-${i}" style="display:none" onchange="onProductSel(${i},this.value)">
+            <option value="">— 품목 선택 —</option>
+            ${opts}
+          </select>
+        </div>
       </td>
       <td><textarea class="cell-input desc" rows="1" placeholder="설명" oninput="upd(${i},'desc',this.value);autoResize(this)" style="overflow:hidden;resize:none;display:block">${it.desc}</textarea></td>
       <td class="col-price"><input class="cell-input ta-right" value="${currency==='USD'?(it.price/exchangeRate).toFixed(2):it.price.toLocaleString('ko-KR')}" oninput="updPrice(${i},this.value)" onblur="renderItems();saveQuote()"></td>
@@ -1386,13 +1394,13 @@ function renderItems() {
 }
 
 function onProductSel(i, code) {
+  if (!code) return; // "— 품목 선택 —" 헤더 클릭 무시
   const p = DB.products.find(x => x.code === code);
   if (p) {
     items[i] = { ...items[i], name:p.name, desc:p.desc, price:p.price, unit:p.unit };
-  } else if (code === '__custom__') {
-    items[i] = { ...items[i], name:'', desc:'', price:0, unit:'EA' };
   }
   renderItems(); saveQuote();
+  // 선택 후 드롭다운은 자동으로 사라짐 (renderItems 재생성)
 }
 
 function upd(i, field, val) {
