@@ -1208,11 +1208,20 @@ function saveQuote() {
   clearTimeout(window._fsQuoteTimer);
   window._fsQuoteTimer = setTimeout(function(){
     if(!window._fsDB) return;
+    const notesEl2 = document.getElementById('notesArea');
+    const bankEl2  = document.getElementById('bankDisplay');
+    const bankNoteEl2 = document.getElementById('bankNote');
     // Strip base64 images before sending to Firestore (1MB doc limit)
     const itemsNoImg = items.map(function(it){ var c = Object.assign({},it); delete c.img; return c; });
-    window._fsDB.collection('noa_data').doc('quote')
-      .set({db:{companies:DB.companies,clients:DB.clients,products:DB.products},items:itemsNoImg},{merge:true})
-      .catch(function(e){console.warn('Firestore saveQuote:',e);});
+    window._fsDB.collection('noa_data').doc('quote').set({
+      db: {companies:DB.companies, clients:DB.clients, products:DB.products},
+      items: itemsNoImg,
+      currency: currency,
+      exchangeRate: exchangeRate,
+      notesHTML:    notesEl2    ? notesEl2.innerHTML    : '',
+      bankHTML:     bankEl2     ? bankEl2.innerHTML     : '',
+      bankNoteHTML: bankNoteEl2 ? bankNoteEl2.innerHTML : ''
+    }).catch(function(e){console.warn('Firestore saveQuote:',e);});
   },600);
 }
 
@@ -1671,11 +1680,28 @@ setToday();
           items.length = 0;
           d.items.forEach(function(x){ items.push(x); });
         }
-        localStorage.setItem(_QUOTE_KEY, JSON.stringify({db:DB, items:items, currency:currency, exchangeRate:exchangeRate}));
+        if(d.currency)     currency     = d.currency;
+        if(d.exchangeRate) exchangeRate = d.exchangeRate;
+        if(d.notesHTML    != null) _savedNotesHTML    = d.notesHTML;
+        if(d.bankHTML     != null) _savedBankHTML     = d.bankHTML;
+        if(d.bankNoteHTML != null) _savedBankNoteHTML = d.bankNoteHTML;
+        localStorage.setItem(_QUOTE_KEY, JSON.stringify({
+          db:DB, items:items, currency:currency, exchangeRate:exchangeRate,
+          notesHTML:_savedNotesHTML, bankHTML:_savedBankHTML, bankNoteHTML:_savedBankNoteHTML
+        }));
       } else {
+        // 최초 진입: localStorage 데이터를 Firestore에 업로드
+        var initNotesEl = document.getElementById('notesArea');
+        var initBankEl  = document.getElementById('bankDisplay');
+        var initBankNoteEl = document.getElementById('bankNote');
         await window._fsDB.collection('noa_data').doc('quote').set({
           db:{companies:DB.companies,clients:DB.clients,products:DB.products},
-          items:items
+          items:items,
+          currency:currency,
+          exchangeRate:exchangeRate,
+          notesHTML:    initNotesEl    ? initNotesEl.innerHTML    : '',
+          bankHTML:     initBankEl     ? initBankEl.innerHTML     : '',
+          bankNoteHTML: initBankNoteEl ? initBankNoteEl.innerHTML : ''
         });
       }
     }
