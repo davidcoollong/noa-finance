@@ -518,7 +518,7 @@ body {
   .notes-section { padding: 10px 20px !important; }
   .notes-textarea { font-size: 9px !important; min-height: unset !important; height: auto !important; overflow: visible !important; line-height: 1.6 !important; }
   .notes-content { font-size: 9px !important; min-height: unset !important; line-height: 1.6 !important; }
-  .text-toolbar { display: none !important; }
+  .text-toolbar, .tt-color { display: none !important; }
   .summary-section { padding: 10px 16px !important; }
   .sum-row     { font-size: 11px !important; padding: 5px 0 !important; }
   .sum-row.final { padding: 8px 12px !important; }
@@ -620,6 +620,7 @@ body {
 .tt-btn{width:24px;height:24px;border:1px solid #E5E7EB;border-radius:5px;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;display:flex;align-items:center;justify-content:center;color:#374151;padding:0}
 .tt-btn.active{background:#0432FF;color:#fff;border-color:#0432FF}
 .tt-btn:hover:not(.active){background:#F3F4F6}
+.tt-color{width:24px;height:24px;border:1px solid #E5E7EB;border-radius:5px;padding:1px;cursor:pointer;background:none}
 .notes-content{
   font-family:'Pretendard',sans-serif;font-size:11px;color:#374151;
   line-height:1.75;background:transparent;border:none;outline:none;
@@ -890,20 +891,21 @@ body {
       <div class="notes-section">
         <div class="section-label"><span class="bullet">●</span> 참고사항</div>
         <div class="text-toolbar" id="notesToolbar">
-          <select class="tt-sel" id="notesFontFamily" onchange="updNotesStyle()">
+          <select class="tt-sel" id="notesFontFamily" onchange="applyFmt('notesArea','fontFamily',this.value)">
             <option value="'Pretendard',sans-serif">Pretendard</option>
             <option value="Arial,sans-serif">Arial</option>
             <option value="'Times New Roman',serif">Times NR</option>
             <option value="'Malgun Gothic',sans-serif">맑은고딕</option>
           </select>
-          <select class="tt-sel" id="notesFontSize" onchange="updNotesStyle()">
+          <select class="tt-sel" id="notesFontSize" onchange="applyFmt('notesArea','fontSize',this.value)">
             <option value="8px">8</option><option value="9px">9</option><option value="10px">10</option>
             <option value="11px" selected>11</option><option value="12px">12</option>
             <option value="13px">13</option><option value="14px">14</option>
           </select>
           <span class="tt-label">px</span>
-          <button class="tt-btn" id="notesBoldBtn" onclick="toggleNotesStyle('bold')" title="굵게"><b>B</b></button>
-          <button class="tt-btn" id="notesItalicBtn" onclick="toggleNotesStyle('italic')" title="기울임"><i>I</i></button>
+          <button class="tt-btn" id="notesBoldBtn" onmousedown="event.preventDefault();applyFmt('notesArea','bold')" title="굵게"><b>B</b></button>
+          <button class="tt-btn" id="notesItalicBtn" onmousedown="event.preventDefault();applyFmt('notesArea','italic')" title="기울임"><i>I</i></button>
+          <input type="color" class="tt-color" value="#374151" onchange="applyFmt('notesArea','color',this.value)" title="글자 색상">
         </div>
         <div class="notes-content" id="notesArea" contenteditable="true" oninput="saveQuote()" spellcheck="false">1. 본 견적은 최종 확정된, 디자인과 사양을 반영하였습니다.
 2. 사양변경에 따른 일정변경과 견적추가는 발주사에 책임이 있습니다.
@@ -916,20 +918,21 @@ body {
         <div style="margin-top:20px">
           <div class="section-label"><span class="bullet">●</span> 입금정보</div>
           <div class="text-toolbar" id="bankToolbar">
-            <select class="tt-sel" id="bankFontFamily" onchange="updBankStyle()">
+            <select class="tt-sel" id="bankFontFamily" onchange="applyFmt(_bankFocusId(),'fontFamily',this.value)">
               <option value="'Pretendard',sans-serif">Pretendard</option>
               <option value="Arial,sans-serif">Arial</option>
               <option value="'Times New Roman',serif">Times NR</option>
               <option value="'Malgun Gothic',sans-serif">맑은고딕</option>
             </select>
-            <select class="tt-sel" id="bankFontSize" onchange="updBankStyle()">
+            <select class="tt-sel" id="bankFontSize" onchange="applyFmt(_bankFocusId(),'fontSize',this.value)">
               <option value="8px">8</option><option value="9px">9</option><option value="10px">10</option>
               <option value="11px" selected>11</option><option value="12px">12</option>
               <option value="13px">13</option><option value="14px">14</option>
             </select>
             <span class="tt-label">px</span>
-            <button class="tt-btn active" id="bankBoldBtn" onclick="toggleBankStyle('bold')" title="굵게"><b>B</b></button>
-            <button class="tt-btn" id="bankItalicBtn" onclick="toggleBankStyle('italic')" title="기울임"><i>I</i></button>
+            <button class="tt-btn" id="bankBoldBtn" onmousedown="event.preventDefault();applyFmt(_bankFocusId(),'bold')" title="굵게"><b>B</b></button>
+            <button class="tt-btn" id="bankItalicBtn" onmousedown="event.preventDefault();applyFmt(_bankFocusId(),'italic')" title="기울임"><i>I</i></button>
+            <input type="color" class="tt-color" value="#000000" onchange="applyFmt(_bankFocusId(),'color',this.value)" title="글자 색상">
           </div>
           <div class="notes-content bank" id="bankDisplay" contenteditable="true" oninput="saveQuote()" spellcheck="false">-</div>
           <div class="notes-content bank-note" id="bankNote" contenteditable="true" oninput="saveQuote()" spellcheck="false">견적 유효기간 이내에 납부 부탁드립니다. :)</div>
@@ -1101,18 +1104,17 @@ const _ITEMS_DEFAULTS = [
   { name:'물류/관세 8% (디트로이트 ZOO)', desc:'관세 8%, 물류비(3일 운송)',price:1920000, qty:1,   unit:'EA' }
 ];
 
-let _savedNotes = null, _savedBankText = null, _savedBankNoteText = null;
+let _savedNotesHTML = null, _savedBankHTML = null, _savedBankNoteHTML = null;
 (function _loadQuoteStorage() {
   try {
     const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
     if (saved) {
       if (saved.db) { Object.assign(_DB_DEFAULTS, saved.db); }
       if (saved.items) { _ITEMS_DEFAULTS.length = 0; saved.items.forEach(x => _ITEMS_DEFAULTS.push(x)); }
-      if (saved.notesStyle) Object.assign(notesStyle, saved.notesStyle);
-      if (saved.bankStyle)  Object.assign(bankStyle,  saved.bankStyle);
-      if (saved.notesText != null)    _savedNotes       = saved.notesText;
-      if (saved.bankText != null)     _savedBankText    = saved.bankText;
-      if (saved.bankNoteText != null) _savedBankNoteText = saved.bankNoteText;
+      // HTML 우선, 없으면 구버전 텍스트 폴백
+      _savedNotesHTML   = saved.notesHTML   != null ? saved.notesHTML   : (saved.notesText   != null ? saved.notesText.replace(/\n/g,'<br>') : null);
+      _savedBankHTML    = saved.bankHTML     != null ? saved.bankHTML    : (saved.bankText     != null ? saved.bankText : null);
+      _savedBankNoteHTML= saved.bankNoteHTML != null ? saved.bankNoteHTML: (saved.bankNoteText != null ? saved.bankNoteText : null);
     }
   } catch(e) {}
 })();
@@ -1199,10 +1201,9 @@ function saveQuote() {
   const notesEl = $('notesArea'), bankEl = $('bankDisplay'), bankNoteEl = $('bankNote');
   localStorage.setItem(_QUOTE_KEY, JSON.stringify({
     db: DB, items: items, currency: currency, exchangeRate: exchangeRate,
-    notesText: notesEl ? notesEl.innerText : '',
-    bankText: bankEl ? bankEl.innerText : '',
-    bankNoteText: bankNoteEl ? bankNoteEl.innerText : '',
-    notesStyle: notesStyle, bankStyle: bankStyle
+    notesHTML:    notesEl    ? notesEl.innerHTML    : '',
+    bankHTML:     bankEl     ? bankEl.innerHTML     : '',
+    bankNoteHTML: bankNoteEl ? bankNoteEl.innerHTML : ''
   }));
   clearTimeout(window._fsQuoteTimer);
   window._fsQuoteTimer = setTimeout(function(){
@@ -1215,51 +1216,90 @@ function saveQuote() {
   },600);
 }
 
-// ── Notes / Bank Style ────────────────────────────────────────────────────────
-let notesStyle = { fontFamily:"'Pretendard',sans-serif", fontSize:"11px", fontWeight:"400", fontStyle:"normal" };
-let bankStyle  = { fontFamily:"'Pretendard',sans-serif", fontSize:"11px", fontWeight:"500", fontStyle:"normal" };
+// ── Rich Text Formatting (선택영역별 서식) ────────────────────────────────────
+// selectionchange 로 선택영역 자동 저장
+const _RICH_IDS = ['notesArea','bankDisplay','bankNote'];
+const _selRanges = {};
+document.addEventListener('selectionchange', function() {
+  try {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    for (const id of _RICH_IDS) {
+      const el = document.getElementById(id);
+      if (el && el.contains(range.commonAncestorContainer)) {
+        _selRanges[id] = range.cloneRange();
+        break;
+      }
+    }
+  } catch(e) {}
+});
 
-function _applyTextStyle(elId, style) {
+function _restoreSel(elId) {
+  try {
+    const r = _selRanges[elId];
+    if (!r) return false;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+    return true;
+  } catch(e) { return false; }
+}
+
+// font-size 적용: execCommand fontSize marker → span 교체
+function _applyFontSize(elId, pxSize) {
   const el = $(elId); if (!el) return;
-  el.style.fontFamily  = style.fontFamily;
-  el.style.fontSize    = style.fontSize;
-  el.style.fontWeight  = style.fontWeight;
-  el.style.fontStyle   = style.fontStyle;
-}
-function _applyToolbarUI(prefix, style) {
-  const ff = $(prefix+'FontFamily'); if(ff) ff.value = style.fontFamily;
-  const fs = $(prefix+'FontSize');   if(fs) fs.value = style.fontSize;
-  const bb = $(prefix+'BoldBtn');    if(bb) bb.classList.toggle('active', style.fontWeight === '700');
-  const ib = $(prefix+'ItalicBtn'); if(ib) ib.classList.toggle('active', style.fontStyle === 'italic');
-}
-function updNotesStyle() {
-  notesStyle.fontFamily = $('notesFontFamily').value;
-  notesStyle.fontSize   = $('notesFontSize').value;
-  _applyTextStyle('notesArea', notesStyle);
+  el.focus();
+  _restoreSel(elId);
+  const marker = Date.now().toString(36); // 유니크 마커
+  el.querySelectorAll('font[__m]').forEach(f => f.removeAttribute('__m'));
+  document.execCommand('fontSize', false, '7');
+  el.querySelectorAll('font[size="7"]').forEach(function(f) {
+    const s = document.createElement('span');
+    s.style.fontSize = pxSize;
+    while (f.firstChild) s.appendChild(f.firstChild);
+    f.parentNode.replaceChild(s, f);
+  });
   saveQuote();
 }
-function updBankStyle() {
-  bankStyle.fontFamily = $('bankFontFamily').value;
-  bankStyle.fontSize   = $('bankFontSize').value;
-  _applyTextStyle('bankDisplay', bankStyle);
-  _applyTextStyle('bankNote', { ...bankStyle, fontWeight:'400' });
+
+// 나머지 서식: bold / italic / fontName / foreColor
+function _execFmt(elId, cmd, value) {
+  const el = $(elId); if (!el) return;
+  el.focus();
+  _restoreSel(elId);
+  if (value !== undefined) document.execCommand(cmd, false, value);
+  else document.execCommand(cmd);
   saveQuote();
+  // B/I 버튼 상태 갱신
+  _updFmtBtns(elId);
 }
-function toggleNotesStyle(type) {
-  if (type === 'bold')   notesStyle.fontWeight = notesStyle.fontWeight==='700' ? '400' : '700';
-  if (type === 'italic') notesStyle.fontStyle  = notesStyle.fontStyle==='italic' ? 'normal' : 'italic';
-  _applyTextStyle('notesArea', notesStyle);
-  _applyToolbarUI('notes', notesStyle);
-  saveQuote();
+
+function _updFmtBtns(elId) {
+  const prefix = elId === 'notesArea' ? 'notes' : 'bank';
+  try {
+    const bb = $(prefix+'BoldBtn');   if(bb) bb.classList.toggle('active', document.queryCommandState('bold'));
+    const ib = $(prefix+'ItalicBtn');if(ib) ib.classList.toggle('active', document.queryCommandState('italic'));
+  } catch(e) {}
 }
-function toggleBankStyle(type) {
-  if (type === 'bold')   bankStyle.fontWeight = bankStyle.fontWeight==='700' ? '400' : '700';
-  if (type === 'italic') bankStyle.fontStyle  = bankStyle.fontStyle==='italic' ? 'normal' : 'italic';
-  _applyTextStyle('bankDisplay', bankStyle);
-  _applyTextStyle('bankNote', { ...bankStyle, fontWeight: type==='bold' ? bankStyle.fontWeight : '400' });
-  _applyToolbarUI('bank', bankStyle);
-  saveQuote();
+
+// 툴바 select onchange 핸들러 (포커스가 이미 이동됐으므로 _restoreSel 필수)
+function applyFmt(elId, type, value) {
+  if (type === 'fontSize')  { _applyFontSize(elId, value); return; }
+  if (type === 'fontFamily'){ _execFmt(elId, 'fontName', value); return; }
+  if (type === 'color')     { _execFmt(elId, 'foreColor', value); return; }
+  if (type === 'bold')      { _execFmt(elId, 'bold'); return; }
+  if (type === 'italic')    { _execFmt(elId, 'italic'); return; }
 }
+
+// 입금정보 툴바: bankDisplay / bankNote 중 마지막 포커스된 요소 반환
+let _lastBankEl = 'bankDisplay';
+function _bankFocusId() { return _lastBankEl; }
+['bankDisplay','bankNote'].forEach(function(id) {
+  document.addEventListener('focusin', function(e) {
+    if (e.target && e.target.id === id) _lastBankEl = id;
+  });
+});
 function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
 function toggleItemSel(i) {
   const sel = document.getElementById('nameSel-' + i);
@@ -1642,15 +1682,10 @@ setToday();
   } catch(e){ console.warn('Firestore init failed, using local cache:',e); }
   populateSels();
   _applyInitialCurrency();
-  // Restore notes/bank styles and text
-  if (_savedNotes != null) { const el = $('notesArea'); if(el) el.innerText = _savedNotes; }
-  if (_savedBankText != null) { const el = $('bankDisplay'); if(el) el.innerText = _savedBankText; }
-  if (_savedBankNoteText != null) { const el = $('bankNote'); if(el) el.innerText = _savedBankNoteText; }
-  _applyTextStyle('notesArea', notesStyle);
-  _applyTextStyle('bankDisplay', bankStyle);
-  _applyTextStyle('bankNote', { ...bankStyle, fontWeight:'400' });
-  _applyToolbarUI('notes', notesStyle);
-  _applyToolbarUI('bank', bankStyle);
+  // Restore rich HTML content
+  if (_savedNotesHTML    != null) { const el = $('notesArea');    if(el) el.innerHTML = _savedNotesHTML; }
+  if (_savedBankHTML     != null) { const el = $('bankDisplay');  if(el) el.innerHTML = _savedBankHTML; }
+  if (_savedBankNoteHTML != null) { const el = $('bankNote');     if(el) el.innerHTML = _savedBankNoteHTML; }
   renderItems();
   // Auto-resize all desc textareas after render
   setTimeout(function(){ document.querySelectorAll('.cell-input.desc').forEach(function(el){ autoResize(el); }); }, 0);
