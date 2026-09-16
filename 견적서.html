@@ -245,7 +245,7 @@ body {
 .ce-field:focus { background: #F0F2FF; }
 
 /* ── Optional photo add button ── */
-.item-photo-add { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: none; border: 1px dashed #E5E7EB; border-radius: 6px; cursor: pointer; font-size: 14px; color: #D1D5DB; transition: border-color 0.15s, color 0.15s; margin: 0 auto; }
+.item-photo-add { display: flex; align-items: center; justify-content: center; width: 100%; height: 32px; background: none; border: 1px dashed #E5E7EB; border-radius: 4px; cursor: pointer; font-size: 13px; color: #D1D5DB; transition: border-color 0.15s, color 0.15s; }
 .item-photo-add:hover { border-color: #0432FF; color: #0432FF; }
 
 .cell-input {
@@ -292,7 +292,7 @@ body {
 .cell-del { text-align: center; padding: 2px 6px; }
 
 .col-no   { width: 32px; }
-.col-img  { width: 88px; }
+.col-img  { width: 80px; }
 .col-name { width: 170px; }
 .col-desc { }
 .col-price { width: 100px; }
@@ -302,12 +302,12 @@ body {
 .col-del { width: 38px; }
 
 /* ── Item image cell ── */
-.item-img-cell { padding: 6px 8px !important; vertical-align: middle; }
-.item-img-wrap { position: relative; display: inline-block; }
+.item-img-cell { padding: 2px 4px !important; vertical-align: middle; }
+.item-img-wrap { position: relative; display: block; }
 .item-img-thumb {
-  width: 72px; height: 72px;
+  width: 100%; height: 36px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid #E5E7EB;
   display: block;
   cursor: pointer;
@@ -537,7 +537,7 @@ body {
   .cell-input  { font-size: 9px !important; padding: 6px 8px !important; }
   .cell-amount { font-size: 9px !important; padding: 6px 8px !important; }
   /* Image column: scale down for print, hide upload UI */
-  .item-img-thumb { width: 56px !important; height: 56px !important; }
+  .item-img-thumb { width: 100% !important; height: 28px !important; }
   .item-img-del, .item-img-placeholder, .item-img-input { display: none !important; }
   .group-header-row td { background: #F3F4F6 !important; }
   .ce-field { padding: 6px 8px !important; font-size: 9px !important; }
