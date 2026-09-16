@@ -969,6 +969,13 @@ body {
           </tr>
         </thead>
         <tbody id="itemsBody"></tbody>
+        <tfoot>
+          <tr style="border-top:2px solid #E5E7EB">
+            <td colspan="7" style="text-align:right;font-size:11px;font-weight:600;color:#6B7280;padding:10px 12px;letter-spacing:-0.01em">총 합계</td>
+            <td class="cell-amount" id="itemsTableTotal" style="font-size:14px;font-weight:700;color:#000;padding:10px 12px"></td>
+            <td class="col-del cell-del"></td>
+          </tr>
+        </tfoot>
       </table>
       <div class="items-add-btns">
         <button class="btn-add-group" onclick="addGroup()">+ 아이템 추가</button>
@@ -1199,6 +1206,12 @@ const _ITEMS_DEFAULTS = [
 
 let _savedNotesHTML = null, _savedBankHTML = null, _savedBankNoteHTML = null;
 
+function _ensureGrouped(arr) {
+  if (arr.length > 0 && !arr.some(function(it){ return it._group; })) {
+    arr.unshift({ _group: true, groupName: '아이템 1' });
+  }
+}
+
 // ── Inline Format State ────────────────────────────────────────────────────────
 let _partyNameFmt = { fontSize:'14px', bold:true,  color:'#000000' };
 let _partyRowFmt  = { fontSize:'10px', bold:false, color:'#000000' };
@@ -1210,7 +1223,7 @@ let _savedDocTitleHTML = null;
     const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
     if (saved) {
       if (saved.db) { Object.assign(_DB_DEFAULTS, saved.db); }
-      if (saved.items) { _ITEMS_DEFAULTS.length = 0; saved.items.forEach(x => _ITEMS_DEFAULTS.push(x)); }
+      if (saved.items) { _ITEMS_DEFAULTS.length = 0; saved.items.forEach(x => _ITEMS_DEFAULTS.push(x)); _ensureGrouped(_ITEMS_DEFAULTS); }
       // HTML 우선, 없으면 구버전 텍스트 폴백
       _savedNotesHTML   = saved.notesHTML   != null ? saved.notesHTML   : (saved.notesText   != null ? saved.notesText.replace(/\n/g,'<br>') : null);
       _savedBankHTML    = saved.bankHTML     != null ? saved.bankHTML    : (saved.bankText     != null ? saved.bankText : null);
@@ -1658,6 +1671,7 @@ function renderItems() {
   $('sumSupply').textContent = fmtMoney(total);
   $('sumVat').textContent = fmtMoney(vat);
   $('sumFinal').textContent = fmtMoney(final);
+  if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(total);
   _applyItemsFmt();
 }
 
@@ -1715,6 +1729,7 @@ function _updTotals() {
   $('sumSupply').textContent = fmtMoney(total);
   $('sumVat').textContent    = fmtMoney(vat);
   $('sumFinal').textContent  = fmtMoney(fin);
+  if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(total);
   _updateGroupSubtotals();
 }
 
@@ -1927,6 +1942,7 @@ setToday();
         if(d.items && d.items.length > 0){
           items.length = 0;
           d.items.forEach(function(x){ items.push(x); });
+          _ensureGrouped(items);
         }
         if(d.currency)     currency     = d.currency;
         if(d.exchangeRate) exchangeRate = d.exchangeRate;
