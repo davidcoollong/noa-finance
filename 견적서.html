@@ -101,8 +101,11 @@ body {
   width: 100%;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  min-height: 1.2em;
+  cursor: text;
+  word-break: break-word;
 }
-.doc-title-input::placeholder { color: #D1D5DB; }
+.doc-title-input:empty::before { content: '견적서 제목을 입력하세요'; color: #D1D5DB; pointer-events: none; }
 .doc-brand {
   font-size: 14px;
   font-weight: 700;
@@ -821,17 +824,17 @@ body {
       <div style="flex:1;min-width:0">
         <div class="fmt-bar" id="titleFmtBar" style="margin-bottom:6px">
           <span class="fmt-label">타이틀</span>
-          <select class="tt-sel" id="titleFontSize" onchange="setTitleFmt('fontSize',this.value)">
+          <select class="tt-sel" id="titleFontSize" onchange="applyFmt('docTitle','fontSize',this.value)">
             <option value="18px">18</option><option value="20px">20</option><option value="22px">22</option>
             <option value="24px">24</option><option value="26px">26</option><option value="28px">28</option>
             <option value="30px" selected>30</option><option value="32px">32</option>
             <option value="36px">36</option><option value="40px">40</option><option value="48px">48</option>
           </select>
           <span class="tt-label">px</span>
-          <button class="tt-btn" id="titleBoldBtn" onmousedown="event.preventDefault();setTitleFmt('bold')" title="굵게"><b>B</b></button>
-          <input type="color" class="tt-color" id="titleColorPicker" value="#000000" onchange="setTitleFmt('color',this.value)" title="글자 색상">
+          <button class="tt-btn" id="titleBoldBtn" onmousedown="event.preventDefault();applyFmt('docTitle','bold')" title="굵게"><b>B</b></button>
+          <input type="color" class="tt-color" id="titleColorPicker" value="#000000" onchange="applyFmt('docTitle','color',this.value)" title="글자 색상">
         </div>
-        <input class="doc-title-input" id="docTitle" type="text" value="코렐라인 스노우볼 2종 제작 견적서" placeholder="견적서 제목을 입력하세요">
+        <div class="doc-title-input" id="docTitle" contenteditable="true" spellcheck="false" oninput="saveQuote()">코렐라인 스노우볼 2종 제작 견적서</div>
       </div>
       <div class="doc-brand">NOA&ARK</div>
     </div>
@@ -1162,10 +1165,10 @@ const _ITEMS_DEFAULTS = [
 let _savedNotesHTML = null, _savedBankHTML = null, _savedBankNoteHTML = null;
 
 // ── Inline Format State ────────────────────────────────────────────────────────
-let _titleFmt     = { fontSize:'30px', bold:true,  color:'#000000' };
 let _partyNameFmt = { fontSize:'14px', bold:true,  color:'#000000' };
 let _partyRowFmt  = { fontSize:'10px', bold:false, color:'#000000' };
 let _itemsFmt     = { fontSize:'10px', bold:false, color:'#000000' };
+let _savedDocTitleHTML = null;
 
 (function _loadQuoteStorage() {
   try {
@@ -1177,7 +1180,7 @@ let _itemsFmt     = { fontSize:'10px', bold:false, color:'#000000' };
       _savedNotesHTML   = saved.notesHTML   != null ? saved.notesHTML   : (saved.notesText   != null ? saved.notesText.replace(/\n/g,'<br>') : null);
       _savedBankHTML    = saved.bankHTML     != null ? saved.bankHTML    : (saved.bankText     != null ? saved.bankText : null);
       _savedBankNoteHTML= saved.bankNoteHTML != null ? saved.bankNoteHTML: (saved.bankNoteText != null ? saved.bankNoteText : null);
-      if (saved.titleFmt)     _titleFmt     = Object.assign(_titleFmt,     saved.titleFmt);
+      if (saved.docTitleHTML != null) _savedDocTitleHTML = saved.docTitleHTML;
       if (saved.partyNameFmt) _partyNameFmt = Object.assign(_partyNameFmt, saved.partyNameFmt);
       if (saved.partyRowFmt)  _partyRowFmt  = Object.assign(_partyRowFmt,  saved.partyRowFmt);
       if (saved.itemsFmt)     _itemsFmt     = Object.assign(_itemsFmt,     saved.itemsFmt);
@@ -1198,7 +1201,7 @@ function _loadHistory() {
 function _saveHistory(arr) { localStorage.setItem(HIST_KEY, JSON.stringify(arr)); }
 
 function saveCurrentToHistory() {
-  const title = ($('docTitle') && $('docTitle').value) || '제목 없음';
+  const title = ($('docTitle') && ($('docTitle').innerText || $('docTitle').textContent).trim()) || '제목 없음';
   const quoteDate = $('metaDate') ? $('metaDate').value : '';
   const no = $('metaNo') ? $('metaNo').value : '';
   const mgr = $('metaMgr') ? $('metaMgr').value : '';
@@ -1222,7 +1225,7 @@ function saveCurrentToHistory() {
 function loadQuoteFromHistory(id) {
   const snap = _loadHistory().find(h => h.id === id);
   if (!snap) return;
-  if ($('docTitle')) $('docTitle').value = snap.title || '';
+  if ($('docTitle')) $('docTitle').innerText = snap.title || '';
   if ($('metaDate')) $('metaDate').value = snap.quoteDate || '';
   if ($('metaNo'))   $('metaNo').value   = snap.no || '';
   if ($('metaMgr'))  $('metaMgr').value  = snap.mgr || '';
@@ -1265,13 +1268,14 @@ function renderHistoryList(activeId) {
 
 function saveQuote() {
   const notesEl = $('notesArea'), bankEl = $('bankDisplay'), bankNoteEl = $('bankNote');
+  const titleEl = $('docTitle');
   localStorage.setItem(_QUOTE_KEY, JSON.stringify({
     db: DB, items: items, currency: currency, exchangeRate: exchangeRate,
+    docTitleHTML: titleEl ? titleEl.innerHTML : '',
     notesHTML:    notesEl    ? notesEl.innerHTML    : '',
     bankHTML:     bankEl     ? bankEl.innerHTML     : '',
     bankNoteHTML: bankNoteEl ? bankNoteEl.innerHTML : '',
-    titleFmt: _titleFmt, partyNameFmt: _partyNameFmt,
-    partyRowFmt: _partyRowFmt, itemsFmt: _itemsFmt
+    partyNameFmt: _partyNameFmt, partyRowFmt: _partyRowFmt, itemsFmt: _itemsFmt
   }));
   clearTimeout(window._fsQuoteTimer);
   window._fsQuoteTimer = setTimeout(function(){
@@ -1281,23 +1285,24 @@ function saveQuote() {
     const bankNoteEl2 = document.getElementById('bankNote');
     // Strip base64 images before sending to Firestore (1MB doc limit)
     const itemsNoImg = items.map(function(it){ var c = Object.assign({},it); delete c.img; return c; });
+    const titleEl2 = document.getElementById('docTitle');
     window._fsDB.collection('noa_data').doc('quote').set({
       db: {companies:DB.companies, clients:DB.clients, products:DB.products},
       items: itemsNoImg,
       currency: currency,
       exchangeRate: exchangeRate,
+      docTitleHTML: titleEl2 ? titleEl2.innerHTML : '',
       notesHTML:    notesEl2    ? notesEl2.innerHTML    : '',
       bankHTML:     bankEl2     ? bankEl2.innerHTML     : '',
       bankNoteHTML: bankNoteEl2 ? bankNoteEl2.innerHTML : '',
-      titleFmt: _titleFmt, partyNameFmt: _partyNameFmt,
-      partyRowFmt: _partyRowFmt, itemsFmt: _itemsFmt
+      partyNameFmt: _partyNameFmt, partyRowFmt: _partyRowFmt, itemsFmt: _itemsFmt
     }).catch(function(e){console.warn('Firestore saveQuote:',e);});
   },600);
 }
 
 // ── Rich Text Formatting (선택영역별 서식) ────────────────────────────────────
 // selectionchange 로 선택영역 자동 저장
-const _RICH_IDS = ['notesArea','bankDisplay','bankNote'];
+const _RICH_IDS = ['docTitle','notesArea','bankDisplay','bankNote'];
 const _selRanges = {};
 document.addEventListener('selectionchange', function() {
   try {
@@ -1355,10 +1360,13 @@ function _execFmt(elId, cmd, value) {
 }
 
 function _updFmtBtns(elId) {
-  const prefix = elId === 'notesArea' ? 'notes' : 'bank';
+  let prefix;
+  if (elId === 'notesArea') prefix = 'notes';
+  else if (elId === 'docTitle') prefix = 'title';
+  else prefix = 'bank';
   try {
-    const bb = $(prefix+'BoldBtn');   if(bb) bb.classList.toggle('active', document.queryCommandState('bold'));
-    const ib = $(prefix+'ItalicBtn');if(ib) ib.classList.toggle('active', document.queryCommandState('italic'));
+    const bb = $(prefix+'BoldBtn');    if(bb) bb.classList.toggle('active', document.queryCommandState('bold'));
+    const ib = $(prefix+'ItalicBtn'); if(ib) ib.classList.toggle('active', document.queryCommandState('italic'));
   } catch(e) {}
 }
 
@@ -1371,20 +1379,7 @@ function applyFmt(elId, type, value) {
   if (type === 'italic')    { _execFmt(elId, 'italic'); return; }
 }
 
-// ── Title / Party / Items 인라인 서식 ────────────────────────────────────────
-function setTitleFmt(prop, val) {
-  if (prop === 'bold') _titleFmt.bold = !_titleFmt.bold;
-  else _titleFmt[prop] = val;
-  _applyTitleFmt(); saveQuote();
-}
-function _applyTitleFmt() {
-  const el = $('docTitle'); if (!el) return;
-  el.style.fontSize   = _titleFmt.fontSize;
-  el.style.fontWeight = _titleFmt.bold ? '700' : '400';
-  el.style.color      = _titleFmt.color;
-  const btn = $('titleBoldBtn'); if (btn) btn.classList.toggle('active', _titleFmt.bold);
-}
-
+// ── Party / Items 인라인 서식 ────────────────────────────────────────────────
 function setPartyFmt(which, prop, val) {
   const state = which === 'name' ? _partyNameFmt : _partyRowFmt;
   if (prop === 'bold') state.bold = !state.bold;
@@ -1423,15 +1418,12 @@ function _applyItemsFmt() {
 }
 
 function _initFmtUI() {
-  var ts = $('titleFontSize');    if (ts) ts.value = _titleFmt.fontSize;
-  var tc = $('titleColorPicker'); if (tc) tc.value = _titleFmt.color;
   var pns = $('partyNameFontSize'); if (pns) pns.value = _partyNameFmt.fontSize;
   var pnc = $('partyNameColor');    if (pnc) pnc.value = _partyNameFmt.color;
   var prs = $('partyRowFontSize');  if (prs) prs.value = _partyRowFmt.fontSize;
   var prc = $('partyRowColor');     if (prc) prc.value = _partyRowFmt.color;
   var is_ = $('itemsFontSize'); if (is_) is_.value = _itemsFmt.fontSize;
   var ic  = $('itemsColor');    if (ic)  ic.value  = _itemsFmt.color;
-  _applyTitleFmt();
   _applyPartyFmt();
   _applyItemsFmt();
 }
@@ -1787,7 +1779,7 @@ function switchTab(btn, name) {
 function resetDoc() {
   if (!confirm('새 견적서를 작성하시겠습니까? 현재 내용이 초기화됩니다.')) return;
   saveCurrentToHistory();
-  $('docTitle').value = '견적서';
+  $('docTitle').innerText = '견적서';
   $('metaNo').value = 'NO-' + Date.now().toString().slice(-6);
   $('metaMgr').value = '';
   $('senderSel').value = ''; $('receiverSel').value = '';
@@ -1818,17 +1810,18 @@ setToday();
         }
         if(d.currency)     currency     = d.currency;
         if(d.exchangeRate) exchangeRate = d.exchangeRate;
+        if(d.docTitleHTML != null) _savedDocTitleHTML = d.docTitleHTML;
         if(d.notesHTML    != null) _savedNotesHTML    = d.notesHTML;
         if(d.bankHTML     != null) _savedBankHTML     = d.bankHTML;
         if(d.bankNoteHTML != null) _savedBankNoteHTML = d.bankNoteHTML;
-        if(d.titleFmt)     _titleFmt     = Object.assign(_titleFmt,     d.titleFmt);
         if(d.partyNameFmt) _partyNameFmt = Object.assign(_partyNameFmt, d.partyNameFmt);
         if(d.partyRowFmt)  _partyRowFmt  = Object.assign(_partyRowFmt,  d.partyRowFmt);
         if(d.itemsFmt)     _itemsFmt     = Object.assign(_itemsFmt,     d.itemsFmt);
         localStorage.setItem(_QUOTE_KEY, JSON.stringify({
           db:DB, items:items, currency:currency, exchangeRate:exchangeRate,
+          docTitleHTML:_savedDocTitleHTML,
           notesHTML:_savedNotesHTML, bankHTML:_savedBankHTML, bankNoteHTML:_savedBankNoteHTML,
-          titleFmt:_titleFmt, partyNameFmt:_partyNameFmt, partyRowFmt:_partyRowFmt, itemsFmt:_itemsFmt
+          partyNameFmt:_partyNameFmt, partyRowFmt:_partyRowFmt, itemsFmt:_itemsFmt
         }));
       } else {
         // 최초 진입: localStorage 데이터를 Firestore에 업로드
@@ -1850,6 +1843,7 @@ setToday();
   populateSels();
   _applyInitialCurrency();
   // Restore rich HTML content
+  if (_savedDocTitleHTML != null) { const el = $('docTitle');    if(el) el.innerHTML = _savedDocTitleHTML; }
   if (_savedNotesHTML    != null) { const el = $('notesArea');    if(el) el.innerHTML = _savedNotesHTML; }
   if (_savedBankHTML     != null) { const el = $('bankDisplay');  if(el) el.innerHTML = _savedBankHTML; }
   if (_savedBankNoteHTML != null) { const el = $('bankNote');     if(el) el.innerHTML = _savedBankNoteHTML; }
