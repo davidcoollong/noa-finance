@@ -191,7 +191,7 @@ body {
 
 /* ── Section Label ── */
 .section-label {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 700;
   color: #000;
   margin-bottom: 10px;
@@ -199,8 +199,8 @@ body {
   align-items: center;
   gap: 6px;
 }
-.section-label .bullet { color: #0432FF; font-size: 14px; }
-.section-label .sub { font-size: 11px; font-weight: 400; color: #6B7280; margin-left: 4px; }
+.section-label .bullet { color: #0432FF; font-size: 18px; }
+.section-label .sub { font-size: 15px; font-weight: 400; color: #6B7280; margin-left: 4px; }
 
 /* ── Items Table ── */
 .items-section { padding: 20px 36px; border-bottom: 1px solid #E5E7EB; }
@@ -232,12 +232,12 @@ body {
 .group-header-row td { padding: 0; background: #F3F4F6; border-bottom: none; }
 .group-header-inner { display: flex; align-items: center; gap: 10px; padding: 7px 10px; }
 .group-tag { font-size: 10px; font-weight: 600; color: #6B7280; background: #E5E7EB; padding: 2px 8px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; letter-spacing: 0; }
-.ce-group-name { font-size: 12px; font-weight: 600; color: #374151; outline: none; flex: 1; min-width: 60px; cursor: text; font-family: 'Pretendard', sans-serif; }
+.ce-group-name { font-size: 16px; font-weight: 600; color: #374151; outline: none; flex: 1; min-width: 60px; cursor: text; font-family: 'Pretendard', sans-serif; }
 .ce-group-name:empty::before { content: '아이템명 입력'; color: #D1D5DB; pointer-events: none; }
 .group-subtotal { font-size: 12px; font-weight: 700; color: #6B7280; white-space: nowrap; }
 
 /* ── Contenteditable item cells ── */
-.ce-field { outline: none; min-height: 1.4em; cursor: text; word-break: break-word; font-family: 'Pretendard', sans-serif; line-height: 1.5; padding: 4px 10px; display: block; width: 100%; }
+.ce-field { outline: none; min-height: 1.4em; cursor: text; word-break: break-word; font-family: 'Pretendard', sans-serif; line-height: 1.5; padding: 2px 10px; display: block; width: 100%; }
 .ce-name { font-size: 10px; font-weight: 600; }
 .ce-desc { font-size: 10px; color: #6B7280; }
 .ce-name:empty::before { content: '항목명'; color: #D1D5DB; pointer-events: none; }
@@ -257,7 +257,7 @@ body {
   background: transparent;
   border: none;
   outline: none;
-  padding: 4px 10px;
+  padding: 2px 10px;
 }
 .cell-input::placeholder { color: #D1D5DB; }
 .cell-input:focus { background: #F0F2FF; }
@@ -276,7 +276,7 @@ body {
   background: transparent;
   border: none;
   outline: none;
-  padding: 4px 6px;
+  padding: 2px 6px;
   cursor: pointer;
 }
 .cell-select:focus { background: #F0F2FF; }
@@ -286,10 +286,10 @@ body {
   font-weight: 700;
   color: #000;
   text-align: right;
-  padding: 4px 10px;
+  padding: 2px 10px;
   white-space: nowrap;
 }
-.cell-del { text-align: center; padding: 4px 6px; }
+.cell-del { text-align: center; padding: 2px 6px; }
 
 .col-no   { width: 32px; }
 .col-img  { width: 88px; }
@@ -1643,7 +1643,7 @@ function renderItems() {
       }
 
       tr.innerHTML =
-        '<td class="col-no" style="text-align:center;font-size:10px;color:#9CA3AF;padding:4px 6px">'+rowNo+'</td>' +
+        '<td class="col-no" style="text-align:center;font-size:10px;color:#9CA3AF;padding:2px 6px">'+rowNo+'</td>' +
         '<td class="col-img item-img-cell">'+imgCellHtml+'</td>' +
         '<td class="col-name"><div class="name-wrap">' +
           '<div class="name-input-row">' +
