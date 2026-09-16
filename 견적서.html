@@ -237,7 +237,7 @@ body {
 .group-subtotal { font-size: 12px; font-weight: 700; color: #6B7280; white-space: nowrap; }
 
 /* ── Contenteditable item cells ── */
-.ce-field { outline: none; min-height: 1.4em; cursor: text; word-break: break-word; font-family: 'Pretendard', sans-serif; line-height: 1.5; padding: 6px 10px; display: block; width: 100%; }
+.ce-field { outline: none; min-height: 1.4em; cursor: text; word-break: break-word; font-family: 'Pretendard', sans-serif; line-height: 1.5; padding: 4px 10px; display: block; width: 100%; }
 .ce-name { font-size: 10px; font-weight: 600; }
 .ce-desc { font-size: 10px; color: #6B7280; }
 .ce-name:empty::before { content: '항목명'; color: #D1D5DB; pointer-events: none; }
@@ -257,7 +257,7 @@ body {
   background: transparent;
   border: none;
   outline: none;
-  padding: 6px 10px;
+  padding: 4px 10px;
 }
 .cell-input::placeholder { color: #D1D5DB; }
 .cell-input:focus { background: #F0F2FF; }
@@ -276,7 +276,7 @@ body {
   background: transparent;
   border: none;
   outline: none;
-  padding: 6px 6px;
+  padding: 4px 6px;
   cursor: pointer;
 }
 .cell-select:focus { background: #F0F2FF; }
@@ -286,7 +286,7 @@ body {
   font-weight: 700;
   color: #000;
   text-align: right;
-  padding: 6px 10px;
+  padding: 4px 10px;
   white-space: nowrap;
 }
 .cell-del { text-align: center; padding: 4px 6px; }
@@ -1643,7 +1643,7 @@ function renderItems() {
       }
 
       tr.innerHTML =
-        '<td class="col-no" style="text-align:center;font-size:10px;color:#9CA3AF;padding:6px 6px">'+rowNo+'</td>' +
+        '<td class="col-no" style="text-align:center;font-size:10px;color:#9CA3AF;padding:4px 6px">'+rowNo+'</td>' +
         '<td class="col-img item-img-cell">'+imgCellHtml+'</td>' +
         '<td class="col-name"><div class="name-wrap">' +
           '<div class="name-input-row">' +
