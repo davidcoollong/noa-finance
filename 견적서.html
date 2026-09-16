@@ -486,22 +486,23 @@ body {
 /* ═══════════════════════════════ PRINT / PDF ═══════════════════════════════ */
 @media print {
   /* ── A4 page & margin ── */
-  @page { size: A4 portrait; margin: 10mm 12mm; }
+  @page { size: A4 portrait; margin: 8mm 10mm; }
 
   /* ── Render colours exactly ── */
   html, body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     background: #fff !important;
-    font-size: 10px !important;
   }
 
   /* ── Hide every web-only element ── */
   .app-bar, .cross-nav, .dbm, .btn-add-row, .btn-add-group, .items-add-btns, .btn-danger, .cell-del,
   .party-selector, #qh-sidebar, #backup-panel, #auth-overlay,
-  #pw-modal, #fs-loading, .item-photo-add { display: none !important; }
+  #pw-modal, #fs-loading, .item-photo-add,
+  .text-toolbar, .tt-color, .fmt-bar,
+  .btn-show-sel, .name-db-sel { display: none !important; }
 
-  /* ── Reset wrapper so sidebar doesn't bleed in ── */
+  /* ── Reset wrapper ── */
   .page-wrapper { display: block !important; max-width: 100% !important;
                   margin: 0 !important; padding: 0 !important; }
   .page         { margin: 0 !important; padding: 0 !important;
@@ -512,54 +513,9 @@ body {
     box-shadow: none !important;
     border-radius: 0 !important;
     border: 1px solid #E5E7EB !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
   }
 
-  /* ── Tighter spacing so doc fits on one A4 page ── */
-  .doc-logos   { padding: 10px 20px 8px !important; }
-  .doc-logo-left  { height: 50px !important; }
-  .doc-logo-right { height: 56px !important; }
-
-  .doc-header  { padding: 12px 20px 10px !important; }
-  .doc-title-input { font-size: 16px !important; }
-
-  .doc-meta    { padding: 7px 20px !important; gap: 18px !important; }
-
-  .party       { padding: 10px 20px !important; }
-  .party-name  { font-size: 12px !important; margin-bottom: 5px !important; }
-  .party-row   { font-size: 9px !important; margin-bottom: 2px !important; }
-
-  .items-section { padding: 10px 20px !important; }
-  .section-label { font-size: 10px !important; margin-bottom: 6px !important; }
-  .items-table thead tr th { font-size: 9px !important; padding: 7px 8px !important; }
-  .items-table tbody tr td { font-size: 9px !important; }
-  .cell-input  { font-size: 9px !important; padding: 6px 8px !important; }
-  .cell-amount { font-size: 9px !important; padding: 6px 8px !important; }
-  /* Image column: scale down for print, hide upload UI */
-  .item-img-thumb { width: 100% !important; height: 28px !important; }
-  .item-img-del, .item-img-placeholder, .item-img-input { display: none !important; }
-  .group-header-row td { background: #F3F4F6 !important; }
-  .ce-field { padding: 6px 8px !important; font-size: 9px !important; }
-  .group-header-inner { padding: 5px 8px !important; }
-  .group-tag { font-size: 9px !important; }
-  .ce-group-name { font-size: 11px !important; }
-  .group-subtotal { font-size: 10px !important; }
-  .item-img-cell { padding: 4px 6px !important; }
-  .col-img { width: 68px !important; }
-
-  .notes-section { padding: 10px 20px !important; }
-  .notes-textarea { font-size: 9px !important; min-height: unset !important; height: auto !important; overflow: visible !important; line-height: 1.6 !important; }
-  .notes-content { font-size: 9px !important; min-height: unset !important; line-height: 1.6 !important; }
-  .text-toolbar, .tt-color, .fmt-bar { display: none !important; }
-  .summary-section { padding: 10px 16px !important; }
-  .sum-row     { font-size: 11px !important; padding: 5px 0 !important; }
-  .sum-row.final { padding: 8px 12px !important; }
-  .sum-row.final .sum-label { font-size: 12px !important; }
-  .sum-row.final .sum-value { font-size: 13px !important; }
-  .bank-section { padding: 8px 20px !important; font-size: 9px !important; }
-
-  /* ── Remove all interactive chrome ── */
+  /* ── Remove interactive chrome ── */
   .cell-input, .meta-input, .doc-title-input {
     pointer-events: none !important;
     border: none !important;
@@ -575,7 +531,6 @@ body {
     height: auto !important;
     min-height: unset !important;
   }
-  /* Hide select arrow, show value as plain text */
   .cell-select, select {
     -webkit-appearance: none !important;
     appearance: none !important;
@@ -583,7 +538,13 @@ body {
     border: none !important;
     background: transparent !important;
   }
-  .btn-show-sel, .name-db-sel { display: none !important; }
+
+  /* ── Preserve group header background ── */
+  .group-header-row td { background: #F3F4F6 !important; }
+
+  /* ── Image column: keep landscape ratio ── */
+  .item-img-thumb { width: 100% !important; height: 28px !important; }
+  .item-img-del, .item-img-placeholder, .item-img-input { display: none !important; }
 }
 
 @media (max-width: 680px) {
