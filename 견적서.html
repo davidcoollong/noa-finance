@@ -518,7 +518,7 @@ body {
   .notes-section { padding: 10px 20px !important; }
   .notes-textarea { font-size: 9px !important; min-height: unset !important; height: auto !important; overflow: visible !important; line-height: 1.6 !important; }
   .notes-content { font-size: 9px !important; min-height: unset !important; line-height: 1.6 !important; }
-  .text-toolbar, .tt-color { display: none !important; }
+  .text-toolbar, .tt-color, .fmt-bar { display: none !important; }
   .summary-section { padding: 10px 16px !important; }
   .sum-row     { font-size: 11px !important; padding: 5px 0 !important; }
   .sum-row.final { padding: 8px 12px !important; }
@@ -674,6 +674,11 @@ body {
 .cross-nav a.cn-active{color:#0432FF;background:rgba(4,50,255,.08)}
 .cross-nav .cn-sep{width:1px;height:14px;background:#E5E7EB;margin:0 4px;flex-shrink:0}
 
+/* ── Inline Format Bar ── */
+.fmt-bar{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.fmt-label{font-size:9px;color:#9CA3AF;font-weight:700;letter-spacing:.04em;white-space:nowrap;margin-right:2px}
+.fmt-sep{width:1px;height:16px;background:#E5E7EB;flex-shrink:0;margin:0 4px}
+
 /* ── Quote History Sidebar ── */
 #qh-sidebar { width:188px; flex-shrink:0; position:sticky; top:60px; max-height:calc(100vh - 80px); overflow-y:auto; }
 .qh-header { font-size:11px; font-weight:700; color:#6B7280; letter-spacing:.06em; text-transform:uppercase; padding:0 4px 8px; border-bottom:1.5px solid #E5E7EB; margin-bottom:4px; }
@@ -813,7 +818,22 @@ body {
       <img class="doc-logo-right" src="data:image/png;base64,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" alt="ARK logo">
     </div>
     <div class="doc-header">
-      <input class="doc-title-input" id="docTitle" type="text" value="코렐라인 스노우볼 2종 제작 견적서" placeholder="견적서 제목을 입력하세요">
+      <div style="flex:1;min-width:0">
+        <div class="fmt-bar" id="titleFmtBar" style="margin-bottom:6px">
+          <span class="fmt-label">타이틀</span>
+          <select class="tt-sel" id="titleFontSize" onchange="setTitleFmt('fontSize',this.value)">
+            <option value="18px">18</option><option value="20px">20</option><option value="22px">22</option>
+            <option value="24px">24</option><option value="26px">26</option><option value="28px">28</option>
+            <option value="30px" selected>30</option><option value="32px">32</option>
+            <option value="36px">36</option><option value="40px">40</option><option value="48px">48</option>
+          </select>
+          <span class="tt-label">px</span>
+          <button class="tt-btn" id="titleBoldBtn" onmousedown="event.preventDefault();setTitleFmt('bold')" title="굵게"><b>B</b></button>
+          <input type="color" class="tt-color" id="titleColorPicker" value="#000000" onchange="setTitleFmt('color',this.value)" title="글자 색상">
+        </div>
+        <input class="doc-title-input" id="docTitle" type="text" value="코렐라인 스노우볼 2종 제작 견적서" placeholder="견적서 제목을 입력하세요">
+      </div>
+      <div class="doc-brand">NOA&ARK</div>
     </div>
 
     <!-- Meta -->
@@ -834,6 +854,28 @@ body {
 
     <!-- Parties -->
     <div class="parties">
+      <div style="grid-column:1/-1;padding:6px 36px;border-bottom:1px solid #E5E7EB;background:#FAFAFA">
+        <div class="fmt-bar">
+          <span class="fmt-label">회사명</span>
+          <select class="tt-sel" id="partyNameFontSize" onchange="setPartyFmt('name','fontSize',this.value)">
+            <option value="10px">10</option><option value="11px">11</option><option value="12px">12</option>
+            <option value="13px">13</option><option value="14px" selected>14</option><option value="16px">16</option>
+            <option value="18px">18</option><option value="20px">20</option>
+          </select>
+          <span class="tt-label">px</span>
+          <button class="tt-btn" id="partyNameBoldBtn" onmousedown="event.preventDefault();setPartyFmt('name','bold')" title="굵게"><b>B</b></button>
+          <input type="color" class="tt-color" id="partyNameColor" value="#000000" onchange="setPartyFmt('name','color',this.value)" title="글자 색상">
+          <span class="fmt-sep"></span>
+          <span class="fmt-label">상세정보</span>
+          <select class="tt-sel" id="partyRowFontSize" onchange="setPartyFmt('row','fontSize',this.value)">
+            <option value="8px">8</option><option value="9px">9</option><option value="10px" selected>10</option>
+            <option value="11px">11</option><option value="12px">12</option><option value="13px">13</option>
+          </select>
+          <span class="tt-label">px</span>
+          <button class="tt-btn" id="partyRowBoldBtn" onmousedown="event.preventDefault();setPartyFmt('row','bold')" title="굵게"><b>B</b></button>
+          <input type="color" class="tt-color" id="partyRowColor" value="#000000" onchange="setPartyFmt('row','color',this.value)" title="글자 색상">
+        </div>
+      </div>
       <div class="party">
         <div class="party-selector">
           <select id="senderSel" onchange="fillSender(this.value)">
@@ -862,9 +904,22 @@ body {
 
     <!-- Items -->
     <div class="items-section">
-      <div class="section-label">
-        <span class="bullet">●</span> 견적항목
-        <span class="sub" id="itemsTotalLabel"></span>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <div class="section-label" style="margin-bottom:0">
+          <span class="bullet">●</span> 견적항목
+          <span class="sub" id="itemsTotalLabel"></span>
+        </div>
+        <div class="fmt-bar" style="padding:0">
+          <span class="fmt-label">항목폰트</span>
+          <select class="tt-sel" id="itemsFontSize" onchange="setItemsFmt('fontSize',this.value)">
+            <option value="8px">8</option><option value="9px">9</option><option value="10px" selected>10</option>
+            <option value="11px">11</option><option value="12px">12</option><option value="13px">13</option>
+            <option value="14px">14</option>
+          </select>
+          <span class="tt-label">px</span>
+          <button class="tt-btn" id="itemsBoldBtn" onmousedown="event.preventDefault();setItemsFmt('bold')" title="굵게"><b>B</b></button>
+          <input type="color" class="tt-color" id="itemsColor" value="#000000" onchange="setItemsFmt('color',this.value)" title="글자 색상">
+        </div>
       </div>
       <table class="items-table">
         <thead>
@@ -1105,6 +1160,13 @@ const _ITEMS_DEFAULTS = [
 ];
 
 let _savedNotesHTML = null, _savedBankHTML = null, _savedBankNoteHTML = null;
+
+// ── Inline Format State ────────────────────────────────────────────────────────
+let _titleFmt     = { fontSize:'30px', bold:true,  color:'#000000' };
+let _partyNameFmt = { fontSize:'14px', bold:true,  color:'#000000' };
+let _partyRowFmt  = { fontSize:'10px', bold:false, color:'#000000' };
+let _itemsFmt     = { fontSize:'10px', bold:false, color:'#000000' };
+
 (function _loadQuoteStorage() {
   try {
     const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
@@ -1115,6 +1177,10 @@ let _savedNotesHTML = null, _savedBankHTML = null, _savedBankNoteHTML = null;
       _savedNotesHTML   = saved.notesHTML   != null ? saved.notesHTML   : (saved.notesText   != null ? saved.notesText.replace(/\n/g,'<br>') : null);
       _savedBankHTML    = saved.bankHTML     != null ? saved.bankHTML    : (saved.bankText     != null ? saved.bankText : null);
       _savedBankNoteHTML= saved.bankNoteHTML != null ? saved.bankNoteHTML: (saved.bankNoteText != null ? saved.bankNoteText : null);
+      if (saved.titleFmt)     _titleFmt     = Object.assign(_titleFmt,     saved.titleFmt);
+      if (saved.partyNameFmt) _partyNameFmt = Object.assign(_partyNameFmt, saved.partyNameFmt);
+      if (saved.partyRowFmt)  _partyRowFmt  = Object.assign(_partyRowFmt,  saved.partyRowFmt);
+      if (saved.itemsFmt)     _itemsFmt     = Object.assign(_itemsFmt,     saved.itemsFmt);
     }
   } catch(e) {}
 })();
@@ -1203,7 +1269,9 @@ function saveQuote() {
     db: DB, items: items, currency: currency, exchangeRate: exchangeRate,
     notesHTML:    notesEl    ? notesEl.innerHTML    : '',
     bankHTML:     bankEl     ? bankEl.innerHTML     : '',
-    bankNoteHTML: bankNoteEl ? bankNoteEl.innerHTML : ''
+    bankNoteHTML: bankNoteEl ? bankNoteEl.innerHTML : '',
+    titleFmt: _titleFmt, partyNameFmt: _partyNameFmt,
+    partyRowFmt: _partyRowFmt, itemsFmt: _itemsFmt
   }));
   clearTimeout(window._fsQuoteTimer);
   window._fsQuoteTimer = setTimeout(function(){
@@ -1220,7 +1288,9 @@ function saveQuote() {
       exchangeRate: exchangeRate,
       notesHTML:    notesEl2    ? notesEl2.innerHTML    : '',
       bankHTML:     bankEl2     ? bankEl2.innerHTML     : '',
-      bankNoteHTML: bankNoteEl2 ? bankNoteEl2.innerHTML : ''
+      bankNoteHTML: bankNoteEl2 ? bankNoteEl2.innerHTML : '',
+      titleFmt: _titleFmt, partyNameFmt: _partyNameFmt,
+      partyRowFmt: _partyRowFmt, itemsFmt: _itemsFmt
     }).catch(function(e){console.warn('Firestore saveQuote:',e);});
   },600);
 }
@@ -1299,6 +1369,71 @@ function applyFmt(elId, type, value) {
   if (type === 'color')     { _execFmt(elId, 'foreColor', value); return; }
   if (type === 'bold')      { _execFmt(elId, 'bold'); return; }
   if (type === 'italic')    { _execFmt(elId, 'italic'); return; }
+}
+
+// ── Title / Party / Items 인라인 서식 ────────────────────────────────────────
+function setTitleFmt(prop, val) {
+  if (prop === 'bold') _titleFmt.bold = !_titleFmt.bold;
+  else _titleFmt[prop] = val;
+  _applyTitleFmt(); saveQuote();
+}
+function _applyTitleFmt() {
+  const el = $('docTitle'); if (!el) return;
+  el.style.fontSize   = _titleFmt.fontSize;
+  el.style.fontWeight = _titleFmt.bold ? '700' : '400';
+  el.style.color      = _titleFmt.color;
+  const btn = $('titleBoldBtn'); if (btn) btn.classList.toggle('active', _titleFmt.bold);
+}
+
+function setPartyFmt(which, prop, val) {
+  const state = which === 'name' ? _partyNameFmt : _partyRowFmt;
+  if (prop === 'bold') state.bold = !state.bold;
+  else state[prop] = val;
+  _applyPartyFmt(); saveQuote();
+}
+function _applyPartyFmt() {
+  document.querySelectorAll('.party-name').forEach(function(el) {
+    el.style.fontSize   = _partyNameFmt.fontSize;
+    el.style.fontWeight = _partyNameFmt.bold ? '700' : '400';
+    el.style.color      = _partyNameFmt.color;
+  });
+  document.querySelectorAll('.party-row').forEach(function(el) {
+    el.style.fontSize = _partyRowFmt.fontSize;
+  });
+  document.querySelectorAll('.party-val').forEach(function(el) {
+    el.style.fontWeight = _partyRowFmt.bold ? '700' : '400';
+    el.style.color      = _partyRowFmt.color;
+  });
+  const nb = $('partyNameBoldBtn'); if (nb) nb.classList.toggle('active', _partyNameFmt.bold);
+  const rb = $('partyRowBoldBtn');  if (rb) rb.classList.toggle('active', _partyRowFmt.bold);
+}
+
+function setItemsFmt(prop, val) {
+  if (prop === 'bold') _itemsFmt.bold = !_itemsFmt.bold;
+  else _itemsFmt[prop] = val;
+  _applyItemsFmt(); saveQuote();
+}
+function _applyItemsFmt() {
+  document.querySelectorAll('#itemsBody .cell-input, #itemsBody .cell-amount, #itemsBody .cell-select').forEach(function(el) {
+    el.style.fontSize   = _itemsFmt.fontSize;
+    el.style.fontWeight = _itemsFmt.bold ? '700' : '400';
+    el.style.color      = _itemsFmt.color;
+  });
+  const btn = $('itemsBoldBtn'); if (btn) btn.classList.toggle('active', _itemsFmt.bold);
+}
+
+function _initFmtUI() {
+  var ts = $('titleFontSize');    if (ts) ts.value = _titleFmt.fontSize;
+  var tc = $('titleColorPicker'); if (tc) tc.value = _titleFmt.color;
+  var pns = $('partyNameFontSize'); if (pns) pns.value = _partyNameFmt.fontSize;
+  var pnc = $('partyNameColor');    if (pnc) pnc.value = _partyNameFmt.color;
+  var prs = $('partyRowFontSize');  if (prs) prs.value = _partyRowFmt.fontSize;
+  var prc = $('partyRowColor');     if (prc) prc.value = _partyRowFmt.color;
+  var is_ = $('itemsFontSize'); if (is_) is_.value = _itemsFmt.fontSize;
+  var ic  = $('itemsColor');    if (ic)  ic.value  = _itemsFmt.color;
+  _applyTitleFmt();
+  _applyPartyFmt();
+  _applyItemsFmt();
 }
 
 // 입금정보 툴바: bankDisplay / bankNote 중 마지막 포커스된 요소 반환
@@ -1440,6 +1575,7 @@ function renderItems() {
   $('sumSupply').textContent = fmtMoney(total);
   $('sumVat').textContent = fmtMoney(vat);
   $('sumFinal').textContent = fmtMoney(final);
+  _applyItemsFmt();
 }
 
 function onProductSel(i, code) {
@@ -1685,9 +1821,14 @@ setToday();
         if(d.notesHTML    != null) _savedNotesHTML    = d.notesHTML;
         if(d.bankHTML     != null) _savedBankHTML     = d.bankHTML;
         if(d.bankNoteHTML != null) _savedBankNoteHTML = d.bankNoteHTML;
+        if(d.titleFmt)     _titleFmt     = Object.assign(_titleFmt,     d.titleFmt);
+        if(d.partyNameFmt) _partyNameFmt = Object.assign(_partyNameFmt, d.partyNameFmt);
+        if(d.partyRowFmt)  _partyRowFmt  = Object.assign(_partyRowFmt,  d.partyRowFmt);
+        if(d.itemsFmt)     _itemsFmt     = Object.assign(_itemsFmt,     d.itemsFmt);
         localStorage.setItem(_QUOTE_KEY, JSON.stringify({
           db:DB, items:items, currency:currency, exchangeRate:exchangeRate,
-          notesHTML:_savedNotesHTML, bankHTML:_savedBankHTML, bankNoteHTML:_savedBankNoteHTML
+          notesHTML:_savedNotesHTML, bankHTML:_savedBankHTML, bankNoteHTML:_savedBankNoteHTML,
+          titleFmt:_titleFmt, partyNameFmt:_partyNameFmt, partyRowFmt:_partyRowFmt, itemsFmt:_itemsFmt
         }));
       } else {
         // 최초 진입: localStorage 데이터를 Firestore에 업로드
@@ -1721,6 +1862,7 @@ setToday();
   $('senderSel').value = 'NOA';   fillSender('NOA');
   $('receiverSel').value = 'BROSCO'; fillReceiver('BROSCO');
   renderHistoryList();
+  _initFmtUI();
   if(loadEl) loadEl.style.display='none';
 })();
 
