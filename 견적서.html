@@ -66,7 +66,10 @@ body {
 .btn-blue { background: #0432FF; color: #fff; }
 .btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 4px; }
 .btn-danger { background: #EF4444; color: #fff; }
-.btn-add-row { width: 100%; padding: 9px; background: #F9FAFB; border: 1px dashed #D1D5DB; border-radius: 6px; color: #6B7280; font-family: 'Pretendard', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; margin-top: 8px; }
+.items-add-btns { display: flex; gap: 8px; margin-top: 8px; }
+.btn-add-group { padding: 8px 16px; border: 1.5px solid #0432FF; border-radius: 6px; background: transparent; color: #0432FF; font-family: 'Pretendard', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; letter-spacing: -0.01em; }
+.btn-add-group:hover { background: #F0F2FF; }
+.btn-add-row { flex: 1; padding: 8px; background: #F9FAFB; border: 1px dashed #D1D5DB; border-radius: 6px; color: #6B7280; font-family: 'Pretendard', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; }
 .btn-add-row:hover { background: #F0F2FF; border-color: #0432FF; color: #0432FF; }
 
 /* ── Page Layout ── */
@@ -223,6 +226,27 @@ body {
 }
 .items-table tbody tr:last-child td { border-bottom: none; }
 .items-table tbody tr:hover td { background: #F9FAFB; }
+.items-table tbody tr.group-header-row:hover td { background: #F3F4F6; }
+
+/* ── Group header row ── */
+.group-header-row td { padding: 0; background: #F3F4F6; border-bottom: none; }
+.group-header-inner { display: flex; align-items: center; gap: 10px; padding: 7px 10px; }
+.group-tag { font-size: 10px; font-weight: 600; color: #6B7280; background: #E5E7EB; padding: 2px 8px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; letter-spacing: 0; }
+.ce-group-name { font-size: 12px; font-weight: 600; color: #374151; outline: none; flex: 1; min-width: 60px; cursor: text; font-family: 'Pretendard', sans-serif; }
+.ce-group-name:empty::before { content: '아이템명 입력'; color: #D1D5DB; pointer-events: none; }
+.group-subtotal { font-size: 12px; font-weight: 700; color: #6B7280; white-space: nowrap; }
+
+/* ── Contenteditable item cells ── */
+.ce-field { outline: none; min-height: 1.4em; cursor: text; word-break: break-word; font-family: 'Pretendard', sans-serif; line-height: 1.5; padding: 9px 10px; display: block; width: 100%; }
+.ce-name { font-size: 10px; font-weight: 600; }
+.ce-desc { font-size: 10px; color: #6B7280; }
+.ce-name:empty::before { content: '항목명'; color: #D1D5DB; pointer-events: none; }
+.ce-desc:empty::before { content: '설명'; color: #D1D5DB; pointer-events: none; }
+.ce-field:focus { background: #F0F2FF; }
+
+/* ── Optional photo add button ── */
+.item-photo-add { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: none; border: 1px dashed #E5E7EB; border-radius: 6px; cursor: pointer; font-size: 14px; color: #D1D5DB; transition: border-color 0.15s, color 0.15s; margin: 0 auto; }
+.item-photo-add:hover { border-color: #0432FF; color: #0432FF; }
 
 .cell-input {
   display: block;
@@ -473,9 +497,9 @@ body {
   }
 
   /* ── Hide every web-only element ── */
-  .app-bar, .cross-nav, .dbm, .btn-add-row, .btn-danger, .cell-del,
+  .app-bar, .cross-nav, .dbm, .btn-add-row, .btn-add-group, .items-add-btns, .btn-danger, .cell-del,
   .party-selector, #qh-sidebar, #backup-panel, #auth-overlay,
-  #pw-modal, #fs-loading { display: none !important; }
+  #pw-modal, #fs-loading, .item-photo-add { display: none !important; }
 
   /* ── Reset wrapper so sidebar doesn't bleed in ── */
   .page-wrapper { display: block !important; max-width: 100% !important;
@@ -515,6 +539,12 @@ body {
   /* Image column: scale down for print, hide upload UI */
   .item-img-thumb { width: 56px !important; height: 56px !important; }
   .item-img-del, .item-img-placeholder, .item-img-input { display: none !important; }
+  .group-header-row td { background: #F3F4F6 !important; }
+  .ce-field { padding: 6px 8px !important; font-size: 9px !important; }
+  .group-header-inner { padding: 5px 8px !important; }
+  .group-tag { font-size: 9px !important; }
+  .ce-group-name { font-size: 11px !important; }
+  .group-subtotal { font-size: 10px !important; }
   .item-img-cell { padding: 4px 6px !important; }
   .col-img { width: 68px !important; }
 
@@ -940,7 +970,10 @@ body {
         </thead>
         <tbody id="itemsBody"></tbody>
       </table>
-      <button class="btn-add-row" onclick="addItem()">+ 항목 추가</button>
+      <div class="items-add-btns">
+        <button class="btn-add-group" onclick="addGroup()">+ 아이템 추가</button>
+        <button class="btn-add-row" onclick="addItem()">+ 제작항목 추가</button>
+      </div>
     </div>
 
     <!-- Bottom -->
@@ -1152,13 +1185,15 @@ const _DB_DEFAULTS = {
 };
 
 const _ITEMS_DEFAULTS = [
+  { _group: true, groupName: '핑크팰리스 스노우볼' },
   { name:'핑크팰리스 스노우볼',          desc:'유리구슬10cm',            price:11000,   qty:400, unit:'EA' },
   { name:'핑크팰리스 3D모델링/목업',     desc:'모델링 수정/3D출력',       price:1500000, qty:1,   unit:'EA' },
-  { name:'핑크팰리스 패키지',            desc:'600g 하드커버,내부완충제',  price:3000,    qty:400, unit:'EA' },
+  { name:'핑크팰리스 패키지',            desc:'600g 하드커버,내부완충재',  price:3000,    qty:400, unit:'EA' },
   { name:'물류/관세 8% (핑크팰리스)',    desc:'관세 8%, 물류비(3일 운송)', price:1550000, qty:1,   unit:'EA' },
+  { _group: true, groupName: '디트로이트 ZOO 스노우볼' },
   { name:'디트로이트 ZOO 스노우볼',      desc:'유리구슬10cm',            price:9000,    qty:700, unit:'EA' },
   { name:'디트로이트 ZOO 3D모델링/목업', desc:'모델링 수정/3D출력',       price:1500000, qty:1,   unit:'EA' },
-  { name:'디트로이트 ZOO 패키지',        desc:'600g 하드커버,내부완충제',  price:3000,    qty:700, unit:'EA' },
+  { name:'디트로이트 ZOO 패키지',        desc:'600g 하드커버,내부완충재',  price:3000,    qty:700, unit:'EA' },
   { name:'물류/관세 8% (디트로이트 ZOO)', desc:'관세 8%, 물류비(3일 운송)',price:1920000, qty:1,   unit:'EA' }
 ];
 
@@ -1301,9 +1336,10 @@ function saveQuote() {
 }
 
 // ── Rich Text Formatting (선택영역별 서식) ────────────────────────────────────
-// selectionchange 로 선택영역 자동 저장
 const _RICH_IDS = ['docTitle','notesArea','bankDisplay','bankNote'];
 const _selRanges = {};
+let _lastItemCellEl = null, _lastItemCellRange = null;
+
 document.addEventListener('selectionchange', function() {
   try {
     const sel = window.getSelection();
@@ -1313,8 +1349,16 @@ document.addEventListener('selectionchange', function() {
       const el = document.getElementById(id);
       if (el && el.contains(range.commonAncestorContainer)) {
         _selRanges[id] = range.cloneRange();
-        break;
+        return;
       }
+    }
+    const tbody = document.getElementById('itemsBody');
+    if (tbody && tbody.contains(range.commonAncestorContainer)) {
+      _lastItemCellRange = range.cloneRange();
+      let node = range.commonAncestorContainer;
+      if (node.nodeType === 3) node = node.parentNode;
+      const ce = node.closest ? node.closest('.ce-field') : null;
+      if (ce) _lastItemCellEl = ce;
     }
   } catch(e) {}
 });
@@ -1404,15 +1448,40 @@ function _applyPartyFmt() {
 }
 
 function setItemsFmt(prop, val) {
+  if (_lastItemCellEl && _lastItemCellRange && !_lastItemCellRange.collapsed) {
+    const el = _lastItemCellEl;
+    el.focus();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(_lastItemCellRange);
+    if (prop === 'bold') { document.execCommand('bold'); }
+    else if (prop === 'fontSize') {
+      document.execCommand('fontSize', false, '7');
+      el.querySelectorAll('font[size="7"]').forEach(function(f) {
+        const sp = document.createElement('span'); sp.style.fontSize = val;
+        while (f.firstChild) sp.appendChild(f.firstChild);
+        f.parentNode.replaceChild(sp, f);
+      });
+    }
+    else if (prop === 'color') { document.execCommand('foreColor', false, val); }
+    const idx = parseInt(el.dataset.i), field = el.dataset.field;
+    if (!isNaN(idx) && field) { items[idx][field] = el.innerText; items[idx][field+'HTML'] = el.innerHTML; }
+    saveQuote();
+    return;
+  }
   if (prop === 'bold') _itemsFmt.bold = !_itemsFmt.bold;
   else _itemsFmt[prop] = val;
   _applyItemsFmt(); saveQuote();
 }
 function _applyItemsFmt() {
-  document.querySelectorAll('#itemsBody .cell-input, #itemsBody .cell-amount, #itemsBody .cell-select').forEach(function(el) {
+  document.querySelectorAll('#itemsBody .cell-input, #itemsBody .cell-select, #itemsBody .ce-field').forEach(function(el) {
     el.style.fontSize   = _itemsFmt.fontSize;
     el.style.fontWeight = _itemsFmt.bold ? '700' : '400';
     el.style.color      = _itemsFmt.color;
+  });
+  document.querySelectorAll('#itemsBody .cell-amount').forEach(function(el) {
+    el.style.fontSize = _itemsFmt.fontSize;
+    el.style.color    = _itemsFmt.color;
   });
   const btn = $('itemsBoldBtn'); if (btn) btn.classList.toggle('active', _itemsFmt.bold);
 }
@@ -1502,64 +1571,86 @@ function setToday() {
 }
 
 // ── Render Items ───────────────────────────────────────────────────────────────
+function _groupIndex(itemIdx) {
+  var c = 0;
+  for (var j = 0; j <= itemIdx; j++) { if (items[j] && items[j]._group) c++; }
+  return c;
+}
+function _updateGroupSubtotals() {
+  var curGroupEl = null, grpTotal = 0;
+  items.forEach(function(it, i) {
+    if (it._group) {
+      if (curGroupEl) { var el = curGroupEl.querySelector('.group-subtotal'); if (el) el.textContent = fmtMoney(grpTotal); }
+      curGroupEl = document.querySelector('#itemsBody tr[data-item-i="'+i+'"]');
+      grpTotal = 0;
+    } else { grpTotal += (it.price||0)*(it.qty||0); }
+  });
+  if (curGroupEl) { var el2 = curGroupEl.querySelector('.group-subtotal'); if (el2) el2.textContent = fmtMoney(grpTotal); }
+}
+
 function renderItems() {
   const tbody = $('itemsBody');
   tbody.innerHTML = '';
-  let total = 0;
+  let total = 0, rowNo = 0;
 
-  items.forEach((it, i) => {
-    const amt = it.price * it.qty;
-    total += amt;
-
-    const matchedCode = DB.products.find(p => p.name === it.name)?.code || '__custom__';
-    const opts = DB.products.map(p =>
-      `<option value="${p.code}"${p.code===matchedCode?' selected':''}>${p.name}</option>`
-    ).join('');
-    // escape for HTML attribute value
-    const safeName = it.name.replace(/"/g,'&quot;').replace(/</g,'&lt;');
-
-    const imgCell = it.img
-      ? `<div class="item-img-wrap">
-           <img class="item-img-thumb" src="${it.img}" onclick="triggerImgUpload(${i})" title="클릭하여 변경">
-           <button class="item-img-del" onclick="removeItemImg(${i})" title="삭제">✕</button>
-           <input class="item-img-input" id="img-input-${i}" type="file" accept="image/*" onchange="onImgUpload(${i},this)">
-         </div>`
-      : `<div class="item-img-wrap">
-           <label class="item-img-placeholder" for="img-input-${i}">
-             <span class="img-plus">📷</span><span>사진 추가</span>
-           </label>
-           <input class="item-img-input" id="img-input-${i}" type="file" accept="image/*" onchange="onImgUpload(${i},this)">
-         </div>`;
-
+  items.forEach(function(it, i) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="col-no" style="text-align:center;font-size:10px;color:#9CA3AF;padding:9px 6px">${i+1}</td>
-      <td class="col-img item-img-cell">${imgCell}</td>
-      <td class="col-name">
-        <div class="name-wrap">
-          <div class="name-input-row">
-            <input class="cell-input name" value="${safeName}" placeholder="항목명 입력" oninput="upd(${i},'name',this.value)">
-            <button class="btn-show-sel" onclick="toggleItemSel(${i})" title="품목DB에서 선택">▼</button>
-          </div>
-          <select class="cell-select name-db-sel" id="nameSel-${i}" style="display:none" onchange="onProductSel(${i},this.value)">
-            <option value="">— 품목 선택 —</option>
-            ${opts}
-          </select>
-        </div>
-      </td>
-      <td><textarea class="cell-input desc" rows="1" placeholder="설명" oninput="upd(${i},'desc',this.value);autoResize(this)" style="overflow:hidden;resize:none;display:block">${it.desc}</textarea></td>
-      <td class="col-price"><input class="cell-input ta-right" value="${currency==='USD'?(it.price/exchangeRate).toFixed(2):it.price.toLocaleString('ko-KR')}" oninput="updPrice(${i},this.value)" onblur="renderItems();saveQuote()"></td>
-      <td class="col-qty"><input class="cell-input ta-center" type="text" inputmode="numeric" value="${it.qty}" oninput="updQty(${i},this.value)" onblur="renderItems();saveQuote()" style="text-align:center"></td>
-      <td class="col-unit"><input class="cell-input ta-center" value="${it.unit}" oninput="upd(${i},'unit',this.value)"></td>
-      <td class="col-amount cell-amount">${fmtMoney(amt)}</td>
-      <td class="col-del cell-del"><button class="btn btn-sm btn-danger" onclick="removeItem(${i})">✕</button></td>
-    `;
+    tr.dataset.itemI = i;
+
+    if (it._group) {
+      tr.className = 'group-header-row';
+      const safeGN = (it.groupName||'').replace(/</g,'&lt;');
+      tr.innerHTML = '<td colspan="9"><div class="group-header-inner">' +
+        '<span class="group-tag">아이템 ' + _groupIndex(i) + '</span>' +
+        '<div class="ce-group-name" contenteditable="true" data-i="' + i + '" oninput="updGroup(' + i + ',this.innerText)" spellcheck="false">' + safeGN + '</div>' +
+        '<div class="group-subtotal"></div>' +
+        '<button class="btn btn-sm btn-danger cell-del" onclick="removeItem(' + i + ')">✕</button>' +
+        '</div></td>';
+    } else {
+      rowNo++;
+      const amt = (it.price||0)*(it.qty||0);
+      total += amt;
+      const nameContent = it.nameHTML || (it.name||'').replace(/</g,'&lt;');
+      const descContent = it.descHTML || (it.desc||'').replace(/</g,'&lt;');
+      const mc = (DB.products.find(function(p){ return p.name===it.name; })||{}).code || '__custom__';
+      const opts = DB.products.map(function(p){
+        return '<option value="'+p.code+'"'+(p.code===mc?' selected':'')+'>'+p.name+'</option>';
+      }).join('');
+
+      var imgCellHtml;
+      if (it.img) {
+        imgCellHtml = '<div class="item-img-wrap">' +
+          '<img class="item-img-thumb" src="'+it.img+'" onclick="triggerImgUpload('+i+')" title="클릭하여 변경">' +
+          '<button class="item-img-del" onclick="removeItemImg('+i+')" title="삭제">✕</button>' +
+          '<input class="item-img-input" id="img-input-'+i+'" type="file" accept="image/*" onchange="onImgUpload('+i+',this)">' +
+          '</div>';
+      } else {
+        imgCellHtml = '<button class="item-photo-add" onclick="showPhotoSlot('+i+')" title="사진 추가">📷</button>';
+      }
+
+      tr.innerHTML =
+        '<td class="col-no" style="text-align:center;font-size:10px;color:#9CA3AF;padding:9px 6px">'+rowNo+'</td>' +
+        '<td class="col-img item-img-cell">'+imgCellHtml+'</td>' +
+        '<td class="col-name"><div class="name-wrap">' +
+          '<div class="name-input-row">' +
+            '<div class="ce-field ce-name" contenteditable="true" data-i="'+i+'" data-field="name" oninput="updCE('+i+',\'name\',this)" spellcheck="false">'+nameContent+'</div>' +
+            '<button class="btn-show-sel" onclick="toggleItemSel('+i+')" title="품목DB에서 선택">▼</button>' +
+          '</div>' +
+          '<select class="cell-select name-db-sel" id="nameSel-'+i+'" style="display:none" onchange="onProductSel('+i+',this.value)">' +
+            '<option value="">— 품목 선택 —</option>'+opts +
+          '</select>' +
+        '</div></td>' +
+        '<td><div class="ce-field ce-desc" contenteditable="true" data-i="'+i+'" data-field="desc" oninput="updCE('+i+',\'desc\',this)" spellcheck="false">'+descContent+'</div></td>' +
+        '<td class="col-price"><input class="cell-input ta-right" value="'+(currency==='USD'?(it.price/exchangeRate).toFixed(2):(it.price||0).toLocaleString('ko-KR'))+'" oninput="updPrice('+i+',this.value)" onblur="renderItems();saveQuote()"></td>' +
+        '<td class="col-qty"><input class="cell-input ta-center" type="text" inputmode="numeric" value="'+(it.qty||1)+'" oninput="updQty('+i+',this.value)" onblur="renderItems();saveQuote()" style="text-align:center"></td>' +
+        '<td class="col-unit"><input class="cell-input ta-center" value="'+(it.unit||'EA')+'" oninput="upd('+i+',\'unit\',this.value)"></td>' +
+        '<td class="col-amount cell-amount">'+fmtMoney(amt)+'</td>' +
+        '<td class="col-del cell-del"><button class="btn btn-sm btn-danger" onclick="removeItem('+i+')">✕</button></td>';
+    }
     tbody.appendChild(tr);
-    // auto-resize desc textarea
-    const descEl = tr.querySelector('.cell-input.desc');
-    if (descEl) setTimeout(function(){ autoResize(descEl); }, 0);
   });
 
+  _updateGroupSubtotals();
   const vat = currency === 'USD' ? 0 : total * 0.1;
   const final = total + vat;
   $('itemsTotalLabel').textContent = fmtMoney(total);
@@ -1571,36 +1662,52 @@ function renderItems() {
 }
 
 function onProductSel(i, code) {
-  if (!code) return; // "— 품목 선택 —" 헤더 클릭 무시
+  if (!code) return;
   const p = DB.products.find(x => x.code === code);
   if (p) {
-    items[i] = { ...items[i], name:p.name, desc:p.desc, price:p.price, unit:p.unit };
+    items[i] = { ...items[i], name:p.name, desc:p.desc, price:p.price, unit:p.unit, nameHTML:'', descHTML:'' };
   }
   renderItems(); saveQuote();
-  // 선택 후 드롭다운은 자동으로 사라짐 (renderItems 재생성)
 }
 
 function upd(i, field, val) {
+  if (!items[i] || items[i]._group) return;
   items[i][field] = val;
   saveQuote();
 }
+function updCE(i, field, el) {
+  if (!items[i] || items[i]._group) return;
+  items[i][field] = el.innerText;
+  items[i][field+'HTML'] = el.innerHTML;
+  saveQuote();
+}
+function updGroup(i, val) {
+  if (items[i] && items[i]._group) { items[i].groupName = val; saveQuote(); }
+}
+function showPhotoSlot(i) {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = function() { onImgUpload(i, inp); };
+  inp.click();
+}
 
-// 단가·수량: 입력 중엔 해당 행 금액+합계만 갱신, blur 시 전체 재렌더
 function updPrice(i, val) {
+  if (!items[i] || items[i]._group) return;
   const raw = toNum(val);
   items[i].price = currency === 'USD' ? raw * exchangeRate : raw;
   _updRowAmt(i); _updTotals();
 }
 function updQty(i, val) {
+  if (!items[i] || items[i]._group) return;
   items[i].qty = toNum(val);
   _updRowAmt(i); _updTotals();
 }
 function _updRowAmt(i) {
-  const el = document.querySelector('#itemsBody tr:nth-child('+(i+1)+') .cell-amount');
-  if (el) el.textContent = fmtMoney(items[i].price * items[i].qty);
+  const tr = document.querySelector('#itemsBody tr[data-item-i="'+i+'"]');
+  if (tr) { const el = tr.querySelector('.cell-amount'); if(el) el.textContent = fmtMoney((items[i].price||0)*(items[i].qty||0)); }
 }
 function _updTotals() {
-  const total = items.reduce((s,it) => s + it.price * it.qty, 0);
+  const total = items.reduce(function(s,it){ return it._group ? s : s+(it.price||0)*(it.qty||0); }, 0);
   const vat = currency === 'USD' ? 0 : total * 0.1;
   const fin = total + vat;
   $('itemsTotalLabel').textContent = fmtMoney(total);
@@ -1608,9 +1715,22 @@ function _updTotals() {
   $('sumSupply').textContent = fmtMoney(total);
   $('sumVat').textContent    = fmtMoney(vat);
   $('sumFinal').textContent  = fmtMoney(fin);
+  _updateGroupSubtotals();
 }
 
-function addItem()   { items.push({name:'',desc:'',price:0,qty:1,unit:'EA',img:''}); renderItems(); saveQuote(); }
+function addGroup() {
+  items.push({ _group: true, groupName: '새 아이템' });
+  items.push({ name:'', desc:'', price:0, qty:1, unit:'EA' });
+  renderItems(); saveQuote();
+  setTimeout(function(){
+    const last = document.querySelector('#itemsBody .group-header-row:last-of-type .ce-group-name');
+    if (last) { last.focus(); document.execCommand('selectAll'); }
+  }, 50);
+}
+function addItem() {
+  items.push({ name:'', desc:'', price:0, qty:1, unit:'EA' });
+  renderItems(); saveQuote();
+}
 function removeItem(i) { items.splice(i,1); renderItems(); saveQuote(); }
 
 // ── Item image upload ──────────────────────────────────────────────────────────
@@ -1786,7 +1906,7 @@ function resetDoc() {
   ['sName','sBiz','sCeo','sEmail','sAddr','rName','rBiz','rContact','rEmail','rAddr']
     .forEach(id=>$(id).textContent='-');
   const bd2 = $('bankDisplay'); if(bd2) bd2.innerText = '-';
-  items = [{ name:'', desc:'', price:0, qty:1, unit:'EA' }];
+  items = [{ _group: true, groupName: '새 아이템' }, { name:'', desc:'', price:0, qty:1, unit:'EA' }];
   renderItems(); setToday();
 }
 
