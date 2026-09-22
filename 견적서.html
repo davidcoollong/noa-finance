@@ -509,12 +509,31 @@ body {
   .page         { margin: 0 !important; padding: 0 !important;
                   max-width: 100% !important; }
 
-  /* ── Doc card ── */
+  /* ── Doc card: no outer border, no shadow ── */
   .doc {
     box-shadow: none !important;
     border-radius: 0 !important;
-    border: 1px solid #E5E7EB !important;
+    border: none !important;
   }
+
+  /* ── Remove outer left/right borders from all sections ── */
+  .doc-logos, .doc-header, .doc-meta, .parties, .party,
+  .items-section, .doc-bottom, .notes-section, .summary-section, .bank-section {
+    border-left: none !important;
+    border-right: none !important;
+  }
+  /* Keep horizontal dividers only */
+  .parties { border-bottom: 1px solid #E5E7EB !important; }
+  .party:first-child { border-right: none !important; }
+  .doc-meta { border-bottom: 1px solid #E5E7EB !important; }
+  .items-section { border-bottom: 1px solid #E5E7EB !important; }
+  .notes-section { border-right: none !important; border-bottom: 1px solid #E5E7EB !important; }
+
+  /* ── Items table: no outer border, only row dividers ── */
+  .items-table { border-left: none !important; border-right: none !important; }
+  .items-table thead tr th:first-child { border-radius: 0 !important; }
+  .items-table thead tr th:last-child  { border-radius: 0 !important; }
+  .items-table tbody tr td { border-left: none !important; border-right: none !important; }
 
   /* ── Remove interactive chrome ── */
   .cell-input, .meta-input, .doc-title-input {
