@@ -1,0 +1,2222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOA 견적서</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 14px;
+  background: #F3F4F6;
+  color: #000;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+
+/* ── Logos ── */
+.doc-logos {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 36px 16px;
+  border-bottom: 1px solid #E5E7EB;
+}
+.doc-logo-left  { height: 80px; width: auto; object-fit: contain; }
+.doc-logo-right { height: 88px; width: auto; object-fit: contain; }
+
+/* ── App Bar (web-only) ── */
+.app-bar {
+  background: #0432FF;
+  color: #fff;
+  padding: 0 36px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.app-bar-logo {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.app-bar-actions { display: flex; gap: 8px; }
+.btn {
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: opacity 0.15s;
+}
+.btn:hover { opacity: 0.85; }
+.btn-white { background: #fff; color: #0432FF; }
+.btn-outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.45); }
+.btn-save { background: #fff; color: #0432FF; border: none; font-weight: 700; }
+.btn-blue { background: #0432FF; color: #fff; }
+.btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 4px; }
+.btn-danger { background: #EF4444; color: #fff; }
+.items-add-btns { display: flex; gap: 8px; margin-top: 8px; }
+.btn-add-group { padding: 8px 16px; border: 1.5px solid #0432FF; border-radius: 6px; background: transparent; color: #0432FF; font-family: 'Pretendard', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; letter-spacing: -0.01em; }
+.btn-add-group:hover { background: #F0F2FF; }
+.btn-add-row { flex: 1; padding: 8px; background: #F9FAFB; border: 1px dashed #D1D5DB; border-radius: 6px; color: #6B7280; font-family: 'Pretendard', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; }
+.btn-add-row:hover { background: #F0F2FF; border-color: #0432FF; color: #0432FF; }
+
+/* ── Page Layout ── */
+.page-wrapper { display: flex; gap: 20px; max-width: 1200px; margin: 28px auto; padding: 0 20px; align-items: flex-start; }
+.page { flex: 1; min-width: 0; padding-bottom: 80px; }
+
+/* ── Quote Document ── */
+.doc {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10), 0 4px 24px rgba(0,0,0,0.06);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+/* ── Doc Header ── */
+.doc-header {
+  padding: 28px 36px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid #E5E7EB;
+}
+.doc-title-input {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: #000;
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  min-height: 1.2em;
+  cursor: text;
+  word-break: break-word;
+}
+.doc-title-input:empty::before { content: '견적서 제목을 입력하세요'; color: #D1D5DB; pointer-events: none; }
+.doc-brand {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0432FF;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  margin-left: 24px;
+  padding-top: 6px;
+}
+
+/* ── Doc Meta Row ── */
+.doc-meta {
+  padding: 14px 36px;
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  border-bottom: 1px solid #E5E7EB;
+  flex-wrap: wrap;
+  background: #FAFAFA;
+}
+.meta-field { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.meta-label { color: #6B7280; font-weight: 500; white-space: nowrap; }
+.meta-input {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  border: none;
+  border-bottom: 1px solid #E5E7EB;
+  outline: none;
+  background: transparent;
+  color: #000;
+  padding: 2px 0;
+}
+.meta-input:focus { border-bottom-color: #0432FF; }
+.meta-input.wide { width: 260px; }
+.meta-input.mid { width: 100px; }
+
+/* ── Parties ── */
+.parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #E5E7EB;
+}
+.party {
+  padding: 20px 36px;
+}
+.party:first-child { border-right: 1px solid #E5E7EB; }
+
+.party-selector select {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #000;
+  background: #FFFBEB;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  outline: none;
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+}
+.party-selector select:focus { border-color: #0432FF; }
+
+.party-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.party-row {
+  display: flex;
+  gap: 6px;
+  font-size: 10px;
+  margin-bottom: 3px;
+  line-height: 1.5;
+}
+.party-key { color: #6B7280; min-width: 32px; flex-shrink: 0; }
+.party-val { color: #000; }
+
+/* ── Section Label ── */
+.section-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-label .bullet { color: #0432FF; font-size: 18px; }
+.section-label .sub { font-size: 15px; font-weight: 700; color: #6B7280; margin-left: 4px; }
+
+/* ── Items Table ── */
+.items-section { padding: 20px 36px; border-bottom: 1px solid #E5E7EB; }
+
+.items-table { width: 100%; border-collapse: collapse; }
+.items-table thead tr th {
+  background: #0432FF;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 9px 10px;
+  letter-spacing: -0.01em;
+}
+.items-table thead tr th:first-child { border-radius: 0; }
+.items-table th.ta-left { text-align: left; }
+.items-table th.ta-right { text-align: right; }
+.items-table th.ta-center { text-align: center; }
+
+.items-table tbody tr td {
+  padding: 0;
+  border-bottom: 1px solid #E5E7EB;
+  vertical-align: middle;
+}
+.items-table tbody tr:last-child td { border-bottom: none; }
+.items-table tbody tr:hover td { background: #F9FAFB; }
+.items-table tbody tr.group-header-row:hover td { background: #F3F4F6; }
+
+/* ── Group header row ── */
+.group-header-row td { padding: 0; background: #F3F4F6; border-bottom: none; }
+.group-header-inner { display: flex; align-items: center; gap: 10px; padding: 7px 10px; }
+.group-tag { font-size: 10px; font-weight: 600; color: #6B7280; background: #E5E7EB; padding: 2px 8px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; letter-spacing: 0; }
+.ce-group-name { font-size: 16px; font-weight: 600; color: #374151; outline: none; flex: 1; min-width: 60px; cursor: text; font-family: 'Pretendard', sans-serif; }
+.ce-group-name:empty::before { content: '아이템명 입력'; color: #D1D5DB; pointer-events: none; }
+.group-subtotal { font-size: 12px; font-weight: 700; color: #93B2FB; white-space: nowrap; }
+
+/* ── Contenteditable item cells ── */
+.ce-field { outline: none; min-height: 1.4em; cursor: text; word-break: break-word; font-family: 'Pretendard', sans-serif; line-height: 1.5; padding: 2px 10px; display: block; width: 100%; }
+.ce-name { font-size: 10px; font-weight: 600; }
+.ce-desc { font-size: 10px; color: #6B7280; }
+.ce-name:empty::before { content: '항목명'; color: #D1D5DB; pointer-events: none; }
+.ce-desc:empty::before { content: '설명'; color: #D1D5DB; pointer-events: none; }
+.ce-field:focus { background: #F0F2FF; }
+
+/* ── Optional photo add button ── */
+.item-photo-add { display: flex; align-items: center; justify-content: center; width: 100%; height: 32px; background: none; border: 1px dashed #E5E7EB; border-radius: 4px; cursor: pointer; font-size: 13px; color: #D1D5DB; transition: border-color 0.15s, color 0.15s; }
+.item-photo-add:hover { border-color: #0432FF; color: #0432FF; }
+
+.cell-input {
+  display: block;
+  width: 100%;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 10px;
+  color: #000;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 2px 10px;
+}
+.cell-input::placeholder { color: #D1D5DB; }
+.cell-input:focus { background: #F0F2FF; }
+.cell-input.name { font-weight: 600; }
+.cell-input.desc { color: #6B7280; }
+.cell-input.ta-right { text-align: right; }
+.cell-input.ta-center { text-align: center; }
+
+.cell-select {
+  display: block;
+  width: 100%;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #000;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+.cell-select:focus { background: #F0F2FF; }
+
+.cell-amount {
+  font-size: 10px;
+  font-weight: 700;
+  color: #000;
+  text-align: right;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+.cell-del { text-align: center; padding: 2px 6px; }
+
+.col-no   { width: 32px; }
+.col-img  { width: 80px; }
+.col-name { width: 170px; }
+.col-desc { }
+.col-price { width: 100px; }
+.col-qty { width: 62px; }
+.col-unit { width: 54px; }
+.col-amount { width: 110px; }
+.col-del { width: 38px; }
+
+/* ── Item image cell ── */
+.item-img-cell { padding: 2px 4px !important; vertical-align: middle; }
+.item-img-wrap { position: relative; display: block; }
+.item-img-thumb {
+  width: 100%; height: 36px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #E5E7EB;
+  display: block;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.item-img-thumb:hover { opacity: 0.88; }
+.item-img-del {
+  position: absolute; top: 5px; right: 5px;
+  background: rgba(0,0,0,0.55); color: #fff;
+  border: none; border-radius: 50%;
+  width: 20px; height: 20px;
+  font-size: 11px; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  line-height: 1; padding: 0;
+}
+.item-img-wrap:hover .item-img-del { display: flex; }
+.item-img-placeholder {
+  width: 72px; height: 72px;
+  border: 1.5px dashed #D1D5DB; border-radius: 6px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; color: #9CA3AF;
+  font-size: 9px; gap: 3px;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.item-img-placeholder:hover { border-color: #0432FF; background: #F0F2FF; color: #0432FF; }
+.item-img-placeholder .img-plus { font-size: 18px; line-height: 1; }
+.item-img-input { display: none; }
+
+/* ── Bottom: Notes + Summary ── */
+.doc-bottom {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+}
+
+/* Notes */
+.notes-section { padding: 20px 36px; border-right: 1px solid #E5E7EB; }
+.notes-textarea {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  color: #374151;
+  line-height: 1.75;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  min-height: 150px;
+  resize: none;
+  letter-spacing: -0.01em;
+}
+
+/* Summary */
+.summary-section { padding: 20px 24px; background: #FAFAFA; }
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid #E5E7EB;
+  font-size: 14px;
+}
+.sum-row:last-child { border-bottom: none; padding: 0; }
+.sum-label { font-weight: 700; color: #000; }
+.sum-value { font-weight: 700; color: #000; font-size: 12px; }
+.sum-row.final {
+  margin-top: 8px;
+  background: #0432FF;
+  border-radius: 4px;
+  padding: 10px 14px;
+  border-bottom: none;
+}
+.sum-row.final .sum-label { color: #fff; font-size: 14px; }
+.sum-row.final .sum-value { color: #fff; font-size: 16px; font-weight: 700; }
+
+/* ── Bank ── */
+.bank-section {
+  padding: 14px 36px;
+  border-top: 1px solid #E5E7EB;
+  font-size: 11px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.bank-label { color: #6B7280; }
+.bank-value { font-weight: 500; color: #000; }
+.bank-note { color: #6B7280; margin-left: auto; }
+
+/* ── DB Manager ── */
+.dbm {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+.dbm-header {
+  background: #0432FF;
+  color: #fff;
+  padding: 12px 24px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.dbm-body { padding: 20px 24px; }
+
+.tab-bar { display: flex; gap: 4px; margin-bottom: 16px; }
+.tab-btn {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 18px;
+  border: none;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  background: #F3F4F6;
+  color: #6B7280;
+  border-bottom: 2px solid #E5E7EB;
+}
+.tab-btn.active { background: #0432FF; color: #fff; border-bottom-color: #0432FF; }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+.db-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.db-table th {
+  background: #F3F4F6;
+  font-weight: 600;
+  color: #374151;
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #E5E7EB;
+  white-space: nowrap;
+}
+.db-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #F3F4F6;
+  color: #374151;
+}
+.db-table tr:last-child td { border-bottom: none; }
+.db-table tr:hover td { background: #F9FAFB; }
+.db-edit-input {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px; color: #374151;
+  background: transparent; border: none; outline: none;
+  width: 100%; min-width: 40px; padding: 0;
+}
+.db-edit-input:focus {
+  background: #EEF2FF; border-radius: 3px;
+  padding: 1px 4px; color: #0432FF;
+}
+.db-edit-input:hover { background: rgba(4,50,255,.04); border-radius: 3px; }
+
+.add-row-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  padding: 12px;
+  background: #F9FAFB;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+}
+.add-input {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  padding: 6px 10px;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  outline: none;
+  min-width: 80px;
+  flex: 1;
+}
+.add-input:focus { border-color: #0432FF; }
+
+/* ── Print ── */
+/* ═══════════════════════════════ PRINT / PDF ═══════════════════════════════ */
+@media print {
+  /* ── A4 page & margin ── */
+  @page { size: A4 portrait; margin: 8mm 10mm; }
+
+  /* ── Render colours exactly ── */
+  html, body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: #fff !important;
+  }
+
+  /* ── Hide every web-only element ── */
+  .app-bar, .cross-nav, .dbm, .btn-add-row, .btn-add-group, .items-add-btns, .btn-danger, .cell-del,
+  .party-selector, #qh-sidebar, #backup-panel, #auth-overlay,
+  #pw-modal, #fs-loading, .item-photo-add,
+  .text-toolbar, .tt-color, .fmt-bar,
+  .btn-show-sel, .name-db-sel, #save-toast { display: none !important; }
+
+  /* ── Reset wrapper ── */
+  .page-wrapper { display: block !important; max-width: 100% !important;
+                  margin: 0 !important; padding: 0 !important; }
+  .page         { margin: 0 !important; padding: 0 !important;
+                  max-width: 100% !important; }
+
+  /* ── Doc card ── */
+  .doc {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: 1px solid #E5E7EB !important;
+  }
+
+  /* ── Remove interactive chrome ── */
+  .cell-input, .meta-input, .doc-title-input {
+    pointer-events: none !important;
+    border: none !important;
+    border-bottom: none !important;
+    background: transparent !important;
+  }
+  .notes-textarea, .notes-content {
+    pointer-events: none !important;
+    border: none !important;
+    background: transparent !important;
+    resize: none !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: unset !important;
+  }
+  .cell-select, select {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    pointer-events: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  /* ── Preserve group header background ── */
+  .group-header-row td { background: #F3F4F6 !important; }
+
+  /* ── Image column: keep landscape ratio ── */
+  .item-img-thumb { width: 100% !important; height: 28px !important; }
+  .item-img-del, .item-img-placeholder, .item-img-input { display: none !important; }
+}
+
+@media (max-width: 680px) {
+  .parties { grid-template-columns: 1fr; }
+  .party:first-child { border-right: none; border-bottom: 1px solid #E5E7EB; }
+  .doc-bottom { grid-template-columns: 1fr; }
+  .notes-section { border-right: none; border-bottom: 1px solid #E5E7EB; }
+  .doc-header { flex-direction: column; gap: 8px; }
+  .doc-brand { margin-left: 0; }
+}
+
+/* ── Auth Overlay ── */
+#auth-overlay{position:fixed;inset:0;background:rgba(4,50,255,.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:9999;display:flex;align-items:center;justify-content:center}
+.auth-box{background:#fff;border-radius:24px;padding:44px 40px 36px;width:380px;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 24px 64px rgba(0,0,0,.18);text-align:center}
+.auth-brand{font-size:13px;font-weight:700;letter-spacing:.12em;color:rgba(4,50,255,.5);text-transform:uppercase;margin-bottom:8px}
+.auth-title{font-size:26px;font-weight:800;letter-spacing:-1px;color:#000;margin-bottom:28px}
+.auth-field{width:100%;border:1.5px solid #E5E7EB;border-radius:10px;padding:12px 16px;font-family:inherit;font-size:14px;font-weight:500;color:#111;outline:none;transition:border-color .15s;margin-bottom:10px;background:#FAFAFA}
+.auth-field:focus{border-color:#0432FF;background:#fff;box-shadow:0 0 0 3px rgba(4,50,255,.1)}
+.auth-btn{width:100%;background:#0432FF;color:#fff;border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .15s;letter-spacing:-.01em}
+.auth-btn:hover{opacity:.88}
+.auth-err{font-size:12px;color:#FF3B30;margin-top:10px;min-height:16px;font-weight:500}
+.auth-footer{font-size:11px;color:#9CA3AF;margin-top:20px}
+/* ── User badge & logout ── */
+.user-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;color:#fff;cursor:default}
+.user-badge .dot-online{width:7px;height:7px;background:#34C759;border-radius:50%;flex-shrink:0}
+.btn-logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);font-family:inherit;font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;cursor:pointer;transition:all .15s;letter-spacing:-.01em}
+.btn-logout:hover{background:rgba(255,255,255,.2);color:#fff}
+/* ── Backup Panel ── */
+#backup-panel{position:fixed;top:0;right:0;height:100%;width:340px;background:#fff;box-shadow:-4px 0 32px rgba(0,0,0,.12);z-index:8000;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+#backup-panel.open{transform:none}
+.bp-header{padding:20px 20px 16px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between}
+.bp-title{font-size:16px;font-weight:800;letter-spacing:-.4px}
+.bp-close{background:none;border:none;font-size:20px;cursor:pointer;color:#9CA3AF;line-height:1;padding:0}
+.bp-close:hover{color:#000}
+.bp-body{flex:1;overflow-y:auto;padding:16px 20px}
+.bp-section{margin-bottom:20px}
+.bp-section-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9CA3AF;margin-bottom:10px}
+.bp-btn{width:100%;background:#F3F4F6;border:none;border-radius:10px;padding:12px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:left;color:#111;transition:background .12s;display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.bp-btn:hover{background:#E5E7EB}
+.bp-btn.primary{background:#0432FF;color:#fff}
+.bp-btn.primary:hover{background:#0228D4}
+.bp-btn .bp-icon{font-size:16px;flex-shrink:0}
+.bp-btn-sub{font-size:11px;font-weight:500;color:rgba(255,255,255,.7);display:block;margin-top:1px}
+.bp-btn.primary .bp-btn-sub{color:rgba(255,255,255,.7)}
+.bp-btn:not(.primary) .bp-btn-sub{color:#6B7280}
+.snap-item{background:#F9FAFB;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.snap-date{font-size:11px;font-weight:600;color:#374151}
+.snap-size{font-size:10px;color:#9CA3AF}
+.snap-restore{background:#fff;border:1px solid #E5E7EB;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer;color:#0432FF;font-family:inherit}
+.snap-restore:hover{background:#EEF2FF}
+.snap-del{background:none;border:none;cursor:pointer;font-size:14px;color:#D1D5DB;padding:0 0 0 6px}
+.snap-del:hover{color:#FF3B30}
+.bp-storage-info{background:#F0F9FF;border-radius:8px;padding:10px 12px;font-size:11px;color:#0369A1;font-weight:500;line-height:1.5;margin-bottom:12px}
+/* ── PW Change modal ── */
+#pw-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:10000;align-items:center;justify-content:center}
+#pw-modal.open{display:flex}
+.pw-box{background:#fff;border-radius:16px;padding:28px;width:320px;box-shadow:0 8px 40px rgba(0,0,0,.15)}
+.pw-title{font-size:16px;font-weight:800;margin-bottom:16px}
+.pw-err{font-size:11px;color:#FF3B30;margin-bottom:8px;min-height:14px}
+
+
+/* ── Text Toolbar (참고사항/입금정보 서식) ── */
+.text-toolbar{display:flex;align-items:center;gap:5px;margin-bottom:6px;flex-wrap:wrap}
+.tt-sel{font-size:10px;font-family:inherit;border:1px solid #E5E7EB;border-radius:5px;padding:2px 5px;background:#fff;cursor:pointer;color:#374151;outline:none}
+.tt-sel:focus{border-color:#0432FF}
+.tt-label{font-size:10px;color:#9CA3AF}
+.tt-btn{width:24px;height:24px;border:1px solid #E5E7EB;border-radius:5px;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;display:flex;align-items:center;justify-content:center;color:#374151;padding:0}
+.tt-btn.active{background:#0432FF;color:#fff;border-color:#0432FF}
+.tt-btn:hover:not(.active){background:#F3F4F6}
+.tt-color{width:24px;height:24px;border:1px solid #E5E7EB;border-radius:5px;padding:1px;cursor:pointer;background:none}
+.notes-content{
+  font-family:'Pretendard',sans-serif;font-size:11px;color:#374151;
+  line-height:1.75;background:transparent;border:none;outline:none;
+  width:100%;min-height:80px;white-space:pre-wrap;word-break:break-word;
+  letter-spacing:-0.01em;cursor:text;
+}
+.notes-content:focus{background:#FAFBFF}
+.notes-content.bank{min-height:unset;font-weight:500;color:#000;margin-top:4px}
+.notes-content.bank-note{min-height:unset;color:#6B7280;margin-top:3px;font-weight:400}
+.cell-input.desc{color:#6B7280;overflow:hidden;resize:none;height:auto;min-height:0;vertical-align:top;line-height:1.5}
+/* 항목명 입력 + 품목DB 선택 버튼 */
+.name-wrap{display:flex;flex-direction:column;gap:2px}
+.name-input-row{display:flex;align-items:center;gap:2px}
+.name-input-row .cell-input.name{flex:1;min-width:0}
+.btn-show-sel{flex-shrink:0;background:#F3F4F6;border:1px solid #E5E7EB;border-radius:4px;cursor:pointer;font-size:9px;color:#6B7280;padding:2px 5px;font-family:inherit;line-height:1;transition:all .12s}
+.btn-show-sel:hover{background:#E5E7EB;color:#374151}
+.name-db-sel{width:100%;font-size:10px}
+/* ── Currency Toggle ── */
+.currency-toggle{display:flex;background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:8px;overflow:hidden}
+.cur-btn{padding:5px 10px;font-size:12px;font-weight:700;border:none;background:transparent;cursor:pointer;color:#6B7280;font-family:inherit;transition:all .15s;letter-spacing:.02em}
+.cur-btn.active{background:#0432FF;color:#fff}
+.cur-btn:hover:not(.active){background:#E5E7EB;color:#374151}
+/* ── Cross-app Navigation Bar ── */
+.cross-nav{
+  background:#fff;
+  border-bottom:1px solid rgba(0,0,0,.07);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  height:38px;
+  padding:0 16px;
+  position:sticky;
+  top:0;
+  z-index:400;
+  box-shadow:0 1px 0 rgba(0,0,0,.04);
+}
+.cross-nav a{
+  font-family:'Pretendard',-apple-system,sans-serif;
+  font-size:12px;
+  font-weight:600;
+  color:#9CA3AF;
+  text-decoration:none;
+  padding:5px 11px;
+  border-radius:7px;
+  transition:color .12s,background .12s;
+  letter-spacing:-.01em;
+  white-space:nowrap;
+}
+.cross-nav a:hover{color:#0432FF;background:rgba(4,50,255,.06)}
+.cross-nav a.cn-active{color:#0432FF;background:rgba(4,50,255,.08)}
+.cross-nav .cn-sep{width:1px;height:14px;background:#E5E7EB;margin:0 4px;flex-shrink:0}
+
+/* ── Inline Format Bar ── */
+.fmt-bar{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.fmt-label{font-size:9px;color:#9CA3AF;font-weight:700;letter-spacing:.04em;white-space:nowrap;margin-right:2px}
+.fmt-sep{width:1px;height:16px;background:#E5E7EB;flex-shrink:0;margin:0 4px}
+
+/* ── Quote History Sidebar ── */
+#qh-sidebar { width:188px; flex-shrink:0; position:sticky; top:60px; max-height:calc(100vh - 80px); overflow-y:auto; }
+.qh-header { font-size:11px; font-weight:700; color:#6B7280; letter-spacing:.06em; text-transform:uppercase; padding:0 4px 8px; border-bottom:1.5px solid #E5E7EB; margin-bottom:4px; }
+.qh-item { display:flex; align-items:flex-start; gap:4px; padding:7px 6px; border-radius:7px; cursor:pointer; transition:background .13s; }
+.qh-item:hover { background:#F3F4F6; }
+.qh-item.active { background:#EEF2FF; }
+.qh-info { flex:1; min-width:0; }
+.qh-title-text { font-size:12px; font-weight:700; color:#6B7280; line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; word-break:break-all; }
+.qh-date { font-size:10px; color:#9CA3AF; margin-top:2px; }
+.qh-del { background:none; border:none; cursor:pointer; color:#D1D5DB; font-size:12px; padding:0; line-height:1; flex-shrink:0; margin-top:2px; }
+.qh-del:hover { color:#EF4444; }
+.qh-empty { font-size:11px; color:#9CA3AF; padding:12px 4px; text-align:center; }
+
+</style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<!-- FS Loading Overlay -->
+<div id="fs-loading" style="position:fixed;inset:0;background:var(--gray100,#F3F4F6);z-index:8500;display:flex;align-items:center;justify-content:center;font-family:'Pretendard',-apple-system,sans-serif">
+  <div style="text-align:center">
+    <div style="width:32px;height:32px;border:3px solid #E5E7EB;border-top-color:#0432FF;border-radius:50%;animation:_fsspin .75s linear infinite;margin:0 auto 12px"></div>
+    <div style="font-size:13px;font-weight:600;color:#6B7280;letter-spacing:-.01em">클라우드 동기화 중...</div>
+  </div>
+  <style>@keyframes _fsspin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<!-- ═══ AUTH OVERLAY ═══ -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-brand">NOA &amp; ARK</div>
+    <div class="auth-title">로그인</div>
+    <input id="auth-user" class="auth-field" type="text" placeholder="아이디" autocomplete="username"
+      onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    <input id="auth-pass" class="auth-field" type="password" placeholder="비밀번호" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="auth-btn" onclick="doLogin()">로그인</button>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-footer">© NOA&amp;ARK · 접근 권한 보유자만 사용 가능</div>
+  </div>
+</div>
+
+<!-- ═══ BACKUP PANEL ═══ -->
+<div id="backup-panel">
+  <div class="bp-header">
+    <span class="bp-title">💾 데이터 관리</span>
+    <button class="bp-close" onclick="closeBackup()">×</button>
+  </div>
+  <div class="bp-body">
+    <div class="bp-storage-info" id="bp-storage-info">브라우저 로컬 스토리지에 저장됨</div>
+    <div class="bp-section">
+      <div class="bp-section-title">백업 내보내기 / 불러오기</div>
+      <button class="bp-btn primary" onclick="exportBackup()">
+        <span class="bp-icon">⬇️</span>
+        <span><span>JSON 백업 다운로드</span><span class="bp-btn-sub">전체 데이터를 파일로 저장</span></span>
+      </button>
+      <button class="bp-btn" onclick="importBackup()">
+        <span class="bp-icon">⬆️</span>
+        <span><span>백업 파일에서 복원</span><span class="bp-btn-sub">JSON 파일 선택 후 데이터 복원</span></span>
+      </button>
+    </div>
+    <div class="bp-section">
+      <div class="bp-section-title">스냅샷 (최근 7개 자동 보관)</div>
+      <button class="bp-btn" onclick="saveSnapshot()">
+        <span class="bp-icon">📸</span>
+        <span><span>지금 스냅샷 저장</span><span class="bp-btn-sub">현재 상태를 즉시 저장</span></span>
+      </button>
+      <div id="snap-list"></div>
+    </div>
+    <div class="bp-section">
+      <div class="bp-section-title">계정 관리</div>
+      <button class="bp-btn" onclick="openPwModal()">
+        <span class="bp-icon">🔑</span>
+        <span><span>비밀번호 변경</span><span class="bp-btn-sub">내 계정 비밀번호 변경</span></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PW CHANGE MODAL ═══ -->
+<div id="pw-modal">
+  <div class="pw-box">
+    <div class="pw-title">🔑 비밀번호 변경</div>
+    <div class="pw-err" id="pw-err"></div>
+    <input id="pw-cur"  class="auth-field" type="password" placeholder="현재 비밀번호" style="margin-bottom:8px">
+    <input id="pw-new"  class="auth-field" type="password" placeholder="새 비밀번호 (8자 이상)" style="margin-bottom:8px">
+    <input id="pw-new2" class="auth-field" type="password" placeholder="새 비밀번호 확인" style="margin-bottom:12px">
+    <div style="display:flex;gap:8px">
+      <button class="auth-btn" style="background:#E5E7EB;color:#111" onclick="document.getElementById('pw-modal').classList.remove('open')">취소</button>
+      <button class="auth-btn" onclick="changePw()">변경하기</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- App Bar -->
+<div class="cross-nav">
+  <a href="index.html">🏠 포털</a>
+  <a href="견적서.html" class="cn-active">📄 견적서</a>
+  <a href="재고관리.html">📦 재고관리</a>
+  <a href="자금관리.html">💰 자금관리</a>
+  <a href="거래처관리.html">🏪 거래처관리</a>
+  <a href="수익관리.html">📊 수익관리</a>
+  <a href="https://www.notion.so/35f9704e895e81c28e07f30f1219dfa3?pvs=1" target="_blank" rel="noopener">📋 할일</a>
+</div>
+<div class="app-bar">
+  <div class="app-bar-logo">NOA&ARK · 견적서</div>
+  <div class="app-bar-actions">
+    <div class="user-badge" style="background:rgba(4,50,255,.06);border-color:#E5E7EB;color:#374151"><span class="dot-online"></span><span class="auth-user-name" style="color:#374151">-</span></div>
+    <button onclick="openBackup()" class="btn btn-outline" style="background:#F3F4F6;border-color:#E5E7EB;color:#374151">💾 백업</button>
+    <button onclick="doLogout()" class="btn" style="background:#F3F4F6;border:1.5px solid #E5E7EB;color:#374151;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px">로그아웃</button>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="currency-toggle" id="currencyToggle">
+        <button id="btn-krw" class="cur-btn active" onclick="setCurrency('KRW')">₩ KRW</button>
+        <button id="btn-usd" class="cur-btn" onclick="setCurrency('USD')">$ USD</button>
+      </div>
+      <div id="exrate-wrap" style="display:none;align-items:center;gap:4px;font-size:12px;color:#374151">
+        1 USD = <input id="exrateInp" type="text" inputmode="numeric" value="1350" oninput="setExRate(this.value)" style="width:65px;padding:4px 6px;border:1.5px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit"> ₩
+      </div>
+    </div>
+    <button class="btn btn-outline" onclick="window.print()">인쇄 / PDF</button>
+    <button class="btn btn-save" onclick="manualSave()">저장하기</button>
+    <button class="btn btn-white" onclick="resetDoc()">새 견적서</button>
+  </div>
+</div>
+<div id="save-toast" style="display:none;position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;font-size:13px;font-family:'Pretendard',sans-serif;font-weight:500;padding:10px 20px;border-radius:8px;z-index:9999;letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(0,0,0,0.18)">저장되었습니다</div>
+
+<div class="page-wrapper">
+<div class="page">
+
+  <!-- ── Quote Document ── -->
+  <div class="doc" id="quoteDoc">
+
+    <!-- Header -->
+    <div class="doc-logos">
+      <img class="doc-logo-left" src="data:image/png;base64,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uHDhbCTh7apVq+Qzzzwj8+XLZ00znXXxa1OwYEG5d+/ebONL9eDixYuSNX7iiSfkAw88IAsUKCDz588v77nnHv1/6dKl5fTp0+X169cDyfz444/y5Zdflg899JC87777strff//9skiRInpf/Pnnn4HtGfMjjzwiq1WrJr///ntdH1qsD2N5++235fHjx+Wvv/6qx9SxY0d59uxZ+eWXX8rHH39cMm8zbtoUKlRI1q5dWzIu1iavFpGTA89LALF69WrJxvQTglTPevTooTdOFL5euXLFmj59V6pUKRv57du3y+eeey4teqnmY/vOFiBOnz4t+/btKxFkhOrFF1+Uw4YNkxMnTpTvvvuurF69uhZIQPHzzz+X//77b8Lcb968KVkrhBvBBCB79+4tJ0+eLEePHi1btWolixUrpvkC7d9++81XYPfs2aP7efTRR+Wrr76qhf2pp56SDRo0kB9++KH89ttvNUD98ssvmhZ0R4wYIRkXAMHBxPjGjBkjO3furA8XAO7ZZ5+V69atSxhzXvrHAYQSOD8NYv369bJy5crWAvfWW2/JY8eORdoDnFq2Akj9Zs2aZaPfvn37tGil03+qNgh5VA3ixo0bWog58UuVKiW/+OKLbNoXIPr+++9rgUO7WLp0acLcWSf65B2n/LZt2ySgYcq1a9fk8uXLtWaAJoBg//HHH+Z11qcBCOb24IMPStZx3759We/NFwMQ5cuXlxUrVtR00dy8fVJ3w4YNsnHjxhpo6tSpk01DNfRy+6cDiACA2L17t3zllVeshe6ll16KLCCop6mELehdr169EvYVphXqcFD9VM8RmqJFi8qqVavK1157TQsQgtalSxf5/PPPW9O0AQiA5Omnn9an/4QJEwJNiPPnz2stAxW+Zs2aWXM/c+aMbN26tR4jwrh///6sd8lfABK0C078KVOmZOvLAAT8aNGihTxw4ICvpmEAAjOOsaO9+BUA46effpI1atTQ4xs3bpxftVz/zAFEAECgBTRs2NBaQFB1N27cGGnhUUVTCW/Qu1GjRiXQ/+yzz9KiU6VKFblgwQKtdnNaHjlyRP7999/yxIkTEuH75JNPtP0dNA6/5zYAMWTIED3uDh06hGpda9askWXKlNF+iUOHDun5c3KXLFlS0/juu+8SeOL3D2YLY8YcOHXqVEIVAxAALaZJUDEAAZ1BgwZl03i8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" alt="NOA logo">
+      <img class="doc-logo-right" src="data:image/png;base64,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" alt="ARK logo">
+    </div>
+    <div class="doc-header">
+      <div style="flex:1;min-width:0">
+        <div class="fmt-bar" id="titleFmtBar" style="margin-bottom:6px">
+          <span class="fmt-label">타이틀</span>
+          <select class="tt-sel" id="titleFontSize" onchange="applyFmt('docTitle','fontSize',this.value)">
+            <option value="18px">18</option><option value="20px">20</option><option value="22px">22</option>
+            <option value="24px">24</option><option value="26px">26</option><option value="28px">28</option>
+            <option value="30px" selected>30</option><option value="32px">32</option>
+            <option value="36px">36</option><option value="40px">40</option><option value="48px">48</option>
+          </select>
+          <span class="tt-label">px</span>
+          <button class="tt-btn" id="titleBoldBtn" onmousedown="event.preventDefault();applyFmt('docTitle','bold')" title="굵게"><b>B</b></button>
+          <input type="color" class="tt-color" id="titleColorPicker" value="#000000" onchange="applyFmt('docTitle','color',this.value)" title="글자 색상">
+        </div>
+        <div class="doc-title-input" id="docTitle" contenteditable="true" spellcheck="false" oninput="saveQuote()">코렐라인 스노우볼 2종 제작 견적서</div>
+      </div>
+      <div class="doc-brand">NOA&ARK</div>
+    </div>
+
+    <!-- Meta -->
+    <div class="doc-meta">
+      <div class="meta-field">
+        <span class="meta-label">견적일자</span>
+        <input class="meta-input" id="metaDate" type="date">
+      </div>
+      <div class="meta-field">
+        <span class="meta-label">No.</span>
+        <input class="meta-input mid" id="metaNo" value="202601-1">
+      </div>
+      <div class="meta-field">
+        <span class="meta-label">담당자</span>
+        <input class="meta-input wide" id="metaMgr">
+      </div>
+    </div>
+
+    <!-- Parties -->
+    <div class="parties">
+      <div style="grid-column:1/-1;padding:6px 36px;border-bottom:1px solid #E5E7EB;background:#FAFAFA">
+        <div class="fmt-bar">
+          <span class="fmt-label">회사명</span>
+          <select class="tt-sel" id="partyNameFontSize" onchange="setPartyFmt('name','fontSize',this.value)">
+            <option value="10px">10</option><option value="11px">11</option><option value="12px">12</option>
+            <option value="13px">13</option><option value="14px" selected>14</option><option value="16px">16</option>
+            <option value="18px">18</option><option value="20px">20</option>
+          </select>
+          <span class="tt-label">px</span>
+          <button class="tt-btn" id="partyNameBoldBtn" onmousedown="event.preventDefault();setPartyFmt('name','bold')" title="굵게"><b>B</b></button>
+          <input type="color" class="tt-color" id="partyNameColor" value="#000000" onchange="setPartyFmt('name','color',this.value)" title="글자 색상">
+          <span class="fmt-sep"></span>
+          <span class="fmt-label">상세정보</span>
+          <select class="tt-sel" id="partyRowFontSize" onchange="setPartyFmt('row','fontSize',this.value)">
+            <option value="8px">8</option><option value="9px">9</option><option value="10px" selected>10</option>
+            <option value="11px">11</option><option value="12px">12</option><option value="13px">13</option>
+          </select>
+          <span class="tt-label">px</span>
+          <button class="tt-btn" id="partyRowBoldBtn" onmousedown="event.preventDefault();setPartyFmt('row','bold')" title="굵게"><b>B</b></button>
+          <input type="color" class="tt-color" id="partyRowColor" value="#000000" onchange="setPartyFmt('row','color',this.value)" title="글자 색상">
+        </div>
+      </div>
+      <div class="party">
+        <div class="party-selector">
+          <select id="senderSel" onchange="fillSender(this.value)">
+            <option value="">— 자사 선택 —</option>
+          </select>
+        </div>
+        <div class="party-name" id="sName">-</div>
+        <div class="party-row"><span class="party-key">사업자</span><span class="party-val" id="sBiz">-</span></div>
+        <div class="party-row"><span class="party-key">대표자</span><span class="party-val" id="sCeo">-</span></div>
+        <div class="party-row"><span class="party-key">이메일</span><span class="party-val" id="sEmail">-</span></div>
+        <div class="party-row"><span class="party-key">주소</span><span class="party-val" id="sAddr">-</span></div>
+      </div>
+      <div class="party">
+        <div class="party-selector">
+          <select id="receiverSel" onchange="fillReceiver(this.value)">
+            <option value="">— 거래처 선택 —</option>
+          </select>
+        </div>
+        <div class="party-name" id="rName">-</div>
+        <div class="party-row"><span class="party-key">사업자</span><span class="party-val" id="rBiz">-</span></div>
+        <div class="party-row"><span class="party-key">수신자</span><span class="party-val" id="rContact">-</span></div>
+        <div class="party-row"><span class="party-key">이메일</span><span class="party-val" id="rEmail">-</span></div>
+        <div class="party-row"><span class="party-key">주소</span><span class="party-val" id="rAddr">-</span></div>
+      </div>
+    </div>
+
+    <!-- Items -->
+    <div class="items-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <div class="section-label" style="margin-bottom:0">
+          <span class="bullet">●</span> 견적항목
+          <span class="sub" id="itemsTotalLabel"></span>
+        </div>
+        <div class="fmt-bar" style="padding:0">
+          <span class="fmt-label">항목폰트</span>
+          <select class="tt-sel" id="itemsFontSize" onchange="setItemsFmt('fontSize',this.value)">
+            <option value="8px">8</option><option value="9px">9</option><option value="10px" selected>10</option>
+            <option value="11px">11</option><option value="12px">12</option><option value="13px">13</option>
+            <option value="14px">14</option>
+          </select>
+          <span class="tt-label">px</span>
+          <button class="tt-btn" id="itemsBoldBtn" onmousedown="event.preventDefault();setItemsFmt('bold')" title="굵게"><b>B</b></button>
+          <input type="color" class="tt-color" id="itemsColor" value="#000000" onchange="setItemsFmt('color',this.value)" title="글자 색상">
+        </div>
+      </div>
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th class="col-no ta-center">No</th>
+            <th class="col-img ta-center">사진</th>
+            <th class="col-name ta-left">항목</th>
+            <th class="ta-left">설명</th>
+            <th class="col-price ta-right">단가</th>
+            <th class="col-qty ta-center">수량</th>
+            <th class="col-unit ta-center">단위</th>
+            <th class="col-amount ta-right">금액</th>
+            <th class="col-del"></th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+        <tfoot>
+          <tr style="border-top:2px solid #E5E7EB">
+            <td colspan="8" style="text-align:right;padding:8px 10px">
+              <span style="font-size:11px;font-weight:600;color:#6B7280;letter-spacing:-0.01em;margin-right:16px">총 합계</span><span id="itemsTableTotal" style="font-size:14px;font-weight:700;color:#93B2FB;white-space:nowrap"></span>
+            </td>
+            <td class="col-del cell-del"></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="items-add-btns">
+        <button class="btn-add-group" onclick="addGroup()">+ 아이템 추가</button>
+        <button class="btn-add-row" onclick="addItem()">+ 제작항목 추가</button>
+      </div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="doc-bottom">
+      <!-- Notes -->
+      <div class="notes-section">
+        <div class="section-label"><span class="bullet">●</span> 참고사항</div>
+        <div class="text-toolbar" id="notesToolbar">
+          <select class="tt-sel" id="notesFontFamily" onchange="applyFmt('notesArea','fontFamily',this.value)">
+            <option value="'Pretendard',sans-serif">Pretendard</option>
+            <option value="Arial,sans-serif">Arial</option>
+            <option value="'Times New Roman',serif">Times NR</option>
+            <option value="'Malgun Gothic',sans-serif">맑은고딕</option>
+          </select>
+          <select class="tt-sel" id="notesFontSize" onchange="applyFmt('notesArea','fontSize',this.value)">
+            <option value="8px">8</option><option value="9px">9</option><option value="10px">10</option>
+            <option value="11px" selected>11</option><option value="12px">12</option>
+            <option value="13px">13</option><option value="14px">14</option>
+          </select>
+          <span class="tt-label">px</span>
+          <button class="tt-btn" id="notesBoldBtn" onmousedown="event.preventDefault();applyFmt('notesArea','bold')" title="굵게"><b>B</b></button>
+          <button class="tt-btn" id="notesItalicBtn" onmousedown="event.preventDefault();applyFmt('notesArea','italic')" title="기울임"><i>I</i></button>
+          <input type="color" class="tt-color" value="#374151" onchange="applyFmt('notesArea','color',this.value)" title="글자 색상">
+        </div>
+        <div class="notes-content" id="notesArea" contenteditable="true" oninput="saveQuote()" spellcheck="false">1. 본 견적은 최종 확정된, 디자인과 사양을 반영하였습니다.
+2. 사양변경에 따른 일정변경과 견적추가는 발주사에 책임이 있습니다.
+3. 디자인 수정 요청은 1회까지 무료 제공되며, 이후 요청은 추가 비용이 발생할 수 있습니다.
+4. 납품장소는 1회, 지정된 장소로 입고합니다.
+5. 사양 : 상기 기재 내용 기준.
+6. 관세8% 적용, 14세 이상 KC인증 제외 기준입니다.
+7. 3일 운송 기준 물류비입니다. 에어물류 시, 추가비용 발생입니다.</div>
+
+        <div style="margin-top:20px">
+          <div class="section-label"><span class="bullet">●</span> 입금정보</div>
+          <div class="text-toolbar" id="bankToolbar">
+            <select class="tt-sel" id="bankFontFamily" onchange="applyFmt(_bankFocusId(),'fontFamily',this.value)">
+              <option value="'Pretendard',sans-serif">Pretendard</option>
+              <option value="Arial,sans-serif">Arial</option>
+              <option value="'Times New Roman',serif">Times NR</option>
+              <option value="'Malgun Gothic',sans-serif">맑은고딕</option>
+            </select>
+            <select class="tt-sel" id="bankFontSize" onchange="applyFmt(_bankFocusId(),'fontSize',this.value)">
+              <option value="8px">8</option><option value="9px">9</option><option value="10px">10</option>
+              <option value="11px" selected>11</option><option value="12px">12</option>
+              <option value="13px">13</option><option value="14px">14</option>
+            </select>
+            <span class="tt-label">px</span>
+            <button class="tt-btn" id="bankBoldBtn" onmousedown="event.preventDefault();applyFmt(_bankFocusId(),'bold')" title="굵게"><b>B</b></button>
+            <button class="tt-btn" id="bankItalicBtn" onmousedown="event.preventDefault();applyFmt(_bankFocusId(),'italic')" title="기울임"><i>I</i></button>
+            <input type="color" class="tt-color" value="#000000" onchange="applyFmt(_bankFocusId(),'color',this.value)" title="글자 색상">
+          </div>
+          <div class="notes-content bank" id="bankDisplay" contenteditable="true" oninput="saveQuote()" spellcheck="false">-</div>
+          <div class="notes-content bank-note" id="bankNote" contenteditable="true" oninput="saveQuote()" spellcheck="false">견적 유효기간 이내에 납부 부탁드립니다. :)</div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-section">
+        <div class="section-label" style="margin-bottom:12px"><span class="bullet">●</span> 금액 요약</div>
+        <div class="sum-row">
+          <span class="sum-label">총 합계</span>
+          <span class="sum-value" id="sumTotal">₩0</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-label">공급가액</span>
+          <span class="sum-value" id="sumSupply">₩0</span>
+        </div>
+        <div class="sum-row" id="vatRow">
+          <span class="sum-label" id="vatLabel">VAT (10%)</span>
+          <span class="sum-value" id="sumVat">₩0</span>
+        </div>
+        <div class="sum-row final" style="margin-top:12px">
+          <span class="sum-label">최종 견적</span>
+          <span class="sum-value" id="sumFinal">₩0</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /doc -->
+
+  <!-- ── DB Manager ── -->
+  <div class="dbm">
+    <div class="dbm-header">데이터베이스 관리</div>
+    <div class="dbm-body">
+
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="company" onclick="switchTab(this,'company')">회사정보</button>
+        <button class="tab-btn" data-tab="client" onclick="switchTab(this,'client')">거래처DB</button>
+        <button class="tab-btn" data-tab="product" onclick="switchTab(this,'product')">품목DB</button>
+      </div>
+
+      <!-- Company -->
+      <div class="tab-pane active" id="tab-company">
+        <table class="db-table">
+          <thead><tr>
+            <th>코드</th><th>회사명</th><th>사업자</th><th>대표자</th>
+            <th>이메일</th><th>전화</th><th>은행</th><th>계좌번호</th>
+            <th>담당자</th><th>담당자연락처</th><th>담당자이메일</th><th></th>
+          </tr></thead>
+          <tbody id="companyTbody"></tbody>
+        </table>
+        <div class="add-row-form">
+          <input class="add-input" id="c_code" placeholder="코드">
+          <input class="add-input" id="c_name" placeholder="회사명">
+          <input class="add-input" id="c_biz" placeholder="사업자번호">
+          <input class="add-input" id="c_ceo" placeholder="대표자">
+          <input class="add-input" id="c_email" placeholder="이메일">
+          <input class="add-input" id="c_tel" placeholder="전화">
+          <input class="add-input" id="c_bank" placeholder="은행">
+          <input class="add-input" id="c_acct" placeholder="계좌번호">
+          <input class="add-input" id="c_mgr" placeholder="담당자">
+          <input class="add-input" id="c_mtel" placeholder="담당자연락처">
+          <input class="add-input" id="c_memail" placeholder="담당자이메일">
+          <button class="btn btn-blue" onclick="addCompany()">추가</button>
+        </div>
+      </div>
+
+      <!-- Client -->
+      <div class="tab-pane" id="tab-client">
+        <table class="db-table">
+          <thead><tr>
+            <th>코드</th><th>회사명</th><th>사업자</th><th>수신자</th>
+            <th>이메일</th><th>전화</th><th>주소</th><th>비고</th><th></th>
+          </tr></thead>
+          <tbody id="clientTbody"></tbody>
+        </table>
+        <div class="add-row-form">
+          <input class="add-input" id="cl_code" placeholder="코드">
+          <input class="add-input" id="cl_name" placeholder="회사명">
+          <input class="add-input" id="cl_biz" placeholder="사업자번호">
+          <input class="add-input" id="cl_contact" placeholder="수신자">
+          <input class="add-input" id="cl_email" placeholder="이메일">
+          <input class="add-input" id="cl_tel" placeholder="전화">
+          <input class="add-input" id="cl_addr" placeholder="주소">
+          <input class="add-input" id="cl_note" placeholder="비고">
+          <button class="btn btn-blue" onclick="addClient()">추가</button>
+        </div>
+      </div>
+
+      <!-- Product -->
+      <div class="tab-pane" id="tab-product">
+        <table class="db-table">
+          <thead><tr>
+            <th>코드</th><th>항목명</th><th>설명</th><th>단가</th><th>단위</th><th>비고</th><th></th>
+          </tr></thead>
+          <tbody id="productTbody"></tbody>
+        </table>
+        <div class="add-row-form">
+          <input class="add-input" id="pr_code" placeholder="품목코드">
+          <input class="add-input" id="pr_name" placeholder="항목명">
+          <input class="add-input" id="pr_desc" placeholder="설명">
+          <input class="add-input" id="pr_price" placeholder="단가" type="number">
+          <input class="add-input" id="pr_unit" placeholder="단위" style="max-width:70px">
+          <input class="add-input" id="pr_note" placeholder="비고">
+          <button class="btn btn-blue" onclick="addProduct()">추가</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<div id="qh-sidebar">
+  <div class="qh-header">📋 이전 견적서</div>
+  <div id="qh-list"><div class="qh-empty">저장된 견적서가 없습니다</div></div>
+</div>
+
+</div><!-- /page-wrapper -->
+
+<script>
+// ─────────────────── Firebase Init ───────────────────
+(function(){
+  var cfg={apiKey:"AIzaSyBvLd4BtsmxTe2P0ZTNTBLmYTQPQGtCwYg",authDomain:"noaark-f8f75.firebaseapp.com",
+    projectId:"noaark-f8f75",storageBucket:"noaark-f8f75.firebasestorage.app",
+    messagingSenderId:"497213476251",appId:"1:497213476251:web:64b118a76adb76f7ff653e"};
+  if(!firebase.apps.length) firebase.initializeApp(cfg);
+  window._fsDB=firebase.firestore();
+})();
+
+// ── Data ───────────────────────────────────────────────────────────────────────
+const _QUOTE_KEY = 'noa_quote_v1';
+const _DB_DEFAULTS = {
+  companies: [
+    { code:'NOA', name:'(주)노아코퍼레이션', biz:'487-87-02055', ceo:'김소영',
+      email:'sogood@noawid.com', tel:'02-1234-5678',
+      addr:'강원도 양양군 현남면 안남애길 62 삼광빌딩 / 서울시 마포구 양화로6길 91,4층',
+      bank:'우리은행', acct:'1005-504-069846', holder:'(주)노아코퍼레이션',
+      manager:'김진욱', mtel:'010-6276-6468', memail:'good@noawid.com' }
+  ],
+  clients: [
+    { code:'BROSCO', name:'(주)브로스코', biz:'215-87-78552', contact:'김태경',
+      email:'todd@brosco.com', tel:'031-123-4567',
+      addr:'경기 용인시 수지구 포은대로59번길 37 지1층 B138', note:'' },
+    { code:'SAMPLE1', name:'(주)샘플상사', biz:'123-45-67890', contact:'이영희',
+      email:'sample@example.com', tel:'02-987-6543',
+      addr:'서울시 강남구 테헤란로 123', note:'예시 거래처' }
+  ],
+  products: [
+    { code:'SB-PINK-01',  name:'핑크팰리스 스노우볼',           desc:'유리구슬10cm',           price:11000,   unit:'EA', note:'' },
+    { code:'SB-PINK-3D',  name:'핑크팰리스 3D모델링/목업',      desc:'모델링 수정/3D출력',      price:1500000, unit:'EA', note:'' },
+    { code:'SB-PINK-PKG', name:'핑크팰리스 패키지',             desc:'600g 하드커버,내부완충제', price:3000,    unit:'EA', note:'' },
+    { code:'LOG-PINK-08', name:'물류/관세 8% (핑크팰리스)',      desc:'관세 8%, 물류비(3일 운송)',price:1550000, unit:'EA', note:'' },
+    { code:'SB-DZ-01',   name:'디트로이트 ZOO 스노우볼',        desc:'유리구슬10cm',           price:9000,    unit:'EA', note:'' },
+    { code:'SB-DZ-3D',   name:'디트로이트 ZOO 3D모델링/목업',  desc:'모델링 수정/3D출력',      price:1500000, unit:'EA', note:'' },
+    { code:'SB-DZ-PKG',  name:'디트로이트 ZOO 패키지',          desc:'600g 하드커버,내부완충제', price:3000,    unit:'EA', note:'' },
+    { code:'LOG-DZ-08',  name:'물류/관세 8% (디트로이트 ZOO)',  desc:'관세 8%, 물류비(3일 운송)',price:1920000, unit:'EA', note:'' }
+  ]
+};
+
+const _ITEMS_DEFAULTS = [
+  { _group: true, groupName: '핑크팰리스 스노우볼' },
+  { name:'핑크팰리스 스노우볼',          desc:'유리구슬10cm',            price:11000,   qty:400, unit:'EA' },
+  { name:'핑크팰리스 3D모델링/목업',     desc:'모델링 수정/3D출력',       price:1500000, qty:1,   unit:'EA' },
+  { name:'핑크팰리스 패키지',            desc:'600g 하드커버,내부완충재',  price:3000,    qty:400, unit:'EA' },
+  { name:'물류/관세 8% (핑크팰리스)',    desc:'관세 8%, 물류비(3일 운송)', price:1550000, qty:1,   unit:'EA' },
+  { _group: true, groupName: '디트로이트 ZOO 스노우볼' },
+  { name:'디트로이트 ZOO 스노우볼',      desc:'유리구슬10cm',            price:9000,    qty:700, unit:'EA' },
+  { name:'디트로이트 ZOO 3D모델링/목업', desc:'모델링 수정/3D출력',       price:1500000, qty:1,   unit:'EA' },
+  { name:'디트로이트 ZOO 패키지',        desc:'600g 하드커버,내부완충재',  price:3000,    qty:700, unit:'EA' },
+  { name:'물류/관세 8% (디트로이트 ZOO)', desc:'관세 8%, 물류비(3일 운송)',price:1920000, qty:1,   unit:'EA' }
+];
+
+let _savedNotesHTML = null, _savedBankHTML = null, _savedBankNoteHTML = null;
+
+function _ensureGrouped(arr) {
+  // Fix mixed state: groups exist below but top items have no leading group header
+  if (arr.length > 0 && arr.some(function(it){ return it._group; }) && !arr[0]._group) {
+    arr.unshift({ _group: true, groupName: '아이템 1' });
+  }
+}
+
+// ── Inline Format State ────────────────────────────────────────────────────────
+let _partyNameFmt = { fontSize:'14px', bold:true,  color:'#000000' };
+let _partyRowFmt  = { fontSize:'10px', bold:false, color:'#000000' };
+let _itemsFmt     = { fontSize:'10px', bold:false, color:'#000000' };
+let _savedDocTitleHTML = null;
+
+(function _loadQuoteStorage() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
+    if (saved) {
+      if (saved.db) { Object.assign(_DB_DEFAULTS, saved.db); }
+      if (saved.items) { _ITEMS_DEFAULTS.length = 0; saved.items.forEach(x => _ITEMS_DEFAULTS.push(x)); _ensureGrouped(_ITEMS_DEFAULTS); }
+      // HTML 우선, 없으면 구버전 텍스트 폴백
+      _savedNotesHTML   = saved.notesHTML   != null ? saved.notesHTML   : (saved.notesText   != null ? saved.notesText.replace(/\n/g,'<br>') : null);
+      _savedBankHTML    = saved.bankHTML     != null ? saved.bankHTML    : (saved.bankText     != null ? saved.bankText : null);
+      _savedBankNoteHTML= saved.bankNoteHTML != null ? saved.bankNoteHTML: (saved.bankNoteText != null ? saved.bankNoteText : null);
+      if (saved.docTitleHTML != null) _savedDocTitleHTML = saved.docTitleHTML;
+      if (saved.partyNameFmt) _partyNameFmt = Object.assign(_partyNameFmt, saved.partyNameFmt);
+      if (saved.partyRowFmt)  _partyRowFmt  = Object.assign(_partyRowFmt,  saved.partyRowFmt);
+      if (saved.itemsFmt)     _itemsFmt     = Object.assign(_itemsFmt,     saved.itemsFmt);
+    }
+  } catch(e) {}
+})();
+
+const DB = _DB_DEFAULTS;
+let items = _ITEMS_DEFAULTS;
+
+// ── Quote History ──────────────────────────────────────────────────────────────
+const HIST_KEY = 'noa_quote_hist_v1';
+const HIST_MAX = 30;
+
+function _loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch(e) { return []; }
+}
+function _saveHistory(arr) { localStorage.setItem(HIST_KEY, JSON.stringify(arr)); }
+
+function saveCurrentToHistory(skipBlankCheck) {
+  const title = ($('docTitle') && ($('docTitle').innerText || $('docTitle').textContent).trim()) || '제목 없음';
+  const quoteDate = $('metaDate') ? $('metaDate').value : '';
+  const no = $('metaNo') ? $('metaNo').value : '';
+  const mgr = $('metaMgr') ? $('metaMgr').value : '';
+  const senderCode = $('senderSel') ? $('senderSel').value : '';
+  const receiverCode = $('receiverSel') ? $('receiverSel').value : '';
+  // Skip if completely blank (only when called from auto-save paths, not manual save)
+  if (!skipBlankCheck && items.length === 1 && !items[0].name && title === '견적서') return;
+  const snap = {
+    id: Date.now().toString(),
+    savedAt: new Date().toISOString(),
+    title, quoteDate, no, mgr, senderCode, receiverCode,
+    items: JSON.parse(JSON.stringify(items))
+  };
+  const hist = _loadHistory();
+  hist.unshift(snap);
+  if (hist.length > HIST_MAX) hist.length = HIST_MAX;
+  _saveHistory(hist);
+  renderHistoryList();
+}
+
+function manualSave() {
+  saveCurrentToHistory(true);
+  const toast = document.getElementById('save-toast');
+  if (!toast) return;
+  toast.style.display = 'block';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function() { toast.style.display = 'none'; }, 2000);
+}
+
+function loadQuoteFromHistory(id) {
+  const snap = _loadHistory().find(h => h.id === id);
+  if (!snap) return;
+  if ($('docTitle')) $('docTitle').innerText = snap.title || '';
+  if ($('metaDate')) $('metaDate').value = snap.quoteDate || '';
+  if ($('metaNo'))   $('metaNo').value   = snap.no || '';
+  if ($('metaMgr'))  $('metaMgr').value  = snap.mgr || '';
+  if (snap.senderCode && $('senderSel')) {
+    $('senderSel').value = snap.senderCode; fillSender(snap.senderCode);
+  }
+  if (snap.receiverCode && $('receiverSel')) {
+    $('receiverSel').value = snap.receiverCode; fillReceiver(snap.receiverCode);
+  }
+  if (snap.items && snap.items.length > 0) {
+    items.length = 0; snap.items.forEach(x => items.push(x)); _ensureGrouped(items); renderItems();
+  }
+  renderHistoryList(id);
+}
+
+function deleteFromHistory(id, e) {
+  e && e.stopPropagation();
+  _saveHistory(_loadHistory().filter(h => h.id !== id));
+  renderHistoryList();
+}
+
+function renderHistoryList(activeId) {
+  const container = document.getElementById('qh-list');
+  if (!container) return;
+  const hist = _loadHistory();
+  if (!hist.length) { container.innerHTML = '<div class="qh-empty">저장된 견적서가 없습니다</div>'; return; }
+  container.innerHTML = hist.map(h => {
+    const d = h.savedAt ? new Date(h.savedAt) : null;
+    const ds = d ? (d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0')) : '';
+    const ac = h.id === activeId ? ' active' : '';
+    return `<div class="qh-item${ac}" onclick="loadQuoteFromHistory('${h.id}')">
+  <div class="qh-info">
+    <div class="qh-title-text">${h.title || '제목 없음'}</div>
+    <div class="qh-date">${ds}</div>
+  </div>
+  <button class="qh-del" onclick="deleteFromHistory('${h.id}',event)" title="삭제">✕</button>
+</div>`;
+  }).join('');
+}
+
+function saveQuote() {
+  const notesEl = $('notesArea'), bankEl = $('bankDisplay'), bankNoteEl = $('bankNote');
+  const titleEl = $('docTitle');
+  localStorage.setItem(_QUOTE_KEY, JSON.stringify({
+    db: DB, items: items, currency: currency, exchangeRate: exchangeRate,
+    docTitleHTML: titleEl ? titleEl.innerHTML : '',
+    notesHTML:    notesEl    ? notesEl.innerHTML    : '',
+    bankHTML:     bankEl     ? bankEl.innerHTML     : '',
+    bankNoteHTML: bankNoteEl ? bankNoteEl.innerHTML : '',
+    partyNameFmt: _partyNameFmt, partyRowFmt: _partyRowFmt, itemsFmt: _itemsFmt
+  }));
+  clearTimeout(window._fsQuoteTimer);
+  window._fsQuoteTimer = setTimeout(function(){
+    if(!window._fsDB) return;
+    const notesEl2 = document.getElementById('notesArea');
+    const bankEl2  = document.getElementById('bankDisplay');
+    const bankNoteEl2 = document.getElementById('bankNote');
+    // Strip base64 images before sending to Firestore (1MB doc limit)
+    const itemsNoImg = items.map(function(it){ var c = Object.assign({},it); delete c.img; return c; });
+    const titleEl2 = document.getElementById('docTitle');
+    window._fsDB.collection('noa_data').doc('quote').set({
+      db: {companies:DB.companies, clients:DB.clients, products:DB.products},
+      items: itemsNoImg,
+      currency: currency,
+      exchangeRate: exchangeRate,
+      docTitleHTML: titleEl2 ? titleEl2.innerHTML : '',
+      notesHTML:    notesEl2    ? notesEl2.innerHTML    : '',
+      bankHTML:     bankEl2     ? bankEl2.innerHTML     : '',
+      bankNoteHTML: bankNoteEl2 ? bankNoteEl2.innerHTML : '',
+      partyNameFmt: _partyNameFmt, partyRowFmt: _partyRowFmt, itemsFmt: _itemsFmt
+    }).catch(function(e){console.warn('Firestore saveQuote:',e);});
+  },600);
+}
+
+// ── Rich Text Formatting (선택영역별 서식) ────────────────────────────────────
+const _RICH_IDS = ['docTitle','notesArea','bankDisplay','bankNote'];
+const _selRanges = {};
+let _lastItemCellEl = null, _lastItemCellRange = null;
+
+document.addEventListener('selectionchange', function() {
+  try {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    for (const id of _RICH_IDS) {
+      const el = document.getElementById(id);
+      if (el && el.contains(range.commonAncestorContainer)) {
+        _selRanges[id] = range.cloneRange();
+        return;
+      }
+    }
+    const tbody = document.getElementById('itemsBody');
+    if (tbody && tbody.contains(range.commonAncestorContainer)) {
+      _lastItemCellRange = range.cloneRange();
+      let node = range.commonAncestorContainer;
+      if (node.nodeType === 3) node = node.parentNode;
+      const ce = node.closest ? node.closest('.ce-field') : null;
+      if (ce) _lastItemCellEl = ce;
+    }
+  } catch(e) {}
+});
+
+function _restoreSel(elId) {
+  try {
+    const r = _selRanges[elId];
+    if (!r) return false;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+    return true;
+  } catch(e) { return false; }
+}
+
+// font-size 적용: execCommand fontSize marker → span 교체
+function _applyFontSize(elId, pxSize) {
+  const el = $(elId); if (!el) return;
+  el.focus();
+  _restoreSel(elId);
+  const marker = Date.now().toString(36); // 유니크 마커
+  el.querySelectorAll('font[__m]').forEach(f => f.removeAttribute('__m'));
+  document.execCommand('fontSize', false, '7');
+  el.querySelectorAll('font[size="7"]').forEach(function(f) {
+    const s = document.createElement('span');
+    s.style.fontSize = pxSize;
+    while (f.firstChild) s.appendChild(f.firstChild);
+    f.parentNode.replaceChild(s, f);
+  });
+  saveQuote();
+}
+
+// 나머지 서식: bold / italic / fontName / foreColor
+function _execFmt(elId, cmd, value) {
+  const el = $(elId); if (!el) return;
+  el.focus();
+  _restoreSel(elId);
+  if (value !== undefined) document.execCommand(cmd, false, value);
+  else document.execCommand(cmd);
+  saveQuote();
+  // B/I 버튼 상태 갱신
+  _updFmtBtns(elId);
+}
+
+function _updFmtBtns(elId) {
+  let prefix;
+  if (elId === 'notesArea') prefix = 'notes';
+  else if (elId === 'docTitle') prefix = 'title';
+  else prefix = 'bank';
+  try {
+    const bb = $(prefix+'BoldBtn');    if(bb) bb.classList.toggle('active', document.queryCommandState('bold'));
+    const ib = $(prefix+'ItalicBtn'); if(ib) ib.classList.toggle('active', document.queryCommandState('italic'));
+  } catch(e) {}
+}
+
+// 툴바 select onchange 핸들러 (포커스가 이미 이동됐으므로 _restoreSel 필수)
+function applyFmt(elId, type, value) {
+  if (type === 'fontSize')  { _applyFontSize(elId, value); return; }
+  if (type === 'fontFamily'){ _execFmt(elId, 'fontName', value); return; }
+  if (type === 'color')     { _execFmt(elId, 'foreColor', value); return; }
+  if (type === 'bold')      { _execFmt(elId, 'bold'); return; }
+  if (type === 'italic')    { _execFmt(elId, 'italic'); return; }
+}
+
+// ── Party / Items 인라인 서식 ────────────────────────────────────────────────
+function setPartyFmt(which, prop, val) {
+  const state = which === 'name' ? _partyNameFmt : _partyRowFmt;
+  if (prop === 'bold') state.bold = !state.bold;
+  else state[prop] = val;
+  _applyPartyFmt(); saveQuote();
+}
+function _applyPartyFmt() {
+  document.querySelectorAll('.party-name').forEach(function(el) {
+    el.style.fontSize   = _partyNameFmt.fontSize;
+    el.style.fontWeight = _partyNameFmt.bold ? '700' : '400';
+    el.style.color      = _partyNameFmt.color;
+  });
+  document.querySelectorAll('.party-row').forEach(function(el) {
+    el.style.fontSize = _partyRowFmt.fontSize;
+  });
+  document.querySelectorAll('.party-val').forEach(function(el) {
+    el.style.fontWeight = _partyRowFmt.bold ? '700' : '400';
+    el.style.color      = _partyRowFmt.color;
+  });
+  const nb = $('partyNameBoldBtn'); if (nb) nb.classList.toggle('active', _partyNameFmt.bold);
+  const rb = $('partyRowBoldBtn');  if (rb) rb.classList.toggle('active', _partyRowFmt.bold);
+}
+
+function setItemsFmt(prop, val) {
+  if (_lastItemCellEl && _lastItemCellRange && !_lastItemCellRange.collapsed) {
+    const el = _lastItemCellEl;
+    el.focus();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(_lastItemCellRange);
+    if (prop === 'bold') { document.execCommand('bold'); }
+    else if (prop === 'fontSize') {
+      document.execCommand('fontSize', false, '7');
+      el.querySelectorAll('font[size="7"]').forEach(function(f) {
+        const sp = document.createElement('span'); sp.style.fontSize = val;
+        while (f.firstChild) sp.appendChild(f.firstChild);
+        f.parentNode.replaceChild(sp, f);
+      });
+    }
+    else if (prop === 'color') { document.execCommand('foreColor', false, val); }
+    const idx = parseInt(el.dataset.i), field = el.dataset.field;
+    if (!isNaN(idx) && field) { items[idx][field] = el.innerText; items[idx][field+'HTML'] = el.innerHTML; }
+    saveQuote();
+    return;
+  }
+  if (prop === 'bold') _itemsFmt.bold = !_itemsFmt.bold;
+  else _itemsFmt[prop] = val;
+  _applyItemsFmt(); saveQuote();
+}
+function _applyItemsFmt() {
+  document.querySelectorAll('#itemsBody .cell-input, #itemsBody .cell-select, #itemsBody .ce-field').forEach(function(el) {
+    el.style.fontSize   = _itemsFmt.fontSize;
+    el.style.fontWeight = _itemsFmt.bold ? '700' : '400';
+    el.style.color      = _itemsFmt.color;
+  });
+  document.querySelectorAll('#itemsBody .cell-amount').forEach(function(el) {
+    el.style.fontSize = _itemsFmt.fontSize;
+    el.style.color    = _itemsFmt.color;
+  });
+  const btn = $('itemsBoldBtn'); if (btn) btn.classList.toggle('active', _itemsFmt.bold);
+}
+
+function _initFmtUI() {
+  var pns = $('partyNameFontSize'); if (pns) pns.value = _partyNameFmt.fontSize;
+  var pnc = $('partyNameColor');    if (pnc) pnc.value = _partyNameFmt.color;
+  var prs = $('partyRowFontSize');  if (prs) prs.value = _partyRowFmt.fontSize;
+  var prc = $('partyRowColor');     if (prc) prc.value = _partyRowFmt.color;
+  var is_ = $('itemsFontSize'); if (is_) is_.value = _itemsFmt.fontSize;
+  var ic  = $('itemsColor');    if (ic)  ic.value  = _itemsFmt.color;
+  _applyPartyFmt();
+  _applyItemsFmt();
+}
+
+// 입금정보 툴바: bankDisplay / bankNote 중 마지막 포커스된 요소 반환
+let _lastBankEl = 'bankDisplay';
+function _bankFocusId() { return _lastBankEl; }
+['bankDisplay','bankNote'].forEach(function(id) {
+  document.addEventListener('focusin', function(e) {
+    if (e.target && e.target.id === id) _lastBankEl = id;
+  });
+});
+function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+function toggleItemSel(i) {
+  const sel = document.getElementById('nameSel-' + i);
+  if (!sel) return;
+  sel.style.display = sel.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── Currency State ─────────────────────────────────────────────────────────────
+let currency = 'KRW';
+let exchangeRate = 1350;
+(function _loadCurrencyPref() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
+    if (saved && saved.currency) currency = saved.currency;
+    if (saved && saved.exchangeRate) exchangeRate = saved.exchangeRate;
+  } catch(e) {}
+})();
+
+function setCurrency(c) {
+  currency = c;
+  const btnKrw = document.getElementById('btn-krw');
+  const btnUsd = document.getElementById('btn-usd');
+  if (btnKrw) btnKrw.classList.toggle('active', c === 'KRW');
+  if (btnUsd) btnUsd.classList.toggle('active', c === 'USD');
+  const wrap = document.getElementById('exrate-wrap');
+  if (wrap) wrap.style.display = c === 'USD' ? 'flex' : 'none';
+  const vatRow = document.getElementById('vatRow');
+  if (vatRow) vatRow.style.display = c === 'USD' ? 'none' : '';
+  saveQuote();
+  renderItems();
+}
+
+function setExRate(val) {
+  const n = parseFloat(String(val).replace(/,/g,''));
+  if (n > 0) { exchangeRate = n; saveQuote(); renderItems(); }
+}
+
+function _applyInitialCurrency() {
+  if (currency === 'USD') {
+    const btnKrw = document.getElementById('btn-krw');
+    const btnUsd = document.getElementById('btn-usd');
+    if (btnKrw) btnKrw.classList.remove('active');
+    if (btnUsd) btnUsd.classList.add('active');
+    const wrap = document.getElementById('exrate-wrap');
+    if (wrap) wrap.style.display = 'flex';
+    const inp = document.getElementById('exrateInp');
+    if (inp) inp.value = exchangeRate;
+    const vatRow = document.getElementById('vatRow');
+    if (vatRow) vatRow.style.display = 'none';
+  }
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────────────
+const won = n => '₩' + Math.round(n).toLocaleString('ko-KR');
+const fmtMoney = n => {
+  if (currency === 'USD') return '$' + (n / exchangeRate).toFixed(2);
+  return '₩' + Math.round(n).toLocaleString('ko-KR');
+};
+const toNum = s => parseFloat(String(s).replace(/,/g,'')) || 0;
+const $ = id => document.getElementById(id);
+
+function setToday() {
+  $('metaDate').value = new Date().toISOString().slice(0,10);
+}
+
+// ── Render Items ───────────────────────────────────────────────────────────────
+function _groupIndex(itemIdx) {
+  var c = 0;
+  for (var j = 0; j <= itemIdx; j++) { if (items[j] && items[j]._group) c++; }
+  return c;
+}
+function _updateGroupSubtotals() {
+  var curGroupEl = null, grpTotal = 0;
+  items.forEach(function(it, i) {
+    if (it._group) {
+      if (curGroupEl) { var el = curGroupEl.querySelector('.group-subtotal'); if (el) el.textContent = fmtMoney(grpTotal); }
+      curGroupEl = document.querySelector('#itemsBody tr[data-item-i="'+i+'"]');
+      grpTotal = 0;
+    } else { grpTotal += (it.price||0)*(it.qty||0); }
+  });
+  if (curGroupEl) { var el2 = curGroupEl.querySelector('.group-subtotal'); if (el2) el2.textContent = fmtMoney(grpTotal); }
+}
+
+function renderItems() {
+  const tbody = $('itemsBody');
+  tbody.innerHTML = '';
+  let total = 0, rowNo = 0;
+
+  items.forEach(function(it, i) {
+    const tr = document.createElement('tr');
+    tr.dataset.itemI = i;
+
+    if (it._group) {
+      tr.className = 'group-header-row';
+      const safeGN = (it.groupName||'').replace(/</g,'&lt;');
+      tr.innerHTML = '<td colspan="9"><div class="group-header-inner">' +
+        '<span class="group-tag">아이템 ' + _groupIndex(i) + '</span>' +
+        '<div class="ce-group-name" contenteditable="true" data-i="' + i + '" oninput="updGroup(' + i + ',this.innerText)" spellcheck="false">' + safeGN + '</div>' +
+        '<div class="group-subtotal"></div>' +
+        '<button class="btn btn-sm btn-danger cell-del" onclick="removeItem(' + i + ')">✕</button>' +
+        '</div></td>';
+    } else {
+      rowNo++;
+      const amt = (it.price||0)*(it.qty||0);
+      total += amt;
+      const nameContent = it.nameHTML || (it.name||'').replace(/</g,'&lt;');
+      const descContent = it.descHTML || (it.desc||'').replace(/</g,'&lt;');
+      const mc = (DB.products.find(function(p){ return p.name===it.name; })||{}).code || '__custom__';
+      const opts = DB.products.map(function(p){
+        return '<option value="'+p.code+'"'+(p.code===mc?' selected':'')+'>'+p.name+'</option>';
+      }).join('');
+
+      var imgCellHtml;
+      if (it.img) {
+        imgCellHtml = '<div class="item-img-wrap">' +
+          '<img class="item-img-thumb" src="'+it.img+'" onclick="triggerImgUpload('+i+')" title="클릭하여 변경">' +
+          '<button class="item-img-del" onclick="removeItemImg('+i+')" title="삭제">✕</button>' +
+          '<input class="item-img-input" id="img-input-'+i+'" type="file" accept="image/*" onchange="onImgUpload('+i+',this)">' +
+          '</div>';
+      } else {
+        imgCellHtml = '<button class="item-photo-add" onclick="showPhotoSlot('+i+')" title="사진 추가">📷</button>';
+      }
+
+      tr.innerHTML =
+        '<td class="col-no" style="text-align:center;font-size:10px;color:#9CA3AF;padding:2px 6px">'+rowNo+'</td>' +
+        '<td class="col-img item-img-cell">'+imgCellHtml+'</td>' +
+        '<td class="col-name"><div class="name-wrap">' +
+          '<div class="name-input-row">' +
+            '<div class="ce-field ce-name" contenteditable="true" data-i="'+i+'" data-field="name" oninput="updCE('+i+',\'name\',this)" spellcheck="false">'+nameContent+'</div>' +
+            '<button class="btn-show-sel" onclick="toggleItemSel('+i+')" title="품목DB에서 선택">▼</button>' +
+          '</div>' +
+          '<select class="cell-select name-db-sel" id="nameSel-'+i+'" style="display:none" onchange="onProductSel('+i+',this.value)">' +
+            '<option value="">— 품목 선택 —</option>'+opts +
+          '</select>' +
+        '</div></td>' +
+        '<td><div class="ce-field ce-desc" contenteditable="true" data-i="'+i+'" data-field="desc" oninput="updCE('+i+',\'desc\',this)" spellcheck="false">'+descContent+'</div></td>' +
+        '<td class="col-price"><input class="cell-input ta-right" value="'+(currency==='USD'?(it.price/exchangeRate).toFixed(2):(it.price||0).toLocaleString('ko-KR'))+'" oninput="updPrice('+i+',this.value)" onblur="renderItems();saveQuote()"></td>' +
+        '<td class="col-qty"><input class="cell-input ta-center" type="text" inputmode="numeric" value="'+(it.qty||1)+'" oninput="updQty('+i+',this.value)" onblur="renderItems();saveQuote()" style="text-align:center"></td>' +
+        '<td class="col-unit"><input class="cell-input ta-center" value="'+(it.unit||'EA')+'" oninput="upd('+i+',\'unit\',this.value)"></td>' +
+        '<td class="col-amount cell-amount">'+fmtMoney(amt)+'</td>' +
+        '<td class="col-del cell-del"><button class="btn btn-sm btn-danger" onclick="removeItem('+i+')">✕</button></td>';
+    }
+    tbody.appendChild(tr);
+  });
+
+  _updateGroupSubtotals();
+  const vat = currency === 'USD' ? 0 : total * 0.1;
+  const final = total + vat;
+  $('itemsTotalLabel').textContent = fmtMoney(total);
+  $('sumTotal').textContent = fmtMoney(total);
+  $('sumSupply').textContent = fmtMoney(total);
+  $('sumVat').textContent = fmtMoney(vat);
+  $('sumFinal').textContent = fmtMoney(final);
+  if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(total);
+  _applyItemsFmt();
+}
+
+function onProductSel(i, code) {
+  if (!code) return;
+  const p = DB.products.find(x => x.code === code);
+  if (p) {
+    items[i] = { ...items[i], name:p.name, desc:p.desc, price:p.price, unit:p.unit, nameHTML:'', descHTML:'' };
+  }
+  renderItems(); saveQuote();
+}
+
+function upd(i, field, val) {
+  if (!items[i] || items[i]._group) return;
+  items[i][field] = val;
+  saveQuote();
+}
+function updCE(i, field, el) {
+  if (!items[i] || items[i]._group) return;
+  items[i][field] = el.innerText;
+  items[i][field+'HTML'] = el.innerHTML;
+  saveQuote();
+}
+function updGroup(i, val) {
+  if (items[i] && items[i]._group) { items[i].groupName = val; saveQuote(); }
+}
+function showPhotoSlot(i) {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = function() { onImgUpload(i, inp); };
+  inp.click();
+}
+
+function updPrice(i, val) {
+  if (!items[i] || items[i]._group) return;
+  const raw = toNum(val);
+  items[i].price = currency === 'USD' ? raw * exchangeRate : raw;
+  _updRowAmt(i); _updTotals();
+}
+function updQty(i, val) {
+  if (!items[i] || items[i]._group) return;
+  items[i].qty = toNum(val);
+  _updRowAmt(i); _updTotals();
+}
+function _updRowAmt(i) {
+  const tr = document.querySelector('#itemsBody tr[data-item-i="'+i+'"]');
+  if (tr) { const el = tr.querySelector('.cell-amount'); if(el) el.textContent = fmtMoney((items[i].price||0)*(items[i].qty||0)); }
+}
+function _updTotals() {
+  const total = items.reduce(function(s,it){ return it._group ? s : s+(it.price||0)*(it.qty||0); }, 0);
+  const vat = currency === 'USD' ? 0 : total * 0.1;
+  const fin = total + vat;
+  $('itemsTotalLabel').textContent = fmtMoney(total);
+  $('sumTotal').textContent  = fmtMoney(total);
+  $('sumSupply').textContent = fmtMoney(total);
+  $('sumVat').textContent    = fmtMoney(vat);
+  $('sumFinal').textContent  = fmtMoney(fin);
+  if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(total);
+  _updateGroupSubtotals();
+}
+
+function addGroup() {
+  // If top items are ungrouped, wrap them under '아이템 1' first
+  if (items.length > 0 && !items[0]._group) {
+    items.unshift({ _group: true, groupName: '아이템 1' });
+  }
+  items.push({ _group: true, groupName: '새 아이템' });
+  items.push({ name:'', desc:'', price:0, qty:1, unit:'EA' });
+  renderItems(); saveQuote();
+  setTimeout(function(){
+    const last = document.querySelector('#itemsBody .group-header-row:last-of-type .ce-group-name');
+    if (last) { last.focus(); document.execCommand('selectAll'); }
+  }, 50);
+}
+function addItem() {
+  items.push({ name:'', desc:'', price:0, qty:1, unit:'EA' });
+  renderItems(); saveQuote();
+}
+function removeItem(i) { items.splice(i,1); renderItems(); saveQuote(); }
+
+// ── Item image upload ──────────────────────────────────────────────────────────
+function triggerImgUpload(i) {
+  const inp = document.getElementById('img-input-' + i);
+  if (inp) inp.click();
+}
+function removeItemImg(i) {
+  items[i].img = '';
+  renderItems(); saveQuote();
+}
+function onImgUpload(i, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // Resize to max 300px side via canvas to keep localStorage compact
+    const img = new Image();
+    img.onload = function() {
+      const MAX = 300;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+        else        { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      items[i].img = cv.toDataURL('image/jpeg', 0.75);
+      renderItems(); saveQuote();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Dropdowns ─────────────────────────────────────────────────────────────────
+function populateSels() {
+  $('senderSel').innerHTML   = '<option value="">— 자사 선택 —</option>' +
+    DB.companies.map(c=>`<option value="${c.code}">${c.code} · ${c.name}</option>`).join('');
+  $('receiverSel').innerHTML = '<option value="">— 거래처 선택 —</option>' +
+    DB.clients.map(c=>`<option value="${c.code}">${c.code} · ${c.name}</option>`).join('');
+}
+
+function fillSender(code) {
+  const c = DB.companies.find(x=>x.code===code); if(!c) return;
+  $('sName').textContent  = c.name;
+  $('sBiz').textContent   = c.biz;
+  $('sCeo').textContent   = c.ceo;
+  $('sEmail').textContent = c.email;
+  $('sAddr').textContent  = c.addr;
+  $('metaMgr').value      = `${c.manager} (${c.mtel}, ${c.memail})`;
+  const bd = $('bankDisplay'); if(bd) bd.innerText = `${c.bank} ${c.acct} · ${c.holder}`;
+}
+
+function fillReceiver(code) {
+  const c = DB.clients.find(x=>x.code===code); if(!c) return;
+  $('rName').textContent    = c.name;
+  $('rBiz').textContent     = c.biz;
+  $('rContact').textContent = c.contact;
+  $('rEmail').textContent   = c.email;
+  $('rAddr').textContent    = c.addr;
+}
+
+// ── DB Tables ─────────────────────────────────────────────────────────────────
+// HTML-attribute safe escaper
+function esc(v) { return String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function renderCompanyDB() {
+  $('companyTbody').innerHTML = DB.companies.map((c,i)=>`
+    <tr>
+      <td><input class="db-edit-input" value="${esc(c.code)}"    oninput="updCompany(${i},'code',this.value)"    title="코드"></td>
+      <td><input class="db-edit-input" value="${esc(c.name)}"    oninput="updCompany(${i},'name',this.value)"    title="회사명"></td>
+      <td><input class="db-edit-input" value="${esc(c.biz)}"     oninput="updCompany(${i},'biz',this.value)"     title="사업자번호"></td>
+      <td><input class="db-edit-input" value="${esc(c.ceo)}"     oninput="updCompany(${i},'ceo',this.value)"     title="대표자"></td>
+      <td><input class="db-edit-input" value="${esc(c.email)}"   oninput="updCompany(${i},'email',this.value)"   title="이메일"></td>
+      <td><input class="db-edit-input" value="${esc(c.tel)}"     oninput="updCompany(${i},'tel',this.value)"     title="전화"></td>
+      <td><input class="db-edit-input" value="${esc(c.bank)}"    oninput="updCompany(${i},'bank',this.value)"    title="은행"></td>
+      <td><input class="db-edit-input" value="${esc(c.acct)}"    oninput="updCompany(${i},'acct',this.value)"    title="계좌번호"></td>
+      <td><input class="db-edit-input" value="${esc(c.manager)}" oninput="updCompany(${i},'manager',this.value)" title="담당자"></td>
+      <td><input class="db-edit-input" value="${esc(c.mtel)}"    oninput="updCompany(${i},'mtel',this.value)"    title="담당자연락처"></td>
+      <td><input class="db-edit-input" value="${esc(c.memail)}"  oninput="updCompany(${i},'memail',this.value)"  title="담당자이메일"></td>
+      <td><button class="btn btn-sm btn-danger" onclick="delCompany(${i})">✕</button></td>
+    </tr>`).join('');
+}
+function renderClientDB() {
+  $('clientTbody').innerHTML = DB.clients.map((c,i)=>`
+    <tr>
+      <td><input class="db-edit-input" value="${esc(c.code)}"    oninput="updClient(${i},'code',this.value)"    title="코드"></td>
+      <td><input class="db-edit-input" value="${esc(c.name)}"    oninput="updClient(${i},'name',this.value)"    title="회사명"></td>
+      <td><input class="db-edit-input" value="${esc(c.biz)}"     oninput="updClient(${i},'biz',this.value)"     title="사업자번호"></td>
+      <td><input class="db-edit-input" value="${esc(c.contact)}" oninput="updClient(${i},'contact',this.value)" title="수신자"></td>
+      <td><input class="db-edit-input" value="${esc(c.email)}"   oninput="updClient(${i},'email',this.value)"   title="이메일"></td>
+      <td><input class="db-edit-input" value="${esc(c.tel)}"     oninput="updClient(${i},'tel',this.value)"     title="전화"></td>
+      <td><input class="db-edit-input" value="${esc(c.addr)}"    oninput="updClient(${i},'addr',this.value)"    title="주소"></td>
+      <td><input class="db-edit-input" value="${esc(c.note)}"    oninput="updClient(${i},'note',this.value)"    title="비고"></td>
+      <td><button class="btn btn-sm btn-danger" onclick="delClient(${i})">✕</button></td>
+    </tr>`).join('');
+}
+function renderProductDB() {
+  $('productTbody').innerHTML = DB.products.map((p,i)=>`
+    <tr>
+      <td><input class="db-edit-input" value="${esc(p.code)}"  oninput="updProduct(${i},'code',this.value)"  title="코드"></td>
+      <td><input class="db-edit-input" value="${esc(p.name)}"  oninput="updProduct(${i},'name',this.value)"  title="항목명"></td>
+      <td><input class="db-edit-input" value="${esc(p.desc)}"  oninput="updProduct(${i},'desc',this.value)"  title="설명"></td>
+      <td><input class="db-edit-input" value="${esc(p.price)}" oninput="updProduct(${i},'price',this.value)" title="단가" style="min-width:70px;text-align:right"></td>
+      <td><input class="db-edit-input" value="${esc(p.unit)}"  oninput="updProduct(${i},'unit',this.value)"  title="단위" style="min-width:40px"></td>
+      <td><input class="db-edit-input" value="${esc(p.note)}"  oninput="updProduct(${i},'note',this.value)"  title="비고"></td>
+      <td><button class="btn btn-sm btn-danger" onclick="delProduct(${i})">✕</button></td>
+    </tr>`).join('');
+}
+
+function g(id) { return $(id).value.trim(); }
+
+function addCompany() {
+  if (!g('c_code')||!g('c_name')) return alert('코드와 회사명은 필수입니다.');
+  DB.companies.push({ code:g('c_code'), name:g('c_name'), biz:g('c_biz'), ceo:g('c_ceo'),
+    email:g('c_email'), tel:g('c_tel'), addr:'', bank:g('c_bank'), acct:g('c_acct'),
+    holder:g('c_name'), manager:g('c_mgr'), mtel:g('c_mtel'), memail:g('c_memail') });
+  ['c_code','c_name','c_biz','c_ceo','c_email','c_tel','c_bank','c_acct','c_mgr','c_mtel','c_memail']
+    .forEach(id=>$(id).value='');
+  renderCompanyDB(); populateSels(); saveQuote();
+}
+function addClient() {
+  if (!g('cl_code')||!g('cl_name')) return alert('코드와 회사명은 필수입니다.');
+  DB.clients.push({ code:g('cl_code'), name:g('cl_name'), biz:g('cl_biz'), contact:g('cl_contact'),
+    email:g('cl_email'), tel:g('cl_tel'), addr:g('cl_addr'), note:g('cl_note') });
+  ['cl_code','cl_name','cl_biz','cl_contact','cl_email','cl_tel','cl_addr','cl_note']
+    .forEach(id=>$(id).value='');
+  renderClientDB(); populateSels(); saveQuote();
+}
+function addProduct() {
+  if (!g('pr_code')||!g('pr_name')) return alert('코드와 항목명은 필수입니다.');
+  DB.products.push({ code:g('pr_code'), name:g('pr_name'), desc:g('pr_desc'),
+    price:parseFloat(g('pr_price'))||0, unit:g('pr_unit')||'EA', note:g('pr_note') });
+  ['pr_code','pr_name','pr_desc','pr_price','pr_unit','pr_note'].forEach(id=>$(id).value='');
+  renderProductDB(); renderItems(); saveQuote();
+}
+
+function updCompany(i, field, val) {
+  DB.companies[i][field] = val;
+  populateSels(); saveQuote();
+}
+function updClient(i, field, val) {
+  DB.clients[i][field] = val;
+  populateSels(); saveQuote();
+}
+function updProduct(i, field, val) {
+  DB.products[i][field] = field === 'price' ? (parseFloat(String(val).replace(/,/g,'')) || 0) : val;
+  renderItems(); saveQuote();
+}
+
+function delCompany(i) { if(confirm('삭제하시겠습니까?')) { DB.companies.splice(i,1); renderCompanyDB(); populateSels(); saveQuote(); } }
+function delClient(i)  { if(confirm('삭제하시겠습니까?')) { DB.clients.splice(i,1);  renderClientDB();  populateSels(); saveQuote(); } }
+function delProduct(i) { if(confirm('삭제하시겠습니까?')) { DB.products.splice(i,1); renderProductDB(); renderItems(); saveQuote(); } }
+
+// ── Tabs ───────────────────────────────────────────────────────────────────────
+function switchTab(btn, name) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  $('tab-'+name).classList.add('active');
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────────────
+function resetDoc() {
+  if (!confirm('새 견적서를 작성하시겠습니까? 현재 내용이 초기화됩니다.')) return;
+  saveCurrentToHistory();
+  $('docTitle').innerText = '견적서';
+  $('metaNo').value = 'NO-' + Date.now().toString().slice(-6);
+  $('metaMgr').value = '';
+  $('senderSel').value = ''; $('receiverSel').value = '';
+  ['sName','sBiz','sCeo','sEmail','sAddr','rName','rBiz','rContact','rEmail','rAddr']
+    .forEach(id=>$(id).textContent='-');
+  const bd2 = $('bankDisplay'); if(bd2) bd2.innerText = '-';
+  items = [{ _group: true, groupName: '새 아이템' }, { name:'', desc:'', price:0, qty:1, unit:'EA' }];
+  renderItems(); setToday();
+}
+
+// ── Init (Firebase async) ──────────────────────────────────────────────────────
+setToday();
+(async function _fsInit(){
+  var loadEl = document.getElementById('fs-loading');
+  try {
+    if(window._fsDB){
+      var snap = await window._fsDB.collection('noa_data').doc('quote').get();
+      if(snap.exists){
+        var d = snap.data();
+        if(d.db){
+          if(d.db.companies) DB.companies = d.db.companies;
+          if(d.db.clients)   DB.clients   = d.db.clients;
+          if(d.db.products)  DB.products  = d.db.products;
+        }
+        if(d.items && d.items.length > 0){
+          items.length = 0;
+          d.items.forEach(function(x){ items.push(x); });
+          _ensureGrouped(items);
+        }
+        if(d.currency)     currency     = d.currency;
+        if(d.exchangeRate) exchangeRate = d.exchangeRate;
+        if(d.docTitleHTML != null) _savedDocTitleHTML = d.docTitleHTML;
+        if(d.notesHTML    != null) _savedNotesHTML    = d.notesHTML;
+        if(d.bankHTML     != null) _savedBankHTML     = d.bankHTML;
+        if(d.bankNoteHTML != null) _savedBankNoteHTML = d.bankNoteHTML;
+        if(d.partyNameFmt) _partyNameFmt = Object.assign(_partyNameFmt, d.partyNameFmt);
+        if(d.partyRowFmt)  _partyRowFmt  = Object.assign(_partyRowFmt,  d.partyRowFmt);
+        if(d.itemsFmt)     _itemsFmt     = Object.assign(_itemsFmt,     d.itemsFmt);
+        localStorage.setItem(_QUOTE_KEY, JSON.stringify({
+          db:DB, items:items, currency:currency, exchangeRate:exchangeRate,
+          docTitleHTML:_savedDocTitleHTML,
+          notesHTML:_savedNotesHTML, bankHTML:_savedBankHTML, bankNoteHTML:_savedBankNoteHTML,
+          partyNameFmt:_partyNameFmt, partyRowFmt:_partyRowFmt, itemsFmt:_itemsFmt
+        }));
+      } else {
+        // 최초 진입: localStorage 데이터를 Firestore에 업로드
+        var initNotesEl = document.getElementById('notesArea');
+        var initBankEl  = document.getElementById('bankDisplay');
+        var initBankNoteEl = document.getElementById('bankNote');
+        await window._fsDB.collection('noa_data').doc('quote').set({
+          db:{companies:DB.companies,clients:DB.clients,products:DB.products},
+          items:items,
+          currency:currency,
+          exchangeRate:exchangeRate,
+          notesHTML:    initNotesEl    ? initNotesEl.innerHTML    : '',
+          bankHTML:     initBankEl     ? initBankEl.innerHTML     : '',
+          bankNoteHTML: initBankNoteEl ? initBankNoteEl.innerHTML : ''
+        });
+      }
+    }
+  } catch(e){ console.warn('Firestore init failed, using local cache:',e); }
+  populateSels();
+  _applyInitialCurrency();
+  // Restore rich HTML content
+  if (_savedDocTitleHTML != null) { const el = $('docTitle');    if(el) el.innerHTML = _savedDocTitleHTML; }
+  if (_savedNotesHTML    != null) { const el = $('notesArea');    if(el) el.innerHTML = _savedNotesHTML; }
+  if (_savedBankHTML     != null) { const el = $('bankDisplay');  if(el) el.innerHTML = _savedBankHTML; }
+  if (_savedBankNoteHTML != null) { const el = $('bankNote');     if(el) el.innerHTML = _savedBankNoteHTML; }
+  renderItems();
+  // Auto-resize all desc textareas after render
+  setTimeout(function(){ document.querySelectorAll('.cell-input.desc').forEach(function(el){ autoResize(el); }); }, 0);
+  renderCompanyDB();
+  renderClientDB();
+  renderProductDB();
+  $('senderSel').value = 'NOA';   fillSender('NOA');
+  $('receiverSel').value = 'BROSCO'; fillReceiver('BROSCO');
+  renderHistoryList();
+  _initFmtUI();
+  if(loadEl) loadEl.style.display='none';
+})();
+
+// ═══════════════ AUTH + BACKUP ═══════════════
+(function() {
+const _AUTH_USERS_KEY = 'noa_auth_users_v1';
+const _SESSION_KEY    = 'noa_session_v1';
+const _SESSION_TTL    = 8 * 60 * 60 * 1000; // 8h
+const _SNAP_KEY       = 'noa_snap_quote';
+const _BK_KEYS        = ['noa_quote_v1'];
+const _APPNAME        = '견적서';
+const _LAST_BK_KEY    = 'noa_lastbk_quote';
+
+// Default users (passwords are SHA-256 hashed)
+const _DEFAULT_USERS = [
+  { username:'admin',    hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926', name:'관리자',  role:'admin' },
+  { username:'david',    hash:'2d2a6626eb7a70813ec876ad277281379a2d0d6c6e33e67f3c20d5d66452ef5e', name:'김진욱',  role:'admin' },
+  { username:'sooyoung', hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926', name:'소영',    role:'user'  }
+];
+
+function _loadUsers() {
+  try { return JSON.parse(localStorage.getItem(_AUTH_USERS_KEY)) || _DEFAULT_USERS; } catch(e) { return _DEFAULT_USERS; }
+}
+function _saveUsers(u) { localStorage.setItem(_AUTH_USERS_KEY, JSON.stringify(u)); }
+
+async function _sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function _getSession() {
+  try { return JSON.parse(sessionStorage.getItem(_SESSION_KEY)); } catch(e) { return null; }
+}
+function _setSession(user) {
+  sessionStorage.setItem(_SESSION_KEY, JSON.stringify({
+    username: user.username, name: user.name, role: user.role,
+    expires: Date.now() + _SESSION_TTL
+  }));
+}
+
+function _showUser(name) {
+  const ov = document.getElementById('auth-overlay');
+  if (ov) ov.remove();
+  document.querySelectorAll('.auth-user-name').forEach(el => el.textContent = name);
+  _checkBackupReminder();
+}
+
+window.doLogin = async function() {
+  const username = document.getElementById('auth-user').value.trim();
+  const password = document.getElementById('auth-pass').value;
+  if (!username || !password) { document.getElementById('auth-err').textContent = '아이디와 비밀번호를 입력해주세요.'; return; }
+  const hash = await _sha256(password);
+  const users = _loadUsers();
+  const user = users.find(u => u.username === username && u.hash === hash);
+  if (user) {
+    _setSession(user);
+    _showUser(user.name);
+  } else {
+    document.getElementById('auth-err').textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+    document.getElementById('auth-pass').value = '';
+  }
+};
+
+window.doLogout = function() {
+  if (confirm('로그아웃 하시겠습니까?')) {
+    sessionStorage.removeItem(_SESSION_KEY);
+    location.reload();
+  }
+};
+
+// Check session on load
+(function() {
+  const s = _getSession();
+  if (s && Date.now() < s.expires) {
+    _showUser(s.name);
+  }
+})();
+
+// ── Backup ──
+function _allData() {
+  const obj = {};
+  _BK_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v) obj[k] = JSON.parse(v); });
+  return obj;
+}
+function _dataSize() {
+  let total = 0;
+  _BK_KEYS.forEach(k => { total += (localStorage.getItem(k) || '').length; });
+  return (total / 1024).toFixed(1);
+}
+
+window.openBackup = function() {
+  document.getElementById('backup-panel').classList.add('open');
+  _renderSnapList();
+  const info = document.getElementById('bp-storage-info');
+  if (info) {
+    const lastBk = localStorage.getItem(_LAST_BK_KEY);
+    const lastStr = lastBk ? new Date(lastBk).toLocaleString('ko-KR') : '기록 없음';
+    info.innerHTML = `📦 저장 위치: 브라우저 로컬 스토리지<br>💿 데이터 크기: ${_dataSize()} KB<br>🕐 마지막 백업: ${lastStr}`;
+  }
+};
+window.closeBackup = function() {
+  document.getElementById('backup-panel').classList.remove('open');
+};
+
+window.exportBackup = function() {
+  const backup = { version:2, app:_APPNAME, exportDate:new Date().toISOString(), data:_allData() };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = _APPNAME + '_백업_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  localStorage.setItem(_LAST_BK_KEY, new Date().toISOString());
+  const info = document.getElementById('bp-storage-info');
+  if (info) info.innerHTML += '<br>✅ 방금 백업 완료!';
+};
+
+window.importBackup = function() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const bk = JSON.parse(ev.target.result);
+        if (!bk.data) { alert('올바른 백업 파일이 아닙니다.'); return; }
+        if (!confirm('현재 데이터를 백업 파일로 덮어쓰겠습니까?\n내보낸 날짜: ' + new Date(bk.exportDate).toLocaleString('ko-KR'))) return;
+        Object.entries(bk.data).forEach(([k,v]) => localStorage.setItem(k, JSON.stringify(v)));
+        alert('복원 완료! 페이지를 새로고침합니다.');
+        location.reload();
+      } catch(e) { alert('파일 읽기 오류: ' + e.message); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+};
+
+window.saveSnapshot = function() {
+  const snaps = _loadSnaps();
+  snaps.unshift({ id: Date.now().toString(), date: new Date().toISOString(), size: _dataSize(), data: _allData() });
+  if (snaps.length > 7) snaps.length = 7;
+  localStorage.setItem(_SNAP_KEY, JSON.stringify(snaps));
+  _renderSnapList();
+  alert('스냅샷이 저장되었습니다 (' + new Date().toLocaleString('ko-KR') + ')');
+};
+
+function _loadSnaps() { try { return JSON.parse(localStorage.getItem(_SNAP_KEY)) || []; } catch(e) { return []; } }
+
+function _renderSnapList() {
+  const el = document.getElementById('snap-list'); if (!el) return;
+  const snaps = _loadSnaps();
+  if (snaps.length === 0) { el.innerHTML = '<div style="font-size:11px;color:#9CA3AF;padding:8px 0">저장된 스냅샷 없음</div>'; return; }
+  el.innerHTML = snaps.map((s,i) => `
+    <div class="snap-item">
+      <div><div class="snap-date">${new Date(s.date).toLocaleString('ko-KR')}</div><div class="snap-size">${s.size} KB</div></div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button class="snap-restore" onclick="_restoreSnap(${i})">복원</button>
+        <button class="snap-del" onclick="_delSnap(${i})" title="삭제">×</button>
+      </div>
+    </div>`).join('');
+}
+
+window._restoreSnap = function(i) {
+  const snaps = _loadSnaps();
+  const s = snaps[i]; if (!s) return;
+  if (!confirm('이 스냅샷으로 복원하시겠습니까?\n' + new Date(s.date).toLocaleString('ko-KR'))) return;
+  Object.entries(s.data).forEach(([k,v]) => localStorage.setItem(k, JSON.stringify(v)));
+  alert('복원 완료!'); location.reload();
+};
+window._delSnap = function(i) {
+  const snaps = _loadSnaps(); snaps.splice(i,1);
+  localStorage.setItem(_SNAP_KEY, JSON.stringify(snaps)); _renderSnapList();
+};
+
+// Auto-save snapshot every 7 days
+function _checkBackupReminder() {
+  const lastBk = localStorage.getItem(_LAST_BK_KEY);
+  const diff = lastBk ? (Date.now() - new Date(lastBk).getTime()) / 86400000 : 999;
+  if (diff >= 7) {
+    setTimeout(() => {
+      if (confirm('마지막 백업으로부터 ' + Math.floor(diff) + '일이 경과했습니다.\n지금 백업하시겠습니까?')) {
+        openBackup(); setTimeout(() => exportBackup(), 300);
+      }
+    }, 2000);
+  }
+}
+
+// ── Password change ──
+window.openPwModal = function() {
+  ['pw-cur','pw-new','pw-new2'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  const err = document.getElementById('pw-err'); if(err) err.textContent='';
+  document.getElementById('pw-modal').classList.add('open');
+};
+window.changePw = async function() {
+  const cur  = document.getElementById('pw-cur').value;
+  const nw   = document.getElementById('pw-new').value;
+  const nw2  = document.getElementById('pw-new2').value;
+  const err  = document.getElementById('pw-err');
+  if (!cur || !nw || !nw2) { err.textContent = '모든 항목을 입력해주세요.'; return; }
+  if (nw.length < 8)       { err.textContent = '새 비밀번호는 8자 이상이어야 합니다.'; return; }
+  if (nw !== nw2)          { err.textContent = '새 비밀번호가 일치하지 않습니다.'; return; }
+  const s = _getSession(); if (!s) return;
+  const curHash = await _sha256(cur);
+  const users = _loadUsers();
+  const user = users.find(u => u.username === s.username && u.hash === curHash);
+  if (!user) { err.textContent = '현재 비밀번호가 올바르지 않습니다.'; return; }
+  user.hash = await _sha256(nw);
+  _saveUsers(users);
+  document.getElementById('pw-modal').classList.remove('open');
+  alert('비밀번호가 변경되었습니다.');
+};
+
+})();
+
+// ═══════════════ PRINT AUTO-SCALE (fit to 1 page) ═══════════════
+(function(){
+  // A4 @ 96 dpi: 297mm × 3.7795 = 1122px. Margins 10mm top+bottom → available ≈ 1046px
+  var AVAIL_H = Math.round((297 - 20) * 3.7795);  // ~1046
+  var AVAIL_W = Math.round((210 - 24) * 3.7795);  // ~700  (12mm each side)
+
+  function applyPrintScale() {
+    var doc = document.getElementById('quoteDoc');
+    if (!doc) return;
+    doc.style.zoom = '';                          // reset first
+    var h = doc.getBoundingClientRect().height;
+    var w = doc.getBoundingClientRect().width;
+    var scale = Math.min(AVAIL_H / h, AVAIL_W / w);
+    if (scale < 0.999) {
+      doc.style.zoom = scale.toFixed(4);
+    }
+  }
+  function removePrintScale() {
+    var doc = document.getElementById('quoteDoc');
+    if (doc) doc.style.zoom = '';
+  }
+
+  if (window.matchMedia) {
+    var mq = window.matchMedia('print');
+    mq.addEventListener('change', function(e){ if (e.matches) applyPrintScale(); else removePrintScale(); });
+  }
+  window.addEventListener('beforeprint', applyPrintScale);
+  window.addEventListener('afterprint',  removePrintScale);
+})();
+
+</script>
+</body>
+</html>
