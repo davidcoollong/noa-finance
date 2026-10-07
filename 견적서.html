@@ -1358,6 +1358,64 @@ function saveQuote() {
 
 // ── Rich Text Formatting (선택영역별 서식) ────────────────────────────────────
 const _RICH_IDS = ['docTitle','notesArea','bankDisplay','bankNote'];
+
+// 붙여넣기 시 font-size 등 텍스트 크기 관련 스타일 제거
+(function _initPasteHandlers() {
+  function cleanHtml(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    // font 태그 → span 으로 (size/face 제거)
+    tmp.querySelectorAll('font').forEach(function(f) {
+      const span = document.createElement('span');
+      while (f.firstChild) span.appendChild(f.firstChild);
+      f.parentNode.replaceChild(span, f);
+    });
+    // 모든 인라인 스타일에서 font-size 제거
+    tmp.querySelectorAll('[style]').forEach(function(el) {
+      el.style.fontSize = '';
+      el.style.fontFamily = '';
+      el.style.lineHeight = '';
+      if (!el.getAttribute('style').trim()) el.removeAttribute('style');
+    });
+    // 불필요한 빈 span 제거
+    tmp.querySelectorAll('span:not([style]):not([class])').forEach(function(s) {
+      while (s.firstChild) s.parentNode.insertBefore(s.firstChild, s);
+      s.parentNode.removeChild(s);
+    });
+    return tmp.innerHTML;
+  }
+
+  _RICH_IDS.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('paste', function(e) {
+      e.preventDefault();
+      let html = '';
+      if (e.clipboardData.types.indexOf('text/html') !== -1) {
+        html = cleanHtml(e.clipboardData.getData('text/html'));
+      } else {
+        const text = e.clipboardData.getData('text/plain');
+        html = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+      }
+      document.execCommand('insertHTML', false, html);
+    });
+  });
+
+  // items 영역 paste 핸들러 (동적 생성 셀에 이벤트 위임)
+  document.addEventListener('paste', function(e) {
+    const ce = e.target.closest && e.target.closest('#itemsBody .ce-field');
+    if (!ce) return;
+    e.preventDefault();
+    let html = '';
+    if (e.clipboardData.types.indexOf('text/html') !== -1) {
+      html = cleanHtml(e.clipboardData.getData('text/html'));
+    } else {
+      const text = e.clipboardData.getData('text/plain');
+      html = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    }
+    document.execCommand('insertHTML', false, html);
+  }, true);
+})();
 const _selRanges = {};
 let _lastItemCellEl = null, _lastItemCellRange = null;
 
@@ -1395,18 +1453,30 @@ function _restoreSel(elId) {
   } catch(e) { return false; }
 }
 
-// font-size 적용: execCommand fontSize marker → span 교체
+// 요소와 그 자손의 font-size 인라인 스타일을 모두 제거
+function _stripFontSize(el) {
+  if (el.nodeType !== 1) return;
+  el.style.fontSize = '';
+  el.querySelectorAll('[style]').forEach(function(c) { c.style.fontSize = ''; });
+  el.querySelectorAll('font[size]').forEach(function(f) {
+    f.removeAttribute('size');
+  });
+}
+
+// font-size 적용: execCommand fontSize marker → span 교체, 내부 중첩 font-size 제거
 function _applyFontSize(elId, pxSize) {
   const el = $(elId); if (!el) return;
   el.focus();
   _restoreSel(elId);
-  const marker = Date.now().toString(36); // 유니크 마커
-  el.querySelectorAll('font[__m]').forEach(f => f.removeAttribute('__m'));
   document.execCommand('fontSize', false, '7');
   el.querySelectorAll('font[size="7"]').forEach(function(f) {
     const s = document.createElement('span');
     s.style.fontSize = pxSize;
-    while (f.firstChild) s.appendChild(f.firstChild);
+    while (f.firstChild) {
+      const child = f.firstChild;
+      if (child.nodeType === 1) _stripFontSize(child);
+      s.appendChild(child);
+    }
     f.parentNode.replaceChild(s, f);
   });
   saveQuote();
@@ -1480,7 +1550,11 @@ function setItemsFmt(prop, val) {
       document.execCommand('fontSize', false, '7');
       el.querySelectorAll('font[size="7"]').forEach(function(f) {
         const sp = document.createElement('span'); sp.style.fontSize = val;
-        while (f.firstChild) sp.appendChild(f.firstChild);
+        while (f.firstChild) {
+          const child = f.firstChild;
+          if (child.nodeType === 1) _stripFontSize(child);
+          sp.appendChild(child);
+        }
         f.parentNode.replaceChild(sp, f);
       });
     }
