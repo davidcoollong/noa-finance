@@ -1246,7 +1246,11 @@ function saveCurrentToHistory(skipBlankCheck) {
     id: Date.now().toString(),
     savedAt: new Date().toISOString(),
     title, quoteDate, no, mgr, senderCode, receiverCode,
-    items: JSON.parse(JSON.stringify(items))
+    items: JSON.parse(JSON.stringify(items)),
+    docTitleHTML: $('docTitle')    ? $('docTitle').innerHTML    : '',
+    notesHTML:    $('notesArea')   ? $('notesArea').innerHTML   : '',
+    bankHTML:     $('bankDisplay') ? $('bankDisplay').innerHTML : '',
+    bankNoteHTML: $('bankNote')    ? $('bankNote').innerHTML    : ''
   };
   const hist = _loadHistory();
   hist.unshift(snap);
@@ -1267,7 +1271,10 @@ function manualSave() {
 function loadQuoteFromHistory(id) {
   const snap = _loadHistory().find(h => h.id === id);
   if (!snap) return;
-  if ($('docTitle')) $('docTitle').innerText = snap.title || '';
+  if ($('docTitle')) {
+    if (snap.docTitleHTML != null) $('docTitle').innerHTML = snap.docTitleHTML;
+    else $('docTitle').innerText = snap.title || '';
+  }
   if ($('metaDate')) $('metaDate').value = snap.quoteDate || '';
   if ($('metaNo'))   $('metaNo').value   = snap.no || '';
   if ($('metaMgr'))  $('metaMgr').value  = snap.mgr || '';
@@ -1277,6 +1284,9 @@ function loadQuoteFromHistory(id) {
   if (snap.receiverCode && $('receiverSel')) {
     $('receiverSel').value = snap.receiverCode; fillReceiver(snap.receiverCode);
   }
+  if (snap.notesHTML    != null && $('notesArea'))   $('notesArea').innerHTML   = snap.notesHTML;
+  if (snap.bankHTML     != null && $('bankDisplay')) $('bankDisplay').innerHTML = snap.bankHTML;
+  if (snap.bankNoteHTML != null && $('bankNote'))    $('bankNote').innerHTML    = snap.bankNoteHTML;
   if (snap.items && snap.items.length > 0) {
     items.length = 0; snap.items.forEach(x => items.push(x)); _ensureGrouped(items); renderItems();
   }
