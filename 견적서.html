@@ -1033,7 +1033,10 @@ body {
           <span class="sum-value" id="sumSupply">₩0</span>
         </div>
         <div class="sum-row" id="vatRow">
-          <span class="sum-label" id="vatLabel">VAT (10%)</span>
+          <span class="sum-label" id="vatLabel" style="display:flex;align-items:center;gap:6px">
+            VAT (10%)
+            <button id="vatToggleBtn" onclick="toggleVat()" title="부가세 제외" style="background:none;border:none;cursor:pointer;padding:0;line-height:1;color:#9CA3AF;font-size:13px;font-weight:600;display:inline-flex;align-items:center">×</button>
+          </span>
           <span class="sum-value" id="sumVat">₩0</span>
         </div>
         <div class="sum-row final" style="margin-top:12px">
@@ -1322,7 +1325,7 @@ function saveQuote() {
   const notesEl = $('notesArea'), bankEl = $('bankDisplay'), bankNoteEl = $('bankNote');
   const titleEl = $('docTitle');
   localStorage.setItem(_QUOTE_KEY, JSON.stringify({
-    db: DB, items: items, currency: currency, exchangeRate: exchangeRate,
+    db: DB, items: items, currency: currency, exchangeRate: exchangeRate, vatEnabled: vatEnabled,
     docTitleHTML: titleEl ? titleEl.innerHTML : '',
     notesHTML:    notesEl    ? notesEl.innerHTML    : '',
     bankHTML:     bankEl     ? bankEl.innerHTML     : '',
@@ -1343,6 +1346,7 @@ function saveQuote() {
       items: itemsNoImg,
       currency: currency,
       exchangeRate: exchangeRate,
+      vatEnabled: vatEnabled,
       docTitleHTML: titleEl2 ? titleEl2.innerHTML : '',
       notesHTML:    notesEl2    ? notesEl2.innerHTML    : '',
       bankHTML:     bankEl2     ? bankEl2.innerHTML     : '',
@@ -1532,13 +1536,43 @@ function toggleItemSel(i) {
 // ── Currency State ─────────────────────────────────────────────────────────────
 let currency = 'KRW';
 let exchangeRate = 1350;
+let vatEnabled = true;
 (function _loadCurrencyPref() {
   try {
     const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
     if (saved && saved.currency) currency = saved.currency;
     if (saved && saved.exchangeRate) exchangeRate = saved.exchangeRate;
+    if (saved && saved.vatEnabled != null) vatEnabled = saved.vatEnabled;
   } catch(e) {}
 })();
+
+function toggleVat() {
+  vatEnabled = !vatEnabled;
+  _applyVatUI();
+  saveQuote();
+  _updTotals();
+}
+function _applyVatUI() {
+  const btn = document.getElementById('vatToggleBtn');
+  const row = document.getElementById('vatRow');
+  const finalLabel = document.querySelector('.sum-row.final .sum-label');
+  if (!btn || !row) return;
+  if (vatEnabled) {
+    btn.title = '부가세 제외';
+    btn.style.color = '#9CA3AF';
+    btn.textContent = '×';
+    row.style.opacity = '1';
+    row.style.textDecoration = '';
+    if (finalLabel) finalLabel.textContent = '최종 견적';
+  } else {
+    btn.title = '부가세 포함 (클릭시 부가세 적용)';
+    btn.style.color = '#0432FF';
+    btn.textContent = '+';
+    row.style.opacity = '0.4';
+    row.style.textDecoration = 'line-through';
+    if (finalLabel) finalLabel.textContent = '최종 견적 (VAT포함)';
+  }
+}
 
 function setCurrency(c) {
   currency = c;
@@ -1552,6 +1586,7 @@ function setCurrency(c) {
   if (vatRow) vatRow.style.display = c === 'USD' ? 'none' : '';
   saveQuote();
   renderItems();
+  if (c !== 'USD') _applyVatUI();
 }
 
 function setExRate(val) {
@@ -1668,15 +1703,16 @@ function renderItems() {
   });
 
   _updateGroupSubtotals();
-  const vat = currency === 'USD' ? 0 : total * 0.1;
+  const vat = (currency === 'USD' || !vatEnabled) ? 0 : total * 0.1;
   const final = total + vat;
   $('itemsTotalLabel').textContent = fmtMoney(total);
   $('sumTotal').textContent = fmtMoney(total);
   $('sumSupply').textContent = fmtMoney(total);
   $('sumVat').textContent = fmtMoney(vat);
   $('sumFinal').textContent = fmtMoney(final);
-  if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(total);
+  if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(final);
   _applyItemsFmt();
+  _applyVatUI();
 }
 
 function onProductSel(i, code) {
@@ -1726,14 +1762,14 @@ function _updRowAmt(i) {
 }
 function _updTotals() {
   const total = items.reduce(function(s,it){ return it._group ? s : s+(it.price||0)*(it.qty||0); }, 0);
-  const vat = currency === 'USD' ? 0 : total * 0.1;
+  const vat = (currency === 'USD' || !vatEnabled) ? 0 : total * 0.1;
   const fin = total + vat;
   $('itemsTotalLabel').textContent = fmtMoney(total);
   $('sumTotal').textContent  = fmtMoney(total);
   $('sumSupply').textContent = fmtMoney(total);
   $('sumVat').textContent    = fmtMoney(vat);
   $('sumFinal').textContent  = fmtMoney(fin);
-  if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(total);
+  if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(fin);
   _updateGroupSubtotals();
 }
 
@@ -1954,6 +1990,7 @@ setToday();
         }
         if(d.currency)     currency     = d.currency;
         if(d.exchangeRate) exchangeRate = d.exchangeRate;
+        if(d.vatEnabled   != null) vatEnabled = d.vatEnabled;
         if(d.docTitleHTML != null) _savedDocTitleHTML = d.docTitleHTML;
         if(d.notesHTML    != null) _savedNotesHTML    = d.notesHTML;
         if(d.bankHTML     != null) _savedBankHTML     = d.bankHTML;
@@ -1962,7 +1999,7 @@ setToday();
         if(d.partyRowFmt)  _partyRowFmt  = Object.assign(_partyRowFmt,  d.partyRowFmt);
         if(d.itemsFmt)     _itemsFmt     = Object.assign(_itemsFmt,     d.itemsFmt);
         localStorage.setItem(_QUOTE_KEY, JSON.stringify({
-          db:DB, items:items, currency:currency, exchangeRate:exchangeRate,
+          db:DB, items:items, currency:currency, exchangeRate:exchangeRate, vatEnabled:vatEnabled,
           docTitleHTML:_savedDocTitleHTML,
           notesHTML:_savedNotesHTML, bankHTML:_savedBankHTML, bankNoteHTML:_savedBankNoteHTML,
           partyNameFmt:_partyNameFmt, partyRowFmt:_partyRowFmt, itemsFmt:_itemsFmt
@@ -1992,6 +2029,7 @@ setToday();
   if (_savedBankHTML     != null) { const el = $('bankDisplay');  if(el) el.innerHTML = _savedBankHTML; }
   if (_savedBankNoteHTML != null) { const el = $('bankNote');     if(el) el.innerHTML = _savedBankNoteHTML; }
   renderItems();
+  _applyVatUI();
   // Auto-resize all desc textareas after render
   setTimeout(function(){ document.querySelectorAll('.cell-input.desc').forEach(function(el){ autoResize(el); }); }, 0);
   renderCompanyDB();
