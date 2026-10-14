@@ -1234,11 +1234,52 @@ let items = _ITEMS_DEFAULTS;
 // ── Quote History ──────────────────────────────────────────────────────────────
 const HIST_KEY = 'noa_quote_hist_v1';
 const HIST_MAX = 30;
+const FS_HIST_COL = 'noa_hist'; // Firestore collection for history backup
 
 function _loadHistory() {
   try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch(e) { return []; }
 }
-function _saveHistory(arr) { localStorage.setItem(HIST_KEY, JSON.stringify(arr)); }
+function _saveHistory(arr) {
+  localStorage.setItem(HIST_KEY, JSON.stringify(arr));
+}
+
+// Firestore에 히스토리 전체 동기화
+function _fsSaveHistory(arr) {
+  if (!window._fsDB) return;
+  // 전체를 단일 doc으로 저장 (1MB 이하 유지 위해 img 제거)
+  const cleaned = arr.map(function(s) {
+    const c = Object.assign({}, s);
+    if (c.items) c.items = c.items.map(function(it) {
+      const ci = Object.assign({}, it); delete ci.img; return ci;
+    });
+    return c;
+  });
+  window._fsDB.collection('noa_data').doc('history').set({ snaps: cleaned, updatedAt: new Date().toISOString() })
+    .catch(function(e) { console.warn('Firestore history save failed:', e); });
+}
+
+// 앱 시작 시 Firestore → localStorage 히스토리 복원
+async function _fsRestoreHistory() {
+  if (!window._fsDB) return;
+  try {
+    const local = _loadHistory();
+    if (local.length > 0) {
+      // localStorage에 있으면 Firestore도 최신으로 덮어씀
+      _fsSaveHistory(local);
+      return;
+    }
+    // localStorage가 비어있으면 Firestore에서 복원
+    const snap = await window._fsDB.collection('noa_data').doc('history').get();
+    if (snap.exists) {
+      const d = snap.data();
+      if (d.snaps && d.snaps.length > 0) {
+        _saveHistory(d.snaps);
+        renderHistoryList();
+        console.log('히스토리 ' + d.snaps.length + '건 Firestore에서 복원됨');
+      }
+    }
+  } catch(e) { console.warn('Firestore history restore failed:', e); }
+}
 
 function saveCurrentToHistory(skipBlankCheck) {
   const title = ($('docTitle') && ($('docTitle').innerText || $('docTitle').textContent).trim()) || '제목 없음';
@@ -1247,7 +1288,6 @@ function saveCurrentToHistory(skipBlankCheck) {
   const mgr = $('metaMgr') ? $('metaMgr').value : '';
   const senderCode = $('senderSel') ? $('senderSel').value : '';
   const receiverCode = $('receiverSel') ? $('receiverSel').value : '';
-  // Skip if completely blank (only when called from auto-save paths, not manual save)
   if (!skipBlankCheck && items.length === 1 && !items[0].name && title === '견적서') return;
   const snap = {
     id: Date.now().toString(),
@@ -1264,6 +1304,7 @@ function saveCurrentToHistory(skipBlankCheck) {
   hist.unshift(snap);
   if (hist.length > HIST_MAX) hist.length = HIST_MAX;
   _saveHistory(hist);
+  _fsSaveHistory(hist); // Firestore 백업
   renderHistoryList();
 }
 
@@ -1304,7 +1345,9 @@ function loadQuoteFromHistory(id) {
 
 function deleteFromHistory(id, e) {
   e && e.stopPropagation();
-  _saveHistory(_loadHistory().filter(h => h.id !== id));
+  const hist = _loadHistory().filter(h => h.id !== id);
+  _saveHistory(hist);
+  _fsSaveHistory(hist); // Firestore도 동기화
   renderHistoryList();
 }
 
@@ -2119,6 +2162,7 @@ setToday();
       }
     }
   } catch(e){ console.warn('Firestore init failed, using local cache:',e); }
+  await _fsRestoreHistory(); // localStorage 비어있으면 Firestore에서 히스토리 복원
   populateSels();
   _applyInitialCurrency();
   // Restore rich HTML content
