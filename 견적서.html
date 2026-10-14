@@ -1033,11 +1033,15 @@ body {
           <span class="sum-value" id="sumSupply">₩0</span>
         </div>
         <div class="sum-row" id="vatRow">
-          <span class="sum-label" id="vatLabel" style="display:flex;align-items:center;gap:6px">
+          <span class="sum-label" style="display:flex;align-items:center;gap:5px">
             VAT (10%)
-            <button id="vatToggleBtn" onclick="toggleVat()" title="부가세 제외" style="background:none;border:none;cursor:pointer;padding:0;line-height:1;color:#9CA3AF;font-size:13px;font-weight:600;display:inline-flex;align-items:center">×</button>
+            <button id="vatResetBtn" onclick="resetVatToAuto()" title="자동 계산으로 되돌리기" style="display:none;background:none;border:none;cursor:pointer;padding:0;line-height:1;color:#0432FF;font-size:12px;font-weight:700">↺</button>
           </span>
-          <span class="sum-value" id="sumVat">₩0</span>
+          <input id="sumVat" type="text" value="₩0"
+            onfocus="onVatFocus(this)"
+            oninput="onVatInput(this.value)"
+            onblur="onVatBlur(this.value)"
+            style="font-weight:700;font-size:12px;color:#000;text-align:right;border:none;background:transparent;width:100%;outline:none;font-family:inherit;cursor:text;padding:0">
         </div>
         <div class="sum-row final" style="margin-top:12px">
           <span class="sum-label">최종 견적</span>
@@ -1250,6 +1254,7 @@ function saveCurrentToHistory(skipBlankCheck) {
     savedAt: new Date().toISOString(),
     title, quoteDate, no, mgr, senderCode, receiverCode,
     items: JSON.parse(JSON.stringify(items)),
+    vatOverride: vatOverride,
     docTitleHTML: $('docTitle')    ? $('docTitle').innerHTML    : '',
     notesHTML:    $('notesArea')   ? $('notesArea').innerHTML   : '',
     bankHTML:     $('bankDisplay') ? $('bankDisplay').innerHTML : '',
@@ -1290,6 +1295,7 @@ function loadQuoteFromHistory(id) {
   if (snap.notesHTML    != null && $('notesArea'))   $('notesArea').innerHTML   = snap.notesHTML;
   if (snap.bankHTML     != null && $('bankDisplay')) $('bankDisplay').innerHTML = snap.bankHTML;
   if (snap.bankNoteHTML != null && $('bankNote'))    $('bankNote').innerHTML    = snap.bankNoteHTML;
+  vatOverride = snap.vatOverride !== undefined ? snap.vatOverride : (snap.vatEnabled === false ? 0 : null);
   if (snap.items && snap.items.length > 0) {
     items.length = 0; snap.items.forEach(x => items.push(x)); _ensureGrouped(items); renderItems();
   }
@@ -1325,7 +1331,7 @@ function saveQuote() {
   const notesEl = $('notesArea'), bankEl = $('bankDisplay'), bankNoteEl = $('bankNote');
   const titleEl = $('docTitle');
   localStorage.setItem(_QUOTE_KEY, JSON.stringify({
-    db: DB, items: items, currency: currency, exchangeRate: exchangeRate, vatEnabled: vatEnabled,
+    db: DB, items: items, currency: currency, exchangeRate: exchangeRate, vatOverride: vatOverride,
     docTitleHTML: titleEl ? titleEl.innerHTML : '',
     notesHTML:    notesEl    ? notesEl.innerHTML    : '',
     bankHTML:     bankEl     ? bankEl.innerHTML     : '',
@@ -1346,7 +1352,7 @@ function saveQuote() {
       items: itemsNoImg,
       currency: currency,
       exchangeRate: exchangeRate,
-      vatEnabled: vatEnabled,
+      vatOverride: vatOverride,
       docTitleHTML: titleEl2 ? titleEl2.innerHTML : '',
       notesHTML:    notesEl2    ? notesEl2.innerHTML    : '',
       bankHTML:     bankEl2     ? bankEl2.innerHTML     : '',
@@ -1607,45 +1613,61 @@ function toggleItemSel(i) {
   sel.style.display = sel.style.display === 'none' ? 'block' : 'none';
 }
 
-// ── Currency State ─────────────────────────────────────────────────────────────
+// ── Currency / VAT State ────────────────────────────────────────────────────────
 let currency = 'KRW';
 let exchangeRate = 1350;
-let vatEnabled = true;
+// null = 자동(공급가×10%), number = 사용자 직접 입력값
+let vatOverride = null;
 (function _loadCurrencyPref() {
   try {
     const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
     if (saved && saved.currency) currency = saved.currency;
     if (saved && saved.exchangeRate) exchangeRate = saved.exchangeRate;
-    if (saved && saved.vatEnabled != null) vatEnabled = saved.vatEnabled;
+    if (saved && saved.vatOverride !== undefined) vatOverride = saved.vatOverride;
+    // 구버전 호환: vatEnabled=false 였으면 vatOverride=0 으로 변환
+    else if (saved && saved.vatEnabled === false) vatOverride = 0;
   } catch(e) {}
 })();
 
-function toggleVat() {
-  vatEnabled = !vatEnabled;
-  _applyVatUI();
-  saveQuote();
-  _updTotals();
+function _calcAutoVat(total) {
+  return currency === 'USD' ? 0 : Math.round(total * 0.1);
 }
-function _applyVatUI() {
-  const btn = document.getElementById('vatToggleBtn');
-  const row = document.getElementById('vatRow');
-  const finalLabel = document.querySelector('.sum-row.final .sum-label');
-  if (!btn || !row) return;
-  if (vatEnabled) {
-    btn.title = '부가세 제외';
-    btn.style.color = '#9CA3AF';
-    btn.textContent = '×';
-    row.style.opacity = '1';
-    row.style.textDecoration = '';
-    if (finalLabel) finalLabel.textContent = '최종 견적';
-  } else {
-    btn.title = '부가세 포함 (클릭시 부가세 적용)';
-    btn.style.color = '#0432FF';
-    btn.textContent = '+';
-    row.style.opacity = '0.4';
-    row.style.textDecoration = 'line-through';
-    if (finalLabel) finalLabel.textContent = '최종 견적 (VAT포함)';
-  }
+function _getVat(total) {
+  return vatOverride !== null ? vatOverride : _calcAutoVat(total);
+}
+function _applyVatResetBtn() {
+  const btn = document.getElementById('vatResetBtn');
+  if (btn) btn.style.display = vatOverride !== null ? 'inline-flex' : 'none';
+}
+function resetVatToAuto() {
+  vatOverride = null;
+  _applyVatResetBtn();
+  _updTotals();
+  saveQuote();
+}
+function onVatFocus(input) {
+  // 편집 중엔 숫자만 표시 (콤마/기호 제거)
+  const raw = toNum(input.value);
+  input.value = raw === 0 ? '' : raw.toLocaleString('ko-KR');
+  input.select();
+}
+function onVatInput(val) {
+  vatOverride = toNum(val);
+  _applyVatResetBtn();
+  // 최종 합계만 실시간 갱신
+  const supply = items.reduce(function(s,it){ return it._group ? s : s+(it.price||0)*(it.qty||0); }, 0);
+  const fin = supply + vatOverride;
+  if ($('sumFinal')) $('sumFinal').textContent = fmtMoney(fin);
+  if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(fin);
+}
+function onVatBlur(val) {
+  const trimmed = String(val).replace(/[^\d]/g, '');
+  vatOverride = trimmed === '' ? 0 : toNum(val);
+  const input = document.getElementById('sumVat');
+  if (input) input.value = fmtMoney(vatOverride);
+  _applyVatResetBtn();
+  _updTotals();
+  saveQuote();
 }
 
 function setCurrency(c) {
@@ -1660,7 +1682,6 @@ function setCurrency(c) {
   if (vatRow) vatRow.style.display = c === 'USD' ? 'none' : '';
   saveQuote();
   renderItems();
-  if (c !== 'USD') _applyVatUI();
 }
 
 function setExRate(val) {
@@ -1777,16 +1798,16 @@ function renderItems() {
   });
 
   _updateGroupSubtotals();
-  const vat = (currency === 'USD' || !vatEnabled) ? 0 : total * 0.1;
+  const vat = _getVat(total);
   const final = total + vat;
   $('itemsTotalLabel').textContent = fmtMoney(total);
   $('sumTotal').textContent = fmtMoney(total);
   $('sumSupply').textContent = fmtMoney(total);
-  $('sumVat').textContent = fmtMoney(vat);
+  const vatInput = $('sumVat'); if (vatInput && document.activeElement !== vatInput) vatInput.value = fmtMoney(vat);
   $('sumFinal').textContent = fmtMoney(final);
   if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(final);
   _applyItemsFmt();
-  _applyVatUI();
+  _applyVatResetBtn();
 }
 
 function onProductSel(i, code) {
@@ -1836,15 +1857,16 @@ function _updRowAmt(i) {
 }
 function _updTotals() {
   const total = items.reduce(function(s,it){ return it._group ? s : s+(it.price||0)*(it.qty||0); }, 0);
-  const vat = (currency === 'USD' || !vatEnabled) ? 0 : total * 0.1;
+  const vat = _getVat(total);
   const fin = total + vat;
   $('itemsTotalLabel').textContent = fmtMoney(total);
   $('sumTotal').textContent  = fmtMoney(total);
   $('sumSupply').textContent = fmtMoney(total);
-  $('sumVat').textContent    = fmtMoney(vat);
+  const vatInput = $('sumVat'); if (vatInput && document.activeElement !== vatInput) vatInput.value = fmtMoney(vat);
   $('sumFinal').textContent  = fmtMoney(fin);
   if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(fin);
   _updateGroupSubtotals();
+  _applyVatResetBtn();
 }
 
 function addGroup() {
@@ -2040,6 +2062,7 @@ function resetDoc() {
     .forEach(id=>$(id).textContent='-');
   const bd2 = $('bankDisplay'); if(bd2) bd2.innerText = '-';
   items = [{ _group: true, groupName: '새 아이템' }, { name:'', desc:'', price:0, qty:1, unit:'EA' }];
+  vatOverride = null;
   renderItems(); setToday();
 }
 
@@ -2064,7 +2087,8 @@ setToday();
         }
         if(d.currency)     currency     = d.currency;
         if(d.exchangeRate) exchangeRate = d.exchangeRate;
-        if(d.vatEnabled   != null) vatEnabled = d.vatEnabled;
+        if(d.vatOverride  !== undefined) vatOverride = d.vatOverride;
+        else if(d.vatEnabled === false)  vatOverride = 0;
         if(d.docTitleHTML != null) _savedDocTitleHTML = d.docTitleHTML;
         if(d.notesHTML    != null) _savedNotesHTML    = d.notesHTML;
         if(d.bankHTML     != null) _savedBankHTML     = d.bankHTML;
@@ -2073,7 +2097,7 @@ setToday();
         if(d.partyRowFmt)  _partyRowFmt  = Object.assign(_partyRowFmt,  d.partyRowFmt);
         if(d.itemsFmt)     _itemsFmt     = Object.assign(_itemsFmt,     d.itemsFmt);
         localStorage.setItem(_QUOTE_KEY, JSON.stringify({
-          db:DB, items:items, currency:currency, exchangeRate:exchangeRate, vatEnabled:vatEnabled,
+          db:DB, items:items, currency:currency, exchangeRate:exchangeRate, vatOverride:vatOverride,
           docTitleHTML:_savedDocTitleHTML,
           notesHTML:_savedNotesHTML, bankHTML:_savedBankHTML, bankNoteHTML:_savedBankNoteHTML,
           partyNameFmt:_partyNameFmt, partyRowFmt:_partyRowFmt, itemsFmt:_itemsFmt
@@ -2103,7 +2127,7 @@ setToday();
   if (_savedBankHTML     != null) { const el = $('bankDisplay');  if(el) el.innerHTML = _savedBankHTML; }
   if (_savedBankNoteHTML != null) { const el = $('bankNote');     if(el) el.innerHTML = _savedBankNoteHTML; }
   renderItems();
-  _applyVatUI();
+  _applyVatResetBtn();
   // Auto-resize all desc textareas after render
   setTimeout(function(){ document.querySelectorAll('.cell-input.desc').forEach(function(el){ autoResize(el); }); }, 0);
   renderCompanyDB();
