@@ -1680,7 +1680,6 @@ let vatOverride = null;
     if (saved && saved.currency) currency = saved.currency;
     if (saved && saved.exchangeRate) exchangeRate = saved.exchangeRate;
     if (saved && saved.supplyOverride !== undefined) supplyOverride = saved.supplyOverride;
-    if (saved && saved.supplyOverride !== undefined) supplyOverride = saved.supplyOverride;
     if (saved && saved.vatOverride !== undefined) vatOverride = saved.vatOverride;
     else if (saved && saved.vatEnabled === false) vatOverride = 0;
   } catch(e) {}
@@ -1703,6 +1702,16 @@ function _applySupplyResetBtn() {
 function _applyVatResetBtn() {
   const btn = document.getElementById('vatResetBtn');
   if (btn) btn.style.display = vatOverride !== null ? 'inline-flex' : 'none';
+}
+
+// Clear stale overrides that match auto-calculated values (e.g. after items change across sessions)
+function _normalizeOverrides() {
+  if (supplyOverride !== null && supplyOverride === _getItemsTotal()) supplyOverride = null;
+  if (vatOverride !== null) {
+    const supply = _getSupply();
+    const autoVat = currency === 'USD' ? 0 : Math.round(supply * 0.1);
+    if (vatOverride === autoVat) vatOverride = null;
+  }
 }
 
 // ── 공급가액 핸들러 ─────────────────────────────────────────────────────────────
@@ -1730,7 +1739,9 @@ function onSupplyInput(val) {
 }
 function onSupplyBlur(val) {
   const trimmed = String(val).replace(/[^\d]/g, '');
-  supplyOverride = trimmed === '' ? null : toNum(val);
+  const num = toNum(val);
+  // Reset to auto if empty or value matches the auto-calculated items total
+  supplyOverride = (trimmed === '' || num === _getItemsTotal()) ? null : num;
   const input = document.getElementById('sumSupply');
   if (input) input.value = fmtMoney(_getSupply());
   _applySupplyResetBtn();
@@ -1760,9 +1771,12 @@ function onVatInput(val) {
 }
 function onVatBlur(val) {
   const trimmed = String(val).replace(/[^\d]/g, '');
-  vatOverride = trimmed === '' ? 0 : toNum(val);
+  const num = toNum(val);
+  const autoVat = currency === 'USD' ? 0 : Math.round(_getSupply() * 0.1);
+  // Reset to auto if empty or value matches the auto-calculated VAT
+  vatOverride = (trimmed === '' || num === autoVat) ? null : num;
   const input = document.getElementById('sumVat');
-  if (input) input.value = fmtMoney(vatOverride);
+  if (input) input.value = fmtMoney(_getVat());
   _applyVatResetBtn();
   _updTotals();
   saveQuote();
@@ -2232,6 +2246,7 @@ setToday();
   if (_savedNotesHTML    != null) { const el = $('notesArea');    if(el) el.innerHTML = _savedNotesHTML; }
   if (_savedBankHTML     != null) { const el = $('bankDisplay');  if(el) el.innerHTML = _savedBankHTML; }
   if (_savedBankNoteHTML != null) { const el = $('bankNote');     if(el) el.innerHTML = _savedBankNoteHTML; }
+  _normalizeOverrides();
   renderItems();
   _applyVatResetBtn();
   // Auto-resize all desc textareas after render
