@@ -1384,7 +1384,7 @@ function saveQuote() {
   const notesEl = $('notesArea'), bankEl = $('bankDisplay'), bankNoteEl = $('bankNote');
   const titleEl = $('docTitle');
   localStorage.setItem(_QUOTE_KEY, JSON.stringify({
-    db: DB, items: items, currency: currency, exchangeRate: exchangeRate, supplyOverride: supplyOverride, vatOverride: vatOverride,
+    db: DB, items: items, currency: currency, exchangeRate: exchangeRate,
     docTitleHTML: titleEl ? titleEl.innerHTML : '',
     notesHTML:    notesEl    ? notesEl.innerHTML    : '',
     bankHTML:     bankEl     ? bankEl.innerHTML     : '',
@@ -1405,8 +1405,6 @@ function saveQuote() {
       items: itemsNoImg,
       currency: currency,
       exchangeRate: exchangeRate,
-      supplyOverride: supplyOverride,
-      vatOverride: vatOverride,
       docTitleHTML: titleEl2 ? titleEl2.innerHTML : '',
       notesHTML:    notesEl2    ? notesEl2.innerHTML    : '',
       bankHTML:     bankEl2     ? bankEl2.innerHTML     : '',
@@ -1679,9 +1677,6 @@ let vatOverride = null;
     const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
     if (saved && saved.currency) currency = saved.currency;
     if (saved && saved.exchangeRate) exchangeRate = saved.exchangeRate;
-    if (saved && saved.supplyOverride !== undefined) supplyOverride = saved.supplyOverride;
-    if (saved && saved.vatOverride !== undefined) vatOverride = saved.vatOverride;
-    else if (saved && saved.vatEnabled === false) vatOverride = 0;
   } catch(e) {}
 })();
 
@@ -2205,9 +2200,6 @@ setToday();
         }
         if(d.currency)     currency     = d.currency;
         if(d.exchangeRate) exchangeRate = d.exchangeRate;
-        if(d.supplyOverride !== undefined) supplyOverride = d.supplyOverride;
-        if(d.vatOverride  !== undefined) vatOverride = d.vatOverride;
-        else if(d.vatEnabled === false)  vatOverride = 0;
         if(d.docTitleHTML != null) _savedDocTitleHTML = d.docTitleHTML;
         if(d.notesHTML    != null) _savedNotesHTML    = d.notesHTML;
         if(d.bankHTML     != null) _savedBankHTML     = d.bankHTML;
