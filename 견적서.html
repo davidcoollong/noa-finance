@@ -1029,8 +1029,15 @@ body {
           <span class="sum-value" id="sumTotal">₩0</span>
         </div>
         <div class="sum-row">
-          <span class="sum-label">공급가액</span>
-          <span class="sum-value" id="sumSupply">₩0</span>
+          <span class="sum-label" style="display:flex;align-items:center;gap:5px">
+            공급가액
+            <button id="supplyResetBtn" onclick="resetSupplyToAuto()" title="자동 계산으로 되돌리기" style="display:none;background:none;border:none;cursor:pointer;padding:0;line-height:1;color:#0432FF;font-size:12px;font-weight:700">↺</button>
+          </span>
+          <input id="sumSupply" type="text" value="₩0"
+            onfocus="onSupplyFocus(this)"
+            oninput="onSupplyInput(this.value)"
+            onblur="onSupplyBlur(this.value)"
+            style="font-weight:700;font-size:12px;color:#000;text-align:right;border:none;background:transparent;width:100%;outline:none;font-family:inherit;cursor:text;padding:0">
         </div>
         <div class="sum-row" id="vatRow">
           <span class="sum-label" style="display:flex;align-items:center;gap:5px">
@@ -1068,7 +1075,7 @@ body {
         <table class="db-table">
           <thead><tr>
             <th>코드</th><th>회사명</th><th>사업자</th><th>대표자</th>
-            <th>이메일</th><th>전화</th><th>은행</th><th>계좌번호</th>
+            <th>이메일</th><th>전화</th><th>주소</th><th>은행</th><th>계좌번호</th>
             <th>담당자</th><th>담당자연락처</th><th>담당자이메일</th><th></th>
           </tr></thead>
           <tbody id="companyTbody"></tbody>
@@ -1080,6 +1087,7 @@ body {
           <input class="add-input" id="c_ceo" placeholder="대표자">
           <input class="add-input" id="c_email" placeholder="이메일">
           <input class="add-input" id="c_tel" placeholder="전화">
+          <input class="add-input" id="c_addr" placeholder="주소">
           <input class="add-input" id="c_bank" placeholder="은행">
           <input class="add-input" id="c_acct" placeholder="계좌번호">
           <input class="add-input" id="c_mgr" placeholder="담당자">
@@ -1294,6 +1302,7 @@ function saveCurrentToHistory(skipBlankCheck) {
     savedAt: new Date().toISOString(),
     title, quoteDate, no, mgr, senderCode, receiverCode,
     items: JSON.parse(JSON.stringify(items)),
+    supplyOverride: supplyOverride,
     vatOverride: vatOverride,
     docTitleHTML: $('docTitle')    ? $('docTitle').innerHTML    : '',
     notesHTML:    $('notesArea')   ? $('notesArea').innerHTML   : '',
@@ -1336,6 +1345,7 @@ function loadQuoteFromHistory(id) {
   if (snap.notesHTML    != null && $('notesArea'))   $('notesArea').innerHTML   = snap.notesHTML;
   if (snap.bankHTML     != null && $('bankDisplay')) $('bankDisplay').innerHTML = snap.bankHTML;
   if (snap.bankNoteHTML != null && $('bankNote'))    $('bankNote').innerHTML    = snap.bankNoteHTML;
+  supplyOverride = snap.supplyOverride !== undefined ? snap.supplyOverride : null;
   vatOverride = snap.vatOverride !== undefined ? snap.vatOverride : (snap.vatEnabled === false ? 0 : null);
   if (snap.items && snap.items.length > 0) {
     items.length = 0; snap.items.forEach(x => items.push(x)); _ensureGrouped(items); renderItems();
@@ -1374,7 +1384,7 @@ function saveQuote() {
   const notesEl = $('notesArea'), bankEl = $('bankDisplay'), bankNoteEl = $('bankNote');
   const titleEl = $('docTitle');
   localStorage.setItem(_QUOTE_KEY, JSON.stringify({
-    db: DB, items: items, currency: currency, exchangeRate: exchangeRate, vatOverride: vatOverride,
+    db: DB, items: items, currency: currency, exchangeRate: exchangeRate, supplyOverride: supplyOverride, vatOverride: vatOverride,
     docTitleHTML: titleEl ? titleEl.innerHTML : '',
     notesHTML:    notesEl    ? notesEl.innerHTML    : '',
     bankHTML:     bankEl     ? bankEl.innerHTML     : '',
@@ -1395,6 +1405,7 @@ function saveQuote() {
       items: itemsNoImg,
       currency: currency,
       exchangeRate: exchangeRate,
+      supplyOverride: supplyOverride,
       vatOverride: vatOverride,
       docTitleHTML: titleEl2 ? titleEl2.innerHTML : '',
       notesHTML:    notesEl2    ? notesEl2.innerHTML    : '',
@@ -1656,32 +1667,78 @@ function toggleItemSel(i) {
   sel.style.display = sel.style.display === 'none' ? 'block' : 'none';
 }
 
-// ── Currency / VAT State ────────────────────────────────────────────────────────
+// ── Currency / Supply / VAT State ───────────────────────────────────────────────
 let currency = 'KRW';
 let exchangeRate = 1350;
-// null = 자동(공급가×10%), number = 사용자 직접 입력값
+// null = 자동(아이템 합계), number = 사용자 직접 입력값
+let supplyOverride = null;
+// null = 자동(공급가액×10%), number = 사용자 직접 입력값
 let vatOverride = null;
 (function _loadCurrencyPref() {
   try {
     const saved = JSON.parse(localStorage.getItem(_QUOTE_KEY));
     if (saved && saved.currency) currency = saved.currency;
     if (saved && saved.exchangeRate) exchangeRate = saved.exchangeRate;
+    if (saved && saved.supplyOverride !== undefined) supplyOverride = saved.supplyOverride;
+    if (saved && saved.supplyOverride !== undefined) supplyOverride = saved.supplyOverride;
     if (saved && saved.vatOverride !== undefined) vatOverride = saved.vatOverride;
-    // 구버전 호환: vatEnabled=false 였으면 vatOverride=0 으로 변환
     else if (saved && saved.vatEnabled === false) vatOverride = 0;
   } catch(e) {}
 })();
 
-function _calcAutoVat(total) {
-  return currency === 'USD' ? 0 : Math.round(total * 0.1);
+function _getItemsTotal() {
+  return items.reduce(function(s,it){ return it._group ? s : s+(it.price||0)*(it.qty||0); }, 0);
 }
-function _getVat(total) {
-  return vatOverride !== null ? vatOverride : _calcAutoVat(total);
+function _getSupply() {
+  return supplyOverride !== null ? supplyOverride : _getItemsTotal();
+}
+function _getVat() {
+  const supply = _getSupply();
+  return vatOverride !== null ? vatOverride : (currency === 'USD' ? 0 : Math.round(supply * 0.1));
+}
+function _applySupplyResetBtn() {
+  const btn = document.getElementById('supplyResetBtn');
+  if (btn) btn.style.display = supplyOverride !== null ? 'inline-flex' : 'none';
 }
 function _applyVatResetBtn() {
   const btn = document.getElementById('vatResetBtn');
   if (btn) btn.style.display = vatOverride !== null ? 'inline-flex' : 'none';
 }
+
+// ── 공급가액 핸들러 ─────────────────────────────────────────────────────────────
+function resetSupplyToAuto() {
+  supplyOverride = null;
+  _applySupplyResetBtn();
+  _updTotals();
+  saveQuote();
+}
+function onSupplyFocus(input) {
+  const raw = toNum(input.value);
+  input.value = raw === 0 ? '' : raw.toLocaleString('ko-KR');
+  input.select();
+}
+function onSupplyInput(val) {
+  supplyOverride = toNum(val);
+  _applySupplyResetBtn();
+  // VAT가 자동이면 supply 기준으로 실시간 갱신
+  const vat = vatOverride !== null ? vatOverride : (currency === 'USD' ? 0 : Math.round(supplyOverride * 0.1));
+  const vatInput = document.getElementById('sumVat');
+  if (vatInput && document.activeElement !== vatInput && vatOverride === null) vatInput.value = fmtMoney(vat);
+  const fin = supplyOverride + vat;
+  if ($('sumFinal')) $('sumFinal').textContent = fmtMoney(fin);
+  if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(fin);
+}
+function onSupplyBlur(val) {
+  const trimmed = String(val).replace(/[^\d]/g, '');
+  supplyOverride = trimmed === '' ? null : toNum(val);
+  const input = document.getElementById('sumSupply');
+  if (input) input.value = fmtMoney(_getSupply());
+  _applySupplyResetBtn();
+  _updTotals();
+  saveQuote();
+}
+
+// ── 부가세 핸들러 ──────────────────────────────────────────────────────────────
 function resetVatToAuto() {
   vatOverride = null;
   _applyVatResetBtn();
@@ -1689,7 +1746,6 @@ function resetVatToAuto() {
   saveQuote();
 }
 function onVatFocus(input) {
-  // 편집 중엔 숫자만 표시 (콤마/기호 제거)
   const raw = toNum(input.value);
   input.value = raw === 0 ? '' : raw.toLocaleString('ko-KR');
   input.select();
@@ -1697,8 +1753,7 @@ function onVatFocus(input) {
 function onVatInput(val) {
   vatOverride = toNum(val);
   _applyVatResetBtn();
-  // 최종 합계만 실시간 갱신
-  const supply = items.reduce(function(s,it){ return it._group ? s : s+(it.price||0)*(it.qty||0); }, 0);
+  const supply = _getSupply();
   const fin = supply + vatOverride;
   if ($('sumFinal')) $('sumFinal').textContent = fmtMoney(fin);
   if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(fin);
@@ -1841,15 +1896,17 @@ function renderItems() {
   });
 
   _updateGroupSubtotals();
-  const vat = _getVat(total);
-  const final = total + vat;
+  const supply = _getSupply();
+  const vat = _getVat();
+  const final = supply + vat;
   $('itemsTotalLabel').textContent = fmtMoney(total);
   $('sumTotal').textContent = fmtMoney(total);
-  $('sumSupply').textContent = fmtMoney(total);
+  const supplyInput = $('sumSupply'); if (supplyInput && document.activeElement !== supplyInput) supplyInput.value = fmtMoney(supply);
   const vatInput = $('sumVat'); if (vatInput && document.activeElement !== vatInput) vatInput.value = fmtMoney(vat);
   $('sumFinal').textContent = fmtMoney(final);
   if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(final);
   _applyItemsFmt();
+  _applySupplyResetBtn();
   _applyVatResetBtn();
 }
 
@@ -1899,16 +1956,18 @@ function _updRowAmt(i) {
   if (tr) { const el = tr.querySelector('.cell-amount'); if(el) el.textContent = fmtMoney((items[i].price||0)*(items[i].qty||0)); }
 }
 function _updTotals() {
-  const total = items.reduce(function(s,it){ return it._group ? s : s+(it.price||0)*(it.qty||0); }, 0);
-  const vat = _getVat(total);
-  const fin = total + vat;
+  const total = _getItemsTotal();
+  const supply = _getSupply();
+  const vat = _getVat();
+  const fin = supply + vat;
   $('itemsTotalLabel').textContent = fmtMoney(total);
-  $('sumTotal').textContent  = fmtMoney(total);
-  $('sumSupply').textContent = fmtMoney(total);
+  $('sumTotal').textContent = fmtMoney(total);
+  const supplyInput = $('sumSupply'); if (supplyInput && document.activeElement !== supplyInput) supplyInput.value = fmtMoney(supply);
   const vatInput = $('sumVat'); if (vatInput && document.activeElement !== vatInput) vatInput.value = fmtMoney(vat);
-  $('sumFinal').textContent  = fmtMoney(fin);
+  $('sumFinal').textContent = fmtMoney(fin);
   if ($('itemsTableTotal')) $('itemsTableTotal').textContent = fmtMoney(fin);
   _updateGroupSubtotals();
+  _applySupplyResetBtn();
   _applyVatResetBtn();
 }
 
@@ -2006,6 +2065,7 @@ function renderCompanyDB() {
       <td><input class="db-edit-input" value="${esc(c.ceo)}"     oninput="updCompany(${i},'ceo',this.value)"     title="대표자"></td>
       <td><input class="db-edit-input" value="${esc(c.email)}"   oninput="updCompany(${i},'email',this.value)"   title="이메일"></td>
       <td><input class="db-edit-input" value="${esc(c.tel)}"     oninput="updCompany(${i},'tel',this.value)"     title="전화"></td>
+      <td><input class="db-edit-input" value="${esc(c.addr||'')}" oninput="updCompany(${i},'addr',this.value)"  title="주소" style="min-width:120px"></td>
       <td><input class="db-edit-input" value="${esc(c.bank)}"    oninput="updCompany(${i},'bank',this.value)"    title="은행"></td>
       <td><input class="db-edit-input" value="${esc(c.acct)}"    oninput="updCompany(${i},'acct',this.value)"    title="계좌번호"></td>
       <td><input class="db-edit-input" value="${esc(c.manager)}" oninput="updCompany(${i},'manager',this.value)" title="담당자"></td>
@@ -2046,9 +2106,9 @@ function g(id) { return $(id).value.trim(); }
 function addCompany() {
   if (!g('c_code')||!g('c_name')) return alert('코드와 회사명은 필수입니다.');
   DB.companies.push({ code:g('c_code'), name:g('c_name'), biz:g('c_biz'), ceo:g('c_ceo'),
-    email:g('c_email'), tel:g('c_tel'), addr:'', bank:g('c_bank'), acct:g('c_acct'),
+    email:g('c_email'), tel:g('c_tel'), addr:g('c_addr'), bank:g('c_bank'), acct:g('c_acct'),
     holder:g('c_name'), manager:g('c_mgr'), mtel:g('c_mtel'), memail:g('c_memail') });
-  ['c_code','c_name','c_biz','c_ceo','c_email','c_tel','c_bank','c_acct','c_mgr','c_mtel','c_memail']
+  ['c_code','c_name','c_biz','c_ceo','c_email','c_tel','c_addr','c_bank','c_acct','c_mgr','c_mtel','c_memail']
     .forEach(id=>$(id).value='');
   renderCompanyDB(); populateSels(); saveQuote();
 }
@@ -2105,6 +2165,7 @@ function resetDoc() {
     .forEach(id=>$(id).textContent='-');
   const bd2 = $('bankDisplay'); if(bd2) bd2.innerText = '-';
   items = [{ _group: true, groupName: '새 아이템' }, { name:'', desc:'', price:0, qty:1, unit:'EA' }];
+  supplyOverride = null;
   vatOverride = null;
   renderItems(); setToday();
 }
@@ -2130,6 +2191,7 @@ setToday();
         }
         if(d.currency)     currency     = d.currency;
         if(d.exchangeRate) exchangeRate = d.exchangeRate;
+        if(d.supplyOverride !== undefined) supplyOverride = d.supplyOverride;
         if(d.vatOverride  !== undefined) vatOverride = d.vatOverride;
         else if(d.vatEnabled === false)  vatOverride = 0;
         if(d.docTitleHTML != null) _savedDocTitleHTML = d.docTitleHTML;
@@ -2140,7 +2202,7 @@ setToday();
         if(d.partyRowFmt)  _partyRowFmt  = Object.assign(_partyRowFmt,  d.partyRowFmt);
         if(d.itemsFmt)     _itemsFmt     = Object.assign(_itemsFmt,     d.itemsFmt);
         localStorage.setItem(_QUOTE_KEY, JSON.stringify({
-          db:DB, items:items, currency:currency, exchangeRate:exchangeRate, vatOverride:vatOverride,
+          db:DB, items:items, currency:currency, exchangeRate:exchangeRate, supplyOverride:supplyOverride, vatOverride:vatOverride,
           docTitleHTML:_savedDocTitleHTML,
           notesHTML:_savedNotesHTML, bankHTML:_savedBankHTML, bankNoteHTML:_savedBankNoteHTML,
           partyNameFmt:_partyNameFmt, partyRowFmt:_partyRowFmt, itemsFmt:_itemsFmt
