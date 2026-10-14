@@ -295,7 +295,7 @@ body {
 .col-no   { width: 32px; }
 .col-img  { width: 80px; }
 .col-name { width: 170px; }
-.col-desc { }
+.col-desc { min-width: 100px; word-break: break-word; }
 .col-price { width: 100px; }
 .col-qty { width: 62px; }
 .col-unit { width: 54px; }
@@ -561,6 +561,9 @@ body {
 
   /* ── Preserve group header background ── */
   .group-header-row td { background: #F3F4F6 !important; }
+
+  /* ── Description column: prevent collapse to single-char width ── */
+  .col-desc { min-width: 80px !important; word-break: break-word !important; white-space: normal !important; }
 
   /* ── Image column: keep landscape ratio ── */
   .item-img-thumb { width: 100% !important; height: 28px !important; }
@@ -1899,7 +1902,7 @@ function renderItems() {
             '<option value="">— 품목 선택 —</option>'+opts +
           '</select>' +
         '</div></td>' +
-        '<td><div class="ce-field ce-desc" contenteditable="true" data-i="'+i+'" data-field="desc" oninput="updCE('+i+',\'desc\',this)" spellcheck="false">'+descContent+'</div></td>' +
+        '<td class="col-desc"><div class="ce-field ce-desc" contenteditable="true" data-i="'+i+'" data-field="desc" oninput="updCE('+i+',\'desc\',this)" spellcheck="false">'+descContent+'</div></td>' +
         '<td class="col-price"><input class="cell-input ta-right" value="'+(currency==='USD'?(it.price/exchangeRate).toFixed(2):(it.price||0).toLocaleString('ko-KR'))+'" oninput="updPrice('+i+',this.value)" onblur="renderItems();saveQuote()"></td>' +
         '<td class="col-qty"><input class="cell-input ta-center" type="text" inputmode="numeric" value="'+(it.qty||1)+'" oninput="updQty('+i+',this.value)" onblur="renderItems();saveQuote()" style="text-align:center"></td>' +
         '<td class="col-unit"><input class="cell-input ta-center" value="'+(it.unit||'EA')+'" oninput="upd('+i+',\'unit\',this.value)"></td>' +
@@ -2046,7 +2049,7 @@ function populateSels() {
     DB.clients.map(c=>`<option value="${c.code}">${c.code} · ${c.name}</option>`).join('');
 }
 
-const _ARK_LOGO_SRC = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1NjAgMTEwIj48cmVjdCB3aWR0aD0iNTYwIiBoZWlnaHQ9IjExMCIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSI4IiB5PSI5MiIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLEltcGFjdCxzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iOTAwIiBmb250LXNpemU9IjkyIiBmaWxsPSJibGFjayI+QVJLOjwvdGV4dD48dGV4dCB4PSIzNzIiIHk9Ijg5IiBmb250LWZhbWlseT0iQXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSIzMDAiIGZvbnQtc2l6ZT0iMjIiIGZpbGw9ImJsYWNrIiBsZXR0ZXItc3BhY2luZz0iNSI+U1RVRElPPC90ZXh0Pjwvc3ZnPg==';
+const _ARK_LOGO_SRC = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3ODAgMTIwIj48dGV4dCB4PSIwIiB5PSI5OCIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLEhlbHZldGljYSBOZXVlLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iMTAwIiBmaWxsPSIjMDAwIj5BUks6PC90ZXh0Pjx0ZXh0IHg9IjUwOCIgeT0iOTQiIGZvbnQtZmFtaWx5PSJBcmlhbCxIZWx2ZXRpY2Esc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjQwMCIgZm9udC1zaXplPSIyNiIgZmlsbD0iIzAwMCIgbGV0dGVyLXNwYWNpbmc9IjYiPlNUVURJTzwvdGV4dD48L3N2Zz4=';
 
 function _updateHeaderLogo(code) {
   const logoEl = document.getElementById('docLogoLeft');
