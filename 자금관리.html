@@ -342,7 +342,10 @@ const FIXED_KEY='noa_fixed_v1';
 let FX=[];
 
 function loadFixed(){try{const d=JSON.parse(localStorage.getItem(FIXED_KEY));return Array.isArray(d)&&d.length>0?d:FIXED_SEED;}catch(e){return FIXED_SEED;}}
-function saveFixed(){localStorage.setItem(FIXED_KEY,JSON.stringify(FX));}
+function saveFixed(){
+  localStorage.setItem(FIXED_KEY,JSON.stringify(FX));
+  db.collection('noa_data').doc('finance').set({fixed:FX},{merge:true}).catch(e=>console.error(e));
+}
 
 // ─────────────────── DB ───────────────────
 let DB={entries:[]};
@@ -362,31 +365,37 @@ function getIncome(arr){return arr.filter(e=>e.type==='income').reduce((s,e)=>s+
 function getExpense(arr){return arr.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);}
 
 async function saveDB(){
-  await db.collection('noa_data').doc('finance').set({entries:DB.entries,updatedAt:new Date().toISOString()});
+  await db.collection('noa_data').doc('finance').set({entries:DB.entries,fixed:FX,updatedAt:new Date().toISOString()},{merge:true});
 }
 
 async function init(){
-  FX=loadFixed();
   try{
     const doc=await db.collection('noa_data').doc('finance').get();
     if(doc.exists){
       const data=doc.data();
-      // Support both 'entries' (full version) and 'transactions' (simple version)
+      // Load entries — support both 'entries' and legacy 'transactions'
       if(Array.isArray(data.entries)&&data.entries.length>0){
         DB.entries=data.entries;
       } else if(Array.isArray(data.transactions)&&data.transactions.length>0){
-        // Migrate from simple version
         DB.entries=data.transactions.map(t=>({id:t.id,type:t.type,date:t.date,memo:t.memo||t.cat||'',amount:t.amount||0}));
-        await saveDB();
       } else {
         await loadSeed();
       }
+      // Load fixed expenses from Firestore if present, else use localStorage seed
+      if(Array.isArray(data.fixed)&&data.fixed.length>0){
+        FX=data.fixed;
+        localStorage.setItem(FIXED_KEY,JSON.stringify(FX));
+      } else {
+        FX=loadFixed();
+      }
     } else {
+      FX=loadFixed();
       await loadSeed();
     }
   }catch(e){
     console.error(e);
     DB.entries=[];
+    FX=loadFixed();
   }
   renderBoard();
 }
