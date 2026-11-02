@@ -160,6 +160,15 @@ body{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;background
 .fx-stale{color:var(--faint)}
 .item-price-cell{display:flex;align-items:center;gap:4px;justify-content:flex-end}
 .item-krw-hint{font-size:10px;color:var(--faint);font-weight:500;white-space:nowrap}
+.product-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.product-tab{background:var(--glass-soft);border:1.5px solid var(--sep);border-radius:20px;padding:6px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--sub);transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.product-tab:hover{border-color:var(--blue);color:var(--blue)}
+.product-tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.prod-tab-qty{font-size:10px;font-weight:500;opacity:.75}
+.product-tab-add{background:none;border:1.5px dashed var(--sep);border-radius:20px;padding:6px 12px;font-family:inherit;font-size:12px;font-weight:700;color:var(--faint);cursor:pointer;transition:all .12s}
+.product-tab-add:hover{border-color:var(--blue);color:var(--blue)}
+.product-content{background:var(--glass-soft);border:1px solid var(--sep);border-radius:14px;padding:14px 18px;margin-bottom:16px}
+.proj-summary-card{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -266,12 +275,28 @@ function renderFXBar(){
 // ─────────────────── State ───────────────────
 let projects=[];
 let activeId=null;
+let activeProdId=null;
 let saveTimer=null;
 
 function uid(){return 'x'+Math.random().toString(36).slice(2,10);}
 function won(n,abs=false){const v=abs?Math.abs(n):n;return(v<0?'-':'')+'₩'+Math.abs(Math.round(v)).toLocaleString('ko-KR');}
 function pct(n){return Math.round(n*10)/10+'%';}
 fetchFX();
+
+// ─────────────────── Migration ───────────────────
+function migrateProject(p){
+  if(Array.isArray(p.products))return p;
+  return{
+    id:p.id,name:p.name,
+    products:[{
+      id:uid(),name:p.name||'품목 1',
+      qty:p.totalQty||0,
+      supplyRates:p.supplyRates||[70,80],
+      msrps:p.msrps||[{id:uid(),label:'판매가 A',price:0}],
+      groups:p.groups||[]
+    }]
+  };
+}
 
 // ─────────────────── Save/Load ───────────────────
 async function saveProjects(){
@@ -281,12 +306,7 @@ async function saveProjects(){
   });
   showSaveIndicator();
 }
-
-function scheduleSave(){
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>saveProjects(),800);
-}
-
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveProjects(),800);}
 function showSaveIndicator(){
   const el=document.getElementById('save-ind');
   if(!el)return;
@@ -299,7 +319,8 @@ async function init(){
     const doc=await db.collection('noa_data').doc('profit_projects').get();
     if(doc.exists){
       const raw=doc.data().projects;
-      projects=typeof raw==='string'?JSON.parse(raw):(Array.isArray(raw)?raw:[]);
+      const arr=typeof raw==='string'?JSON.parse(raw):(Array.isArray(raw)?raw:[]);
+      projects=arr.map(migrateProject);
     }
   }catch(e){console.error(e);projects=[];}
   renderSidebar();
@@ -311,115 +332,177 @@ function renderSidebar(){
   document.getElementById('proj-count').textContent=projects.length+'건';
   const list=document.getElementById('proj-list');
   if(projects.length===0){
-    list.innerHTML=`<div style="padding:20px 12px;text-align:center;color:var(--gray400);font-size:12px">프로젝트가 없습니다</div>`;
+    list.innerHTML=`<div style="padding:20px 12px;text-align:center;color:var(--faint);font-size:12px">프로젝트가 없습니다</div>`;
     return;
   }
-  list.innerHTML=projects.map(p=>`
-    <div class="proj-item${activeId===p.id?' active':''}" onclick="selectProject('${p.id}')">
+  list.innerHTML=projects.map(p=>{
+    const cnt=(p.products||[]).length;
+    return`<div class="proj-item${activeId===p.id?' active':''}" onclick="selectProject('${p.id}')">
       <div class="proj-item-dot"></div>
       <div class="proj-item-name">${escHtml(p.name||'이름 없는 프로젝트')}</div>
-      <span class="proj-qty-badge">${(p.totalQty||0).toLocaleString()}EA</span>
+      <span class="proj-qty-badge">${cnt}품목</span>
       <button class="proj-del-btn" onclick="deleteProject(event,'${p.id}')" title="삭제">×</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 window.selectProject=function(id){
   activeId=id;
-  renderSidebar();
-  renderMain();
+  const p=projects.find(x=>x.id===id);
+  activeProdId=p&&(p.products||[]).length>0?p.products[0].id:null;
+  renderSidebar();renderMain();
 };
 
 window.addProject=function(){
-  const p={id:uid(),name:'새 프로젝트',totalQty:0,supplyRates:[70,80,0],groups:[],msrps:[{id:uid(),label:'판매가 A',price:0}]};
+  const prod={id:uid(),name:'품목 1',qty:0,supplyRates:[70,80],groups:[],msrps:[{id:uid(),label:'판매가 A',price:0}]};
+  const p={id:uid(),name:'새 프로젝트',products:[prod]};
   projects.push(p);
-  saveProjects();
-  renderSidebar();
-  selectProject(p.id);
+  saveProjects();renderSidebar();selectProject(p.id);
 };
 
 window.deleteProject=function(e,id){
   e.stopPropagation();
   if(!confirm('프로젝트를 삭제하시겠습니까?'))return;
   projects=projects.filter(p=>p.id!==id);
-  if(activeId===id)activeId=projects.length>0?projects[0].id:null;
-  saveProjects();
-  renderSidebar();
-  if(activeId)renderMain();else document.getElementById('main-area').innerHTML=`<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">프로젝트를 선택하거나 추가해주세요</div></div>`;
+  if(activeId===id){activeId=projects.length>0?projects[0].id:null;activeProdId=null;}
+  saveProjects();renderSidebar();
+  if(activeId)renderMain();
+  else document.getElementById('main-area').innerHTML=`<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">프로젝트를 선택하거나 추가해주세요</div></div>`;
 };
 
 // ─────────────────── Main render ───────────────────
 function renderMain(){
-  const p=projects.find(x=>x.id===activeId);
-  if(!p){document.getElementById('main-area').innerHTML='';return;}
-
-  const totalCost=calcTotalCost(p);
-  const unitCost=p.totalQty>0?totalCost/p.totalQty:0;
+  const proj=projects.find(x=>x.id===activeId);
+  if(!proj){document.getElementById('main-area').innerHTML='';return;}
+  const prods=proj.products||[];
+  if(prods.length>0&&!prods.find(x=>x.id===activeProdId))activeProdId=prods[0].id;
+  const activeProd=prods.find(x=>x.id===activeProdId)||prods[0];
 
   document.getElementById('main-area').innerHTML=`
-    <!-- Project header -->
     <div class="proj-header">
       <div class="proj-name-row">
-        <input class="proj-name-input" id="proj-name" value="${escHtml(p.name)}" placeholder="프로젝트명"
+        <input class="proj-name-input" value="${escHtml(proj.name)}" placeholder="프로젝트명"
           onblur="updateProjField('name',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-        <div class="qty-input-wrap">
-          <span class="qty-label">총 수량</span>
-          <input class="qty-input" id="proj-qty" value="${p.totalQty||0}" type="number" min="0"
-            onblur="updateProjField('totalQty',parseFloat(this.value)||0)" onkeydown="if(event.key==='Enter')this.blur()">
-          <span style="font-size:12px;font-weight:600;color:var(--gray500)">EA</span>
-        </div>
-        <button class="btn-copy-proj" onclick="copyProject('${p.id}')">복사</button>
+        <button class="btn-copy-proj" onclick="copyProject('${proj.id}')">복사</button>
         <span class="save-indicator" id="save-ind" style="opacity:0"></span>
       </div>
-      <!-- Supply rates -->
-      <div class="supply-row">
-        <span class="supply-label">납품가율</span>
-        ${(p.supplyRates||[]).map((r,i)=>`
-          <div class="supply-item">
-            <span class="supply-name">공급가율 ${String.fromCharCode(65+i)}</span>
-            <input class="supply-input" value="${r}" type="number" min="0" max="100"
-              onblur="updateSupplyRate(${i},parseFloat(this.value)||0)" onkeydown="if(event.key==='Enter')this.blur()">
-            <span class="supply-pct">%</span>
-          </div>`).join('')}
-        ${(p.supplyRates||[]).length<4?`<button class="btn-add-rate" onclick="addSupplyRate()">+ 추가</button>`:''}
-      </div>
-      <!-- MSRPs / 납품가 -->
-      <div class="msrp-row">
-        <span class="supply-label">판매가/납품가</span>
-        ${(p.msrps||[]).map((m,i)=>{
-          const isDirect=m.priceType==='supply';
-          return`<div class="msrp-item" style="${isDirect?'background:rgba(48,209,88,.08);border-color:rgba(48,209,88,.3)':''}">
-            <button onclick="toggleMsrpType(${i})" style="background:none;border:none;font-size:9px;font-weight:800;cursor:pointer;padding:0 3px;color:${isDirect?'#1a7d3a':'var(--sub)'};white-space:nowrap" title="클릭해서 전환">${isDirect?'납품가':'소비자가'}</button>
-            <input class="msrp-label-input" value="${escHtml(m.label)}" placeholder="판매가 A"
-              onblur="updateMsrp(${i},'label',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-            <input class="msrp-price-input" value="${(m.price||0).toLocaleString('ko-KR')}" type="text"
-              onblur="updateMsrp(${i},'price',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-            ${(p.msrps||[]).length>1?`<button class="msrp-del" onclick="deleteMsrp(${i})">×</button>`:''}
-          </div>`;}).join('')}
-        <button class="btn-add-msrp" onclick="addMsrp()">+ 추가</button>
+      <div class="product-tabs">
+        ${prods.map(prod=>`
+          <button class="product-tab${activeProdId===prod.id?' active':''}" onclick="selectProduct('${prod.id}')">
+            <span>${escHtml(prod.name||'품목')}</span>
+            <span class="prod-tab-qty">${(prod.qty||0).toLocaleString()}EA</span>
+          </button>`).join('')}
+        <button class="product-tab-add" onclick="addProduct()">+ 품목</button>
       </div>
     </div>
-
-    <!-- Cost groups -->
-    <div style="margin-bottom:16px">
-      <div class="section-title">원가 내역 <span class="section-title-count">${(p.groups||[]).length}개 공정</span>
-        <span style="font-size:11px;color:var(--faint);font-weight:500;margin-left:4px">총 원가: <strong style="color:var(--text)">${won(totalCost)}</strong> · 개당 원가: <strong style="color:var(--text)">${won(unitCost)}</strong></span>
-      </div>
-      <div class="fx-bar" id="fx-bar"></div>
-      ${(p.groups||[]).map((g,gi)=>renderGroup(p,g,gi)).join('')}
-      <button class="btn-add-group" onclick="addGroup()">+ 공정 추가</button>
-    </div>
-
-    <!-- Analysis -->
-    <div class="section-title">수익 분석</div>
-    ${renderAnalysis(p,unitCost)}
+    ${activeProd?renderProductContent(proj,activeProd):'<div style="padding:40px;text-align:center;color:var(--faint)">품목을 추가해주세요</div>'}
+    ${prods.length>1?renderProjectSummary(proj):''}
   `;
   renderFXBar();
 }
 
-function renderGroup(p,g,gi){
-  const groupTotal=calcGroupTotal(p,g);
+function renderProductContent(proj,prod){
+  const totalCost=calcTotalCost(prod);
+  const unitCost=(prod.qty||0)>0?totalCost/(prod.qty||0):0;
+  return`
+    <div class="product-content">
+      <div class="supply-row" style="margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <input class="proj-name-input" style="font-size:14px;max-width:220px" value="${escHtml(prod.name||'')}" placeholder="품목명"
+          onblur="updateProdField('${prod.id}','name',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+        <div class="qty-input-wrap">
+          <span class="qty-label">수량</span>
+          <input class="qty-input" value="${prod.qty||0}" type="number" min="0"
+            onblur="updateProdField('${prod.id}','qty',parseFloat(this.value)||0)" onkeydown="if(event.key==='Enter')this.blur()">
+          <span style="font-size:12px;font-weight:600;color:var(--sub)">EA</span>
+        </div>
+        ${(proj.products||[]).length>1?`<button style="background:none;border:1.5px solid var(--red);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--red);cursor:pointer" onclick="deleteProduct('${prod.id}')">품목 삭제</button>`:''}
+      </div>
+      <div class="supply-row">
+        <span class="supply-label">납품가율</span>
+        ${(prod.supplyRates||[]).map((r,i)=>`
+          <div class="supply-item">
+            <span class="supply-name">공급가율 ${String.fromCharCode(65+i)}</span>
+            <input class="supply-input" value="${r}" type="number" min="0" max="100"
+              onblur="updateSupplyRate('${prod.id}',${i},parseFloat(this.value)||0)" onkeydown="if(event.key==='Enter')this.blur()">
+            <span class="supply-pct">%</span>
+          </div>`).join('')}
+        ${(prod.supplyRates||[]).length<4?`<button class="btn-add-rate" onclick="addSupplyRate('${prod.id}')">+ 추가</button>`:''}
+      </div>
+      <div class="msrp-row">
+        <span class="supply-label">판매가/납품가</span>
+        ${(prod.msrps||[]).map((m,i)=>{
+          const isDirect=m.priceType==='supply';
+          return`<div class="msrp-item" style="${isDirect?'background:rgba(48,209,88,.08);border-color:rgba(48,209,88,.3)':''}">
+            <button onclick="toggleMsrpType('${prod.id}',${i})" style="background:none;border:none;font-size:9px;font-weight:800;cursor:pointer;padding:0 3px;color:${isDirect?'#1a7d3a':'var(--sub)'};white-space:nowrap" title="클릭해서 전환">${isDirect?'납품가':'소비자가'}</button>
+            <input class="msrp-label-input" value="${escHtml(m.label)}" placeholder="판매가 A"
+              onblur="updateMsrp('${prod.id}',${i},'label',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+            <input class="msrp-price-input" value="${(m.price||0).toLocaleString('ko-KR')}" type="text"
+              onblur="updateMsrp('${prod.id}',${i},'price',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+            ${(prod.msrps||[]).length>1?`<button class="msrp-del" onclick="deleteMsrp('${prod.id}',${i})">×</button>`:''}
+          </div>`;}).join('')}
+        <button class="btn-add-msrp" onclick="addMsrp('${prod.id}')">+ 추가</button>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div class="section-title">원가 내역 <span class="section-title-count">${(prod.groups||[]).length}개 공정</span>
+        <span style="font-size:11px;color:var(--faint);font-weight:500;margin-left:4px">총 원가: <strong style="color:var(--text)">${won(totalCost)}</strong> · 개당 원가: <strong style="color:var(--text)">${won(unitCost)}</strong></span>
+      </div>
+      <div class="fx-bar" id="fx-bar"></div>
+      ${(prod.groups||[]).map((g,gi)=>renderGroup(prod,g,gi)).join('')}
+      <button class="btn-add-group" onclick="addGroup('${prod.id}')">+ 공정 추가</button>
+    </div>
+    <div class="section-title">수익 분석</div>
+    ${renderAnalysis(prod,unitCost)}
+  `;
+}
+
+function renderProjectSummary(proj){
+  const prods=proj.products||[];
+  const allLabels=[...new Set(prods.flatMap(prod=>(prod.msrps||[]).filter(m=>m.price>0).map(m=>m.label)))];
+  return`
+    <div style="margin-top:8px">
+      <div class="section-title">프로젝트 전체 요약</div>
+      <div class="analysis-card">
+        <table class="analysis-table">
+          <thead><tr>
+            <th style="text-align:left">항목</th>
+            ${prods.map(prod=>`<th>${escHtml(prod.name||'품목')}<br><span style="font-size:9px;font-weight:500;color:var(--faint)">${(prod.qty||0).toLocaleString()}EA</span></th>`).join('')}
+            <th>합계</th>
+          </tr></thead>
+          <tbody>
+            <tr class="cost-row"><td style="font-size:11px">총 원가</td>
+              ${prods.map(prod=>`<td class="r" style="color:var(--red)">${won(calcTotalCost(prod))}</td>`).join('')}
+              <td class="r" style="color:var(--red)">${won(prods.reduce((s,prod)=>s+calcTotalCost(prod),0))}</td>
+            </tr>
+            <tr><td style="font-size:11px;color:var(--sub)">개당 원가</td>
+              ${prods.map(prod=>{const tc=calcTotalCost(prod);const uc=(prod.qty||0)>0?tc/(prod.qty||0):0;return`<td class="r">${won(uc)}</td>`;}).join('')}
+              <td class="r">-</td>
+            </tr>
+            ${allLabels.map(label=>{
+              let total=0;
+              const cells=prods.map(prod=>{
+                const m=(prod.msrps||[]).find(x=>x.label===label&&x.price>0);
+                if(!m)return`<td class="r" style="color:var(--faint)">-</td>`;
+                const tc=calcTotalCost(prod);
+                const uc=(prod.qty||0)>0?tc/(prod.qty||0):0;
+                const sp=m.priceType==='supply'?m.price:m.price*((prod.supplyRates||[])[0]||0)/100;
+                const profit=(sp-uc)*(prod.qty||0);
+                total+=profit;
+                return`<td class="r"><span class="${profit>=0?'cell-blue':'cell-red'}">${won(profit)}</span></td>`;
+              });
+              return`<tr class="profit-row"><td style="font-size:11px">${escHtml(label)} 총수익</td>${cells.join('')}<td class="r"><span class="${total>=0?'cell-blue':'cell-red'}">${won(total)}</span></td></tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderGroup(prod,g,gi){
+  const groupTotal=calcGroupTotal(prod,g);
   return`
     <div class="cost-group" id="group-${g.id}">
       <div class="group-header" onclick="toggleGroup('${g.id}')">
@@ -483,18 +566,16 @@ function renderGroup(p,g,gi){
     </div>`;
 }
 
-function renderAnalysis(p,unitCost){
-  const msrps=(p.msrps||[]).filter(m=>m.price>0);
+function renderAnalysis(prod,unitCost){
+  const msrps=(prod.msrps||[]).filter(m=>m.price>0);
   if(msrps.length===0){
     return`<div class="analysis-card" style="padding:20px;color:var(--sub);font-size:12px;text-align:center">판매가 또는 납품가를 입력하면 수익 분석이 표시됩니다</div>`;
   }
 
-  // Separate: MSRP type needs supply rates; direct supply type doesn't
   const msrpItems=msrps.filter(m=>m.priceType!=='supply');
   const supplyItems=msrps.filter(m=>m.priceType==='supply');
-  const rates=(p.supplyRates||[]).filter(r=>r>0);
-  const needsRates=msrpItems.length>0&&rates.length===0;
-  const qty=p.totalQty||0;
+  const rates=(prod.supplyRates||[]).filter(r=>r>0);
+  const qty=prod.qty||0;
 
   let html=`<div class="analysis-card"><table class="analysis-table">`;
 
@@ -555,87 +636,113 @@ function renderAnalysis(p,unitCost){
 }
 
 // ─────────────────── Calc helpers ───────────────────
-function calcGroupTotal(p,g){
+function calcGroupTotal(prod,g){
   return(g.items||[]).reduce((s,item)=>s+toKRW(item.unitPrice||0,item.currency||'KRW')*(item.qty||0),0);
 }
+function calcTotalCost(prod){
+  return(prod.groups||[]).reduce((s,g)=>s+calcGroupTotal(prod,g),0);
+}
 
-function calcTotalCost(p){
-  return(p.groups||[]).reduce((s,g)=>s+calcGroupTotal(p,g),0);
+// ─────────────────── Get helpers ───────────────────
+function getProj(){return projects.find(x=>x.id===activeId);}
+function getProd(pid){
+  const p=getProj();if(!p)return null;
+  return(p.products||[]).find(x=>x.id===(pid||activeProdId));
 }
 
 // ─────────────────── Update helpers ───────────────────
-function getProj(){return projects.find(x=>x.id===activeId);}
-
 window.updateProjField=function(field,val){
   const p=getProj();if(!p)return;
   p[field]=val;
-  if(field==='name'){renderSidebar();const el=document.getElementById('save-ind');if(el){el.textContent='저장됨';el.style.opacity='1';setTimeout(()=>el.style.opacity='0',1500);}}
+  if(field==='name')renderSidebar();
   scheduleSave();
-  if(field==='totalQty')renderMain();
 };
 
-window.updateSupplyRate=function(i,val){
-  const p=getProj();if(!p)return;
-  if(!Array.isArray(p.supplyRates))p.supplyRates=[];
-  p.supplyRates[i]=val;
+window.updateProdField=function(pid,field,val){
+  const prod=getProd(pid);if(!prod)return;
+  if(field==='qty')prod.qty=parseFloat(val)||0;
+  else prod[field]=val;
   scheduleSave();renderMain();
 };
 
-window.addSupplyRate=function(){
+window.selectProduct=function(pid){activeProdId=pid;renderMain();};
+
+window.addProduct=function(){
   const p=getProj();if(!p)return;
-  if(!Array.isArray(p.supplyRates))p.supplyRates=[];
-  if(p.supplyRates.length<4)p.supplyRates.push(0);
+  if(!Array.isArray(p.products))p.products=[];
+  const prod={id:uid(),name:'품목 '+(p.products.length+1),qty:0,supplyRates:[70,80],groups:[],msrps:[{id:uid(),label:'판매가 A',price:0}]};
+  p.products.push(prod);activeProdId=prod.id;
+  scheduleSave();renderSidebar();renderMain();
+};
+
+window.deleteProduct=function(pid){
+  const p=getProj();if(!p)return;
+  if((p.products||[]).length<=1){alert('최소 1개의 품목이 필요합니다.');return;}
+  if(!confirm('품목을 삭제하시겠습니까?'))return;
+  p.products=p.products.filter(x=>x.id!==pid);
+  if(activeProdId===pid)activeProdId=p.products[0]?.id||null;
+  scheduleSave();renderSidebar();renderMain();
+};
+
+window.updateSupplyRate=function(pid,i,val){
+  const prod=getProd(pid);if(!prod)return;
+  if(!Array.isArray(prod.supplyRates))prod.supplyRates=[];
+  prod.supplyRates[i]=val;scheduleSave();renderMain();
+};
+
+window.addSupplyRate=function(pid){
+  const prod=getProd(pid);if(!prod)return;
+  if(!Array.isArray(prod.supplyRates))prod.supplyRates=[];
+  if(prod.supplyRates.length<4)prod.supplyRates.push(0);
   scheduleSave();renderMain();
 };
 
-window.updateMsrp=function(i,field,val){
-  const p=getProj();if(!p)return;
-  if(!Array.isArray(p.msrps))p.msrps=[];
-  if(field==='price'){const v=parseFloat(String(val).replace(/,/g,''))||0;p.msrps[i].price=v;}
-  else{p.msrps[i][field]=val;}
+window.updateMsrp=function(pid,i,field,val){
+  const prod=getProd(pid);if(!prod)return;
+  if(!Array.isArray(prod.msrps))prod.msrps=[];
+  if(field==='price'){const v=parseFloat(String(val).replace(/,/g,''))||0;prod.msrps[i].price=v;}
+  else prod.msrps[i][field]=val;
   scheduleSave();renderMain();
 };
 
-window.addMsrp=function(){
-  const p=getProj();if(!p)return;
-  if(!Array.isArray(p.msrps))p.msrps=[];
-  p.msrps.push({id:uid(),label:'판매가 '+(p.msrps.length+1),price:0});
+window.addMsrp=function(pid){
+  const prod=getProd(pid);if(!prod)return;
+  if(!Array.isArray(prod.msrps))prod.msrps=[];
+  prod.msrps.push({id:uid(),label:'판매가 '+(prod.msrps.length+1),price:0});
   scheduleSave();renderMain();
 };
 
-window.deleteMsrp=function(i){
-  const p=getProj();if(!p)return;
-  p.msrps.splice(i,1);
-  scheduleSave();renderMain();
+window.deleteMsrp=function(pid,i){
+  const prod=getProd(pid);if(!prod)return;
+  prod.msrps.splice(i,1);scheduleSave();renderMain();
 };
 
-window.toggleMsrpType=function(i){
-  const p=getProj();if(!p)return;
-  if(!Array.isArray(p.msrps))return;
-  const m=p.msrps[i];if(!m)return;
+window.toggleMsrpType=function(pid,i){
+  const prod=getProd(pid);if(!prod)return;
+  if(!Array.isArray(prod.msrps))return;
+  const m=prod.msrps[i];if(!m)return;
   m.priceType=m.priceType==='supply'?'msrp':'supply';
   scheduleSave();renderMain();
 };
 
-window.addGroup=function(){
-  const p=getProj();if(!p)return;
-  if(!Array.isArray(p.groups))p.groups=[];
-  p.groups.push({id:uid(),name:'새 공정',qty:p.totalQty||0,items:[]});
+window.addGroup=function(pid){
+  const prod=getProd(pid);if(!prod)return;
+  if(!Array.isArray(prod.groups))prod.groups=[];
+  prod.groups.push({id:uid(),name:'새 공정',qty:prod.qty||0,items:[]});
   scheduleSave();renderMain();
 };
 
 window.deleteGroup=function(gid){
-  const p=getProj();if(!p)return;
+  const prod=getProd();if(!prod)return;
   if(!confirm('공정을 삭제하시겠습니까?'))return;
-  p.groups=p.groups.filter(g=>g.id!==gid);
+  prod.groups=prod.groups.filter(g=>g.id!==gid);
   scheduleSave();renderMain();
 };
 
 window.updateGroup=function(gid,field,val){
-  const p=getProj();if(!p)return;
-  const g=p.groups.find(x=>x.id===gid);if(!g)return;
-  g[field]=val;
-  scheduleSave();renderMain();
+  const prod=getProd();if(!prod)return;
+  const g=(prod.groups||[]).find(x=>x.id===gid);if(!g)return;
+  g[field]=val;scheduleSave();renderMain();
 };
 
 window.toggleGroup=function(gid){
@@ -648,45 +755,39 @@ window.toggleGroup=function(gid){
 };
 
 window.addItem=function(gid){
-  const p=getProj();if(!p)return;
-  const g=p.groups.find(x=>x.id===gid);if(!g)return;
+  const prod=getProd();if(!prod)return;
+  const g=(prod.groups||[]).find(x=>x.id===gid);if(!g)return;
   if(!Array.isArray(g.items))g.items=[];
   g.items.push({id:uid(),name:'',unitPrice:0,qty:g.qty||0,currency:'KRW'});
   scheduleSave();renderMain();
 };
 
 window.deleteItem=function(gid,ii){
-  const p=getProj();if(!p)return;
-  const g=p.groups.find(x=>x.id===gid);if(!g)return;
-  g.items.splice(ii,1);
-  scheduleSave();renderMain();
+  const prod=getProd();if(!prod)return;
+  const g=(prod.groups||[]).find(x=>x.id===gid);if(!g)return;
+  g.items.splice(ii,1);scheduleSave();renderMain();
 };
 
 window.updateItem=function(gid,ii,field,val){
-  const p=getProj();if(!p)return;
-  const g=p.groups.find(x=>x.id===gid);if(!g)return;
+  const prod=getProd();if(!prod)return;
+  const g=(prod.groups||[]).find(x=>x.id===gid);if(!g)return;
   const item=g.items[ii];if(!item)return;
   if(field==='unitPrice'||field==='qty'){
-    const v=parseFloat(String(val).replace(/,/g,''))||0;
-    item[field]=v;
-  } else {
-    item[field]=val;
-  }
+    item[field]=parseFloat(String(val).replace(/,/g,''))||0;
+  }else{item[field]=val;}
   scheduleSave();renderMain();
 };
 
 window.copyProject=function(id){
   const src=projects.find(p=>p.id===id);if(!src)return;
   const copy=JSON.parse(JSON.stringify(src));
-  copy.id=uid();
-  copy.name=src.name+' (복사)';
-  // Regenerate all IDs
-  (copy.groups||[]).forEach(g=>{g.id=uid();(g.items||[]).forEach(item=>item.id=uid());});
-  (copy.msrps||[]).forEach(m=>m.id=uid());
-  projects.push(copy);
-  saveProjects();
-  renderSidebar();
-  selectProject(copy.id);
+  copy.id=uid();copy.name=src.name+' (복사)';
+  (copy.products||[]).forEach(prod=>{
+    prod.id=uid();
+    (prod.groups||[]).forEach(g=>{g.id=uid();(g.items||[]).forEach(item=>item.id=uid());});
+    (prod.msrps||[]).forEach(m=>m.id=uid());
+  });
+  projects.push(copy);saveProjects();renderSidebar();selectProject(copy.id);
 };
 </script>
 </body>
