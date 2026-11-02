@@ -153,6 +153,13 @@ body{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;background
 .btn-ghost{background:var(--glass);color:var(--sub);border:1.5px solid var(--stroke);border-radius:20px;padding:7px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
 .save-indicator{font-size:11px;color:var(--faint);margin-left:8px;transition:opacity .3s}
+.currency-sel{border:1.5px solid var(--sep);border-radius:8px;padding:3px 5px;font-family:inherit;font-size:11px;font-weight:800;background:var(--glass-soft);color:var(--blue);cursor:pointer;outline:none;height:28px;-webkit-appearance:none;appearance:none;text-align:center;min-width:36px}
+.currency-sel:focus{border-color:var(--blue)}
+.fx-bar{display:flex;align-items:center;gap:10px;padding:6px 16px 8px;font-size:11px;color:var(--sub);font-weight:600;border-bottom:1px solid var(--sep)}
+.fx-tag{display:inline-flex;align-items:center;gap:4px;background:var(--blue-soft);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;color:var(--blue)}
+.fx-stale{color:var(--faint)}
+.item-price-cell{display:flex;align-items:center;gap:4px;justify-content:flex-end}
+.item-krw-hint{font-size:10px;color:var(--faint);font-weight:500;white-space:nowrap}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -226,6 +233,36 @@ if(!firebase.apps.length)firebase.initializeApp(_FB);
 const db=firebase.firestore();
 (function(){const s=_gs();if(s&&Date.now()<s.expires)_show(s.name);})();
 
+// ─────────────────── Exchange rates ───────────────────
+let FX={CNY:195,USD:1380,loadedAt:0};
+async function fetchFX(){
+  try{
+    const r=await fetch('https://api.frankfurter.app/latest?from=USD&symbols=KRW,CNY');
+    if(!r.ok)throw 0;
+    const d=await r.json();
+    FX.USD=d.rates.KRW;
+    FX.CNY=d.rates.KRW/d.rates.CNY;
+    FX.loadedAt=Date.now();
+  }catch(e){console.warn('환율 로드 실패, 기본값 사용');}
+  renderFXBar();
+}
+function toKRW(amount,currency){
+  if(currency==='CNY')return amount*FX.CNY;
+  if(currency==='USD')return amount*FX.USD;
+  return amount;
+}
+function fmtFX(n){return Math.round(n).toLocaleString('ko-KR');}
+function renderFXBar(){
+  const el=document.getElementById('fx-bar');
+  if(!el)return;
+  const age=FX.loadedAt?Math.round((Date.now()-FX.loadedAt)/60000)+'분 전':'기본값';
+  el.innerHTML=`<span style="color:var(--faint);font-size:10px">환율</span>
+    <span class="fx-tag">¥1 = ₩${fmtFX(FX.CNY)}</span>
+    <span class="fx-tag">$1 = ₩${fmtFX(FX.USD)}</span>
+    <span class="fx-stale">${age}</span>
+    <button onclick="fetchFX()" style="background:none;border:none;font-size:11px;color:var(--blue);cursor:pointer;font-weight:700;padding:0 4px">↻ 갱신</button>`;
+}
+
 // ─────────────────── State ───────────────────
 let projects=[];
 let activeId=null;
@@ -234,6 +271,7 @@ let saveTimer=null;
 function uid(){return 'x'+Math.random().toString(36).slice(2,10);}
 function won(n,abs=false){const v=abs?Math.abs(n):n;return(v<0?'-':'')+'₩'+Math.abs(Math.round(v)).toLocaleString('ko-KR');}
 function pct(n){return Math.round(n*10)/10+'%';}
+fetchFX();
 
 // ─────────────────── Save/Load ───────────────────
 async function saveProjects(){
@@ -346,26 +384,29 @@ function renderMain(){
           </div>`).join('')}
         ${(p.supplyRates||[]).length<4?`<button class="btn-add-rate" onclick="addSupplyRate()">+ 추가</button>`:''}
       </div>
-      <!-- MSRPs -->
+      <!-- MSRPs / 납품가 -->
       <div class="msrp-row">
-        <span class="supply-label">판매가</span>
-        ${(p.msrps||[]).map((m,i)=>`
-          <div class="msrp-item">
+        <span class="supply-label">판매가/납품가</span>
+        ${(p.msrps||[]).map((m,i)=>{
+          const isDirect=m.priceType==='supply';
+          return`<div class="msrp-item" style="${isDirect?'background:rgba(48,209,88,.08);border-color:rgba(48,209,88,.3)':''}">
+            <button onclick="toggleMsrpType(${i})" style="background:none;border:none;font-size:9px;font-weight:800;cursor:pointer;padding:0 3px;color:${isDirect?'#1a7d3a':'var(--sub)'};white-space:nowrap" title="클릭해서 전환">${isDirect?'납품가':'소비자가'}</button>
             <input class="msrp-label-input" value="${escHtml(m.label)}" placeholder="판매가 A"
               onblur="updateMsrp(${i},'label',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
             <input class="msrp-price-input" value="${(m.price||0).toLocaleString('ko-KR')}" type="text"
               onblur="updateMsrp(${i},'price',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
             ${(p.msrps||[]).length>1?`<button class="msrp-del" onclick="deleteMsrp(${i})">×</button>`:''}
-          </div>`).join('')}
-        <button class="btn-add-msrp" onclick="addMsrp()">+ 판매가 추가</button>
+          </div>`;}).join('')}
+        <button class="btn-add-msrp" onclick="addMsrp()">+ 추가</button>
       </div>
     </div>
 
     <!-- Cost groups -->
     <div style="margin-bottom:16px">
       <div class="section-title">원가 내역 <span class="section-title-count">${(p.groups||[]).length}개 공정</span>
-        <span style="font-size:11px;color:var(--gray400);font-weight:500;margin-left:4px">총 원가: <strong style="color:var(--gray900)">${won(totalCost)}</strong> · 개당 원가: <strong style="color:var(--gray900)">${won(unitCost)}</strong></span>
+        <span style="font-size:11px;color:var(--faint);font-weight:500;margin-left:4px">총 원가: <strong style="color:var(--text)">${won(totalCost)}</strong> · 개당 원가: <strong style="color:var(--text)">${won(unitCost)}</strong></span>
       </div>
+      <div class="fx-bar" id="fx-bar"></div>
       ${(p.groups||[]).map((g,gi)=>renderGroup(p,g,gi)).join('')}
       <button class="btn-add-group" onclick="addGroup()">+ 공정 추가</button>
     </div>
@@ -374,6 +415,7 @@ function renderMain(){
     <div class="section-title">수익 분석</div>
     ${renderAnalysis(p,unitCost)}
   `;
+  renderFXBar();
 }
 
 function renderGroup(p,g,gi){
@@ -397,27 +439,43 @@ function renderGroup(p,g,gi){
       <div class="group-body" id="gb-${g.id}">
         <table class="items-table">
           <thead><tr>
-            <th style="width:40%">항목명</th>
-            <th class="r">단가</th>
-            <th class="r">수량</th>
-            <th class="r">소계</th>
+            <th style="width:36%">항목명</th>
+            <th class="r" style="width:22%">통화·단가</th>
+            <th class="r" style="width:12%">수량</th>
+            <th class="r" style="width:18%">소계(₩)</th>
             <th style="width:28px"></th>
           </tr></thead>
           <tbody>
-            ${(g.items||[]).map((item,ii)=>`
-            <tr>
+            ${(g.items||[]).map((item,ii)=>{
+              const cur=item.currency||'KRW';
+              const krwUnit=toKRW(item.unitPrice||0,cur);
+              const krwTotal=krwUnit*(item.qty||0);
+              const showHint=cur!=='KRW'&&(item.unitPrice||0)>0;
+              return`<tr>
               <td><input class="item-name-input" value="${escHtml(item.name)}" placeholder="항목명"
                 onblur="updateItem('${g.id}',${ii},'name',this.value)"
                 onkeydown="if(event.key==='Enter')this.blur()"></td>
-              <td class="r"><input class="item-num-input" value="${(item.unitPrice||0).toLocaleString('ko-KR')}" type="text"
-                onblur="updateItem('${g.id}',${ii},'unitPrice',this.value)"
-                onkeydown="if(event.key==='Enter')this.blur()"></td>
+              <td class="r">
+                <div class="item-price-cell">
+                  <select class="currency-sel" onchange="updateItem('${g.id}',${ii},'currency',this.value)">
+                    <option value="KRW" ${cur==='KRW'?'selected':''}>₩</option>
+                    <option value="CNY" ${cur==='CNY'?'selected':''}>¥</option>
+                    <option value="USD" ${cur==='USD'?'selected':''}>$</option>
+                  </select>
+                  <div>
+                    <input class="item-num-input" value="${(item.unitPrice||0).toLocaleString('ko-KR')}" type="text"
+                      onblur="updateItem('${g.id}',${ii},'unitPrice',this.value)"
+                      onkeydown="if(event.key==='Enter')this.blur()">
+                    ${showHint?`<div class="item-krw-hint">≈ ₩${fmtFX(krwUnit)}</div>`:''}
+                  </div>
+                </div>
+              </td>
               <td class="r"><input class="item-num-input" style="width:70px" value="${item.qty||0}" type="number" min="0"
                 onblur="updateItem('${g.id}',${ii},'qty',parseFloat(this.value)||0)"
                 onkeydown="if(event.key==='Enter')this.blur()"></td>
-              <td class="r item-total">${won((item.unitPrice||0)*(item.qty||0))}</td>
+              <td class="r item-total">${won(krwTotal)}</td>
               <td><button class="item-del-btn" onclick="deleteItem('${g.id}',${ii})">×</button></td>
-            </tr>`).join('')}
+            </tr>`;}).join('')}
           </tbody>
         </table>
         <div class="add-item-row"><button class="btn-add-item" onclick="addItem('${g.id}')">+ 항목 추가</button></div>
@@ -426,78 +484,79 @@ function renderGroup(p,g,gi){
 }
 
 function renderAnalysis(p,unitCost){
-  if((p.msrps||[]).length===0||(p.supplyRates||[]).length===0){
-    return`<div class="analysis-card" style="padding:20px;color:var(--gray400);font-size:12px;text-align:center">판매가와 납품가율을 설정하면 수익 분석이 표시됩니다</div>`;
-  }
-  const rates=(p.supplyRates||[]).filter(r=>r>0);
   const msrps=(p.msrps||[]).filter(m=>m.price>0);
-  if(rates.length===0||msrps.length===0){
-    return`<div class="analysis-card" style="padding:20px;color:var(--gray400);font-size:12px;text-align:center">유효한 판매가와 납품가율이 필요합니다</div>`;
+  if(msrps.length===0){
+    return`<div class="analysis-card" style="padding:20px;color:var(--sub);font-size:12px;text-align:center">판매가 또는 납품가를 입력하면 수익 분석이 표시됩니다</div>`;
   }
 
-  const rateLabels=rates.map((_,i)=>`공급가율 ${String.fromCharCode(65+i)}`);
-
-  const rows=msrps.map(m=>{
-    const cells=rates.map(r=>{
-      const supplyPrice=m.price*(r/100);
-      const profit=supplyPrice-unitCost;
-      const margin=supplyPrice>0?(profit/supplyPrice)*100:0;
-      return{supplyPrice,profit,margin};
-    });
-    return{msrp:m,cells};
-  });
-
-  // also add total revenue rows
+  // Separate: MSRP type needs supply rates; direct supply type doesn't
+  const msrpItems=msrps.filter(m=>m.priceType!=='supply');
+  const supplyItems=msrps.filter(m=>m.priceType==='supply');
+  const rates=(p.supplyRates||[]).filter(r=>r>0);
+  const needsRates=msrpItems.length>0&&rates.length===0;
   const qty=p.totalQty||0;
 
-  return`
-    <div class="analysis-card">
-      <table class="analysis-table">
-        <thead>
-          <tr>
-            <th>판매가</th>
-            ${rateLabels.map(l=>`<th>${l}</th>`).join('')}
-          </tr>
-          <tr>
-            <th style="color:var(--gray400);font-size:9px">납품가율</th>
-            ${rates.map(r=>`<th style="color:var(--blue)">${r}%</th>`).join('')}
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(row=>`
-          <tr style="border-top:2px solid var(--gray200)">
-            <td><strong>${escHtml(row.msrp.label)}</strong><br><span style="font-size:11px;color:var(--gray500)">${won(row.msrp.price)}</span></td>
-            ${row.cells.map(c=>`<td class="r"><strong class="cell-blue">${won(c.supplyPrice)}</strong></td>`).join('')}
-          </tr>
-          <tr class="cost-row">
-            <td style="color:var(--gray500);font-size:11px">개당 원가</td>
-            ${row.cells.map(()=>`<td class="r" style="color:var(--red);font-size:11px">${won(unitCost)}</td>`).join('')}
-          </tr>
-          <tr class="profit-row">
-            <td style="font-size:11px">개당 수익 <span style="color:var(--gray400);font-weight:500">(마진율)</span></td>
-            ${row.cells.map(c=>{
-              const cls=c.profit>=0?'cell-blue':'cell-red';
-              const chipCls=c.margin>=0?'pos':'neg';
-              return`<td class="r"><span class="${cls}">${won(c.profit)}</span> <span class="pct-chip ${chipCls}">${pct(c.margin)}</span></td>`;
-            }).join('')}
-          </tr>
-          ${qty>0?`
-          <tr>
-            <td style="color:var(--gray500);font-size:11px">${qty.toLocaleString()}EA 총 수익</td>
-            ${row.cells.map(c=>{
-              const cls=c.profit*qty>=0?'cell-blue':'cell-red';
-              return`<td class="r"><span class="${cls}">${won(c.profit*qty)}</span></td>`;
-            }).join('')}
-          </tr>`:''}
-          `).join('')}
-        </tbody>
-      </table>
-    </div>`;
+  let html=`<div class="analysis-card"><table class="analysis-table">`;
+
+  // Build columns: direct supply items first (1 col each), then MSRP×rate combos
+  const cols=[];
+  supplyItems.forEach(m=>{
+    cols.push({label:escHtml(m.label),subLabel:'직납가',supplyPrice:m.price,isSup:true});
+  });
+  if(msrpItems.length>0&&rates.length>0){
+    msrpItems.forEach(m=>{
+      rates.forEach((r,ri)=>{
+        cols.push({label:escHtml(m.label),subLabel:`납품가율 ${r}%`,supplyPrice:m.price*(r/100),isSup:false,basePrice:m.price,rate:r});
+      });
+    });
+  }
+
+  if(cols.length===0){
+    return`<div class="analysis-card" style="padding:20px;color:var(--sub);font-size:12px;text-align:center">납품가율을 추가하거나 직납가를 입력해주세요</div>`;
+  }
+
+  html+=`<thead><tr>
+    <th style="text-align:left">항목</th>
+    ${cols.map(c=>`<th>${c.label}</th>`).join('')}
+  </tr><tr>
+    <th style="color:var(--faint);font-size:9px">납품가</th>
+    ${cols.map(c=>`<th style="color:${c.isSup?'#1a7d3a':'var(--blue)'}">${won(c.supplyPrice)}<br><span style="font-size:9px;font-weight:500;color:var(--faint)">${c.subLabel}</span></th>`).join('')}
+  </tr></thead><tbody>`;
+
+  // 개당 원가 row
+  html+=`<tr class="cost-row"><td style="font-size:11px;color:var(--sub)">개당 원가</td>
+    ${cols.map(()=>`<td class="r" style="color:var(--red);font-size:11px">${won(unitCost)}</td>`).join('')}
+  </tr>`;
+
+  // 개당 수익 row
+  html+=`<tr class="profit-row"><td style="font-size:11px">개당 수익 <span style="color:var(--faint);font-weight:500">(마진율)</span></td>
+    ${cols.map(c=>{
+      const profit=c.supplyPrice-unitCost;
+      const margin=c.supplyPrice>0?(profit/c.supplyPrice)*100:0;
+      const cls=profit>=0?'cell-blue':'cell-red';
+      const chipCls=margin>=0?'pos':'neg';
+      return`<td class="r"><span class="${cls}">${won(profit)}</span> <span class="pct-chip ${chipCls}">${pct(margin)}</span></td>`;
+    }).join('')}
+  </tr>`;
+
+  // 총 수익 row
+  if(qty>0){
+    html+=`<tr><td style="color:var(--sub);font-size:11px">${qty.toLocaleString()}EA 총 수익</td>
+      ${cols.map(c=>{
+        const profit=(c.supplyPrice-unitCost)*qty;
+        const cls=profit>=0?'cell-blue':'cell-red';
+        return`<td class="r"><span class="${cls}">${won(profit)}</span></td>`;
+      }).join('')}
+    </tr>`;
+  }
+
+  html+=`</tbody></table></div>`;
+  return html;
 }
 
 // ─────────────────── Calc helpers ───────────────────
 function calcGroupTotal(p,g){
-  return(g.items||[]).reduce((s,item)=>s+(item.unitPrice||0)*(item.qty||0),0);
+  return(g.items||[]).reduce((s,item)=>s+toKRW(item.unitPrice||0,item.currency||'KRW')*(item.qty||0),0);
 }
 
 function calcTotalCost(p){
@@ -550,6 +609,14 @@ window.deleteMsrp=function(i){
   scheduleSave();renderMain();
 };
 
+window.toggleMsrpType=function(i){
+  const p=getProj();if(!p)return;
+  if(!Array.isArray(p.msrps))return;
+  const m=p.msrps[i];if(!m)return;
+  m.priceType=m.priceType==='supply'?'msrp':'supply';
+  scheduleSave();renderMain();
+};
+
 window.addGroup=function(){
   const p=getProj();if(!p)return;
   if(!Array.isArray(p.groups))p.groups=[];
@@ -584,7 +651,7 @@ window.addItem=function(gid){
   const p=getProj();if(!p)return;
   const g=p.groups.find(x=>x.id===gid);if(!g)return;
   if(!Array.isArray(g.items))g.items=[];
-  g.items.push({id:uid(),name:'',unitPrice:0,qty:g.qty||0});
+  g.items.push({id:uid(),name:'',unitPrice:0,qty:g.qty||0,currency:'KRW'});
   scheduleSave();renderMain();
 };
 
