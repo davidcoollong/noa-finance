@@ -218,12 +218,12 @@ function _ss(u){sessionStorage.setItem(_SK,JSON.stringify({username:u.username,n
 function _show(name){const ov=document.getElementById('auth-overlay');if(ov)ov.remove();document.getElementById('user-name-display').textContent=name;init();}
 window.doLogin=async function(){const u=document.getElementById('auth-user').value.trim(),p=document.getElementById('auth-pass').value;if(!u||!p){document.getElementById('auth-err').textContent='아이디와 비밀번호를 입력해주세요.';return;}const h=await _sha(p);const user=_lu().find(x=>x.username===u&&x.hash===h);if(user){_ss(user);_show(user.name);}else{document.getElementById('auth-err').textContent='아이디 또는 비밀번호가 올바르지 않습니다.';document.getElementById('auth-pass').value='';}};
 window.doLogout=function(){if(confirm('로그아웃 하시겠습니까?')){sessionStorage.removeItem(_SK);location.reload();}};
-(function(){const s=_gs();if(s&&Date.now()<s.expires)_show(s.name);})();
 
 // ─────────────────── Firebase ───────────────────
 const _FB={apiKey:"AIzaSyBvLd4BtsmxTe2P0ZTNTBLmYTQPQGtCwYg",authDomain:"noaark-f8f75.firebaseapp.com",projectId:"noaark-f8f75",storageBucket:"noaark-f8f75.firebasestorage.app",messagingSenderId:"120494768831",appId:"1:120494768831:web:placeholder"};
 if(!firebase.apps.length)firebase.initializeApp(_FB);
 const db=firebase.firestore();
+(function(){const s=_gs();if(s&&Date.now()<s.expires)_show(s.name);})();
 
 // ─────────────────── State ───────────────────
 let projects=[];
