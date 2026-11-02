@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOA 자금관리</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;background:#F3F4F6;color:#000;-webkit-font-smoothing:antialiased;letter-spacing:-0.01em}
+#auth-overlay{position:fixed;inset:0;background:rgba(4,50,255,.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:9999;display:flex;align-items:center;justify-content:center}
+.auth-box{background:#fff;border-radius:24px;padding:44px 40px 36px;width:380px;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 24px 64px rgba(0,0,0,.18);text-align:center}
+.auth-brand{font-size:13px;font-weight:700;letter-spacing:.12em;color:rgba(4,50,255,.5);text-transform:uppercase;margin-bottom:8px}
+.auth-title{font-size:26px;font-weight:800;letter-spacing:-1px;color:#000;margin-bottom:28px}
+.auth-field{width:100%;border:1.5px solid #E5E7EB;border-radius:10px;padding:12px 16px;font-family:inherit;font-size:14px;font-weight:500;color:#111;outline:none;transition:border-color .15s;margin-bottom:10px;background:#FAFAFA}
+.auth-field:focus{border-color:#0432FF;background:#fff;box-shadow:0 0 0 3px rgba(4,50,255,.1)}
+.auth-btn{width:100%;background:#0432FF;color:#fff;border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .15s}
+.auth-btn:hover{opacity:.88}
+.auth-err{font-size:12px;color:#FF3B30;margin-top:10px;min-height:16px;font-weight:500}
+.auth-footer{font-size:11px;color:#9CA3AF;margin-top:20px}
+.cross-nav{background:#fff;border-bottom:1px solid rgba(0,0,0,.07);display:flex;align-items:center;justify-content:center;gap:2px;height:38px;padding:0 16px;position:sticky;top:0;z-index:400;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.cross-nav a{font-family:'Pretendard',-apple-system,sans-serif;font-size:12px;font-weight:600;color:#9CA3AF;text-decoration:none;padding:5px 11px;border-radius:7px;transition:color .12s,background .12s;letter-spacing:-.01em;white-space:nowrap}
+.cross-nav a:hover{color:#0432FF;background:rgba(4,50,255,.06)}
+.cross-nav a.cn-active{color:#0432FF;background:rgba(4,50,255,.08)}
+.cross-nav .cn-sep{width:1px;height:14px;background:#E5E7EB;margin:0 4px;flex-shrink:0}
+.app-bar{background:#0432FF;color:#fff;padding:0 36px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.app-bar-logo{font-size:16px;font-weight:700;letter-spacing:.08em}
+.app-bar-actions{display:flex;gap:8px;align-items:center}
+.user-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;color:#fff}
+.user-badge .dot{width:7px;height:7px;background:#34C759;border-radius:50%;flex-shrink:0}
+.btn-logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);font-family:inherit;font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;cursor:pointer;transition:all .15s}
+.btn-logout:hover{background:rgba(255,255,255,.2);color:#fff}
+.page-wrapper{max-width:1100px;margin:28px auto;padding:0 24px 80px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.page-actions{display:flex;gap:8px}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;letter-spacing:-.01em;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-primary{background:#0432FF;color:#fff}
+.btn-income{background:#10B981;color:#fff}
+.btn-expense{background:#EF4444;color:#fff}
+.btn-ghost{background:#fff;color:#374151;border:1.5px solid #E5E7EB}
+.btn-ghost:hover{border-color:#0432FF;color:#0432FF;opacity:1}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.stat-label{font-size:10px;font-weight:700;color:#9CA3AF;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.stat-value{font-size:20px;font-weight:800;letter-spacing:-1px}
+.stat-sub{font-size:10px;color:#9CA3AF;margin-top:2px;font-weight:500}
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.search-input{border:1.5px solid #E5E7EB;border-radius:10px;padding:8px 13px;font-family:inherit;font-size:13px;outline:none;background:#fff;transition:border-color .15s;flex:1;min-width:160px}
+.search-input:focus{border-color:#0432FF;box-shadow:0 0 0 3px rgba(4,50,255,.08)}
+.form-input{border:1.5px solid #E5E7EB;border-radius:10px;padding:8px 13px;font-family:inherit;font-size:13px;outline:none;background:#fff;transition:border-color .15s}
+.form-input:focus{border-color:#0432FF;box-shadow:0 0 0 3px rgba(4,50,255,.08)}
+.month-nav{display:flex;align-items:center;gap:8px}
+.month-nav button{background:#fff;border:1.5px solid #E5E7EB;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:#374151;transition:all .12s}
+.month-nav button:hover{border-color:#0432FF;color:#0432FF}
+.month-nav span{font-size:14px;font-weight:700;color:#111;min-width:80px;text-align:center}
+.table-wrap{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{background:#F9FAFB;font-size:11px;font-weight:700;color:#6B7280;letter-spacing:.05em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid #F3F4F6}
+td{padding:10px 14px;border-bottom:1px solid #F3F4F6;font-size:13px;font-weight:500;color:#111;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFBFF}
+.type-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.02em}
+.type-income{background:#D1FAE5;color:#065F46}
+.type-expense{background:#FEE2E2;color:#991B1B}
+.amount-income{color:#059669;font-weight:700}
+.amount-expense{color:#DC2626;font-weight:700}
+.empty-row td{text-align:center;padding:40px;color:#9CA3AF}
+.table-actions{display:flex;gap:4px}
+.icon-btn{background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;color:#9CA3AF;transition:background .1s}
+.icon-btn:hover{background:#F3F4F6;color:#374151}
+#item-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:5000;align-items:center;justify-content:center}
+#item-modal.open{display:flex}
+.modal-box{background:#fff;border-radius:20px;padding:32px 28px;width:440px;box-shadow:0 12px 48px rgba(0,0,0,.18)}
+.modal-title{font-size:18px;font-weight:800;letter-spacing:-.4px;margin-bottom:20px}
+.form-row{margin-bottom:12px}
+.form-label{font-size:11px;font-weight:700;color:#6B7280;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px;display:block}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-footer{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+.type-toggle{display:flex;border:1.5px solid #E5E7EB;border-radius:9px;overflow:hidden}
+.type-toggle button{flex:1;padding:9px;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;transition:all .15s}
+.type-toggle button.active-income{background:#10B981;color:#fff}
+.type-toggle button.active-expense{background:#EF4444;color:#fff}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-brand">NOA &amp; ARK</div>
+    <div class="auth-title">로그인</div>
+    <input id="auth-user" class="auth-field" type="text" placeholder="아이디" autocomplete="username"
+      onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    <input id="auth-pass" class="auth-field" type="password" placeholder="비밀번호" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="auth-btn" onclick="doLogin()">로그인</button>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-footer">© NOA&amp;ARK · 접근 권한 보유자만 사용 가능</div>
+  </div>
+</div>
+
+<div class="cross-nav">
+  <a href="index.html">🏠 포털</a>
+  <a href="견적서.html">📄 견적서</a>
+  <a href="재고관리.html">📦 재고관리</a>
+  <a href="자금관리.html" class="cn-active">💰 자금관리</a>
+  <a href="거래처관리.html">🏪 거래처관리</a>
+  <a href="수익관리.html">📊 수익관리</a>
+  <div class="cn-sep"></div>
+  <a href="https://www.notion.so/35f9704e895e81c28e07f30f1219dfa3?pvs=1" target="_blank" rel="noopener">📋 할일</a>
+</div>
+
+<div class="app-bar">
+  <div class="app-bar-logo">NOA&ARK · 자금관리</div>
+  <div class="app-bar-actions">
+    <div class="user-badge"><span class="dot"></span><span id="user-name-display">-</span></div>
+    <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+  </div>
+</div>
+
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="page-title">💰 자금관리</div>
+    <div class="page-actions">
+      <button class="btn btn-ghost" onclick="exportCSV()">CSV 내보내기</button>
+      <button class="btn btn-expense" onclick="openModal('expense')">− 지출 추가</button>
+      <button class="btn btn-income" onclick="openModal('income')">+ 입금 추가</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">이번달 입금</div><div class="stat-value" id="s-income" style="color:#059669">₩0</div><div class="stat-sub" id="s-income-cnt">0건</div></div>
+    <div class="stat-card"><div class="stat-label">이번달 지출</div><div class="stat-value" id="s-expense" style="color:#DC2626">₩0</div><div class="stat-sub" id="s-expense-cnt">0건</div></div>
+    <div class="stat-card"><div class="stat-label">이번달 순이익</div><div class="stat-value" id="s-net">₩0</div><div class="stat-sub">입금 - 지출</div></div>
+    <div class="stat-card"><div class="stat-label">전체 잔액</div><div class="stat-value" id="s-balance">₩0</div><div class="stat-sub">누적 합계</div></div>
+  </div>
+
+  <div class="filters">
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">◀</button>
+      <span id="month-display"></span>
+      <button onclick="changeMonth(1)">▶</button>
+    </div>
+    <input class="search-input" type="text" id="search" placeholder="🔍 메모 또는 카테고리 검색..." oninput="renderTable()">
+    <select class="form-input" id="filter-type" onchange="renderTable()">
+      <option value="">전체</option>
+      <option value="income">입금만</option>
+      <option value="expense">지출만</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>날짜</th>
+          <th>구분</th>
+          <th>카테고리</th>
+          <th>금액</th>
+          <th>메모</th>
+          <th>등록일</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="fin-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="item-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">거래 추가</div>
+    <div class="form-row">
+      <div class="type-toggle">
+        <button id="t-income" onclick="setType('income')">+ 입금</button>
+        <button id="t-expense" onclick="setType('expense')">− 지출</button>
+      </div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row"><label class="form-label">날짜 *</label><input class="form-input" id="f-date" type="date" style="width:100%"></div>
+      <div class="form-row"><label class="form-label">금액 *</label><input class="form-input" id="f-amount" type="number" min="0" placeholder="0" style="width:100%"></div>
+    </div>
+    <div class="form-row"><label class="form-label">카테고리</label><input class="form-input" id="f-cat" placeholder="예: 프로젝트, 장비, 인건비..." style="width:100%"></div>
+    <div class="form-row"><label class="form-label">메모</label><input class="form-input" id="f-memo" placeholder="거래 내용 메모" style="width:100%"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveItem()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const _SESSION_KEY='noa_session_v1',_SESSION_TTL=8*60*60*1000,_AUTH_USERS_KEY='noa_auth_users_v1';
+const _DEFAULT_USERS=[{username:'admin',hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926',name:'관리자',role:'admin'},{username:'david',hash:'2d2a6626eb7a70813ec876ad277281379a2d0d6c6e33e67f3c20d5d66452ef5e',name:'김진욱',role:'admin'},{username:'sooyoung',hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926',name:'소영',role:'user'}];
+function _loadUsers(){try{return JSON.parse(localStorage.getItem(_AUTH_USERS_KEY))||_DEFAULT_USERS;}catch(e){return _DEFAULT_USERS;}}
+async function _sha256(str){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+function _getSession(){try{return JSON.parse(sessionStorage.getItem(_SESSION_KEY));}catch(e){return null;}}
+function _setSession(user){sessionStorage.setItem(_SESSION_KEY,JSON.stringify({username:user.username,name:user.name,role:user.role,expires:Date.now()+_SESSION_TTL}));}
+function _showUser(name){const ov=document.getElementById('auth-overlay');if(ov)ov.remove();document.getElementById('user-name-display').textContent=name;init();}
+window.doLogin=async function(){const u=document.getElementById('auth-user').value.trim(),p=document.getElementById('auth-pass').value;if(!u||!p){document.getElementById('auth-err').textContent='아이디와 비밀번호를 입력해주세요.';return;}const h=await _sha256(p);const user=_loadUsers().find(x=>x.username===u&&x.hash===h);if(user){_setSession(user);_showUser(user.name);}else{document.getElementById('auth-err').textContent='아이디 또는 비밀번호가 올바르지 않습니다.';document.getElementById('auth-pass').value='';}};
+window.doLogout=function(){if(confirm('로그아웃 하시겠습니까?')){sessionStorage.removeItem(_SESSION_KEY);location.reload();}};
+(function(){const s=_getSession();if(s&&Date.now()<s.expires)_showUser(s.name);})();
+
+const _FB_CFG={apiKey:"AIzaSyBvLd4BtsmxTe2P0ZTNTBLmYTQPQGtCwYg",authDomain:"noaark-f8f75.firebaseapp.com",projectId:"noaark-f8f75",storageBucket:"noaark-f8f75.firebasestorage.app",messagingSenderId:"120494768831",appId:"1:120494768831:web:placeholder"};
+if(!firebase.apps.length)firebase.initializeApp(_FB_CFG);
+const db=firebase.firestore();
+
+let transactions=[];
+let editId=null;
+let curType='income';
+let viewMonth=new Date().toISOString().slice(0,7);
+
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(n){return'₩'+(n||0).toLocaleString('ko-KR');}
+
+async function save(){await db.collection('noa_data').doc('finance').set({transactions,updatedAt:new Date().toISOString()});}
+
+async function init(){
+  try{const doc=await db.collection('noa_data').doc('finance').get();transactions=doc.exists?(doc.data().transactions||[]):[];}catch(e){transactions=[];}
+  updateMonthDisplay();
+  updateStats();
+  renderTable();
+}
+
+function updateMonthDisplay(){
+  const [y,m]=viewMonth.split('-');
+  document.getElementById('month-display').textContent=`${y}년 ${m}월`;
+}
+
+window.changeMonth=function(d){
+  const [y,m]=viewMonth.split('-').map(Number);
+  const dt=new Date(y,m-1+d,1);
+  viewMonth=dt.toISOString().slice(0,7);
+  updateMonthDisplay();
+  updateStats();
+  renderTable();
+};
+
+function getMonthTxns(month){return transactions.filter(t=>t.date&&t.date.startsWith(month));}
+
+function updateStats(){
+  const mt=getMonthTxns(viewMonth);
+  const income=mt.filter(t=>t.type==='income');
+  const expense=mt.filter(t=>t.type==='expense');
+  const totalIncome=income.reduce((s,t)=>s+(t.amount||0),0);
+  const totalExpense=expense.reduce((s,t)=>s+(t.amount||0),0);
+  document.getElementById('s-income').textContent=fmt(totalIncome);
+  document.getElementById('s-income-cnt').textContent=`${income.length}건`;
+  document.getElementById('s-expense').textContent=fmt(totalExpense);
+  document.getElementById('s-expense-cnt').textContent=`${expense.length}건`;
+  const net=totalIncome-totalExpense;
+  const netEl=document.getElementById('s-net');
+  netEl.textContent=fmt(net);
+  netEl.style.color=net>=0?'#059669':'#DC2626';
+  const allIncome=transactions.filter(t=>t.type==='income').reduce((s,t)=>s+(t.amount||0),0);
+  const allExpense=transactions.filter(t=>t.type==='expense').reduce((s,t)=>s+(t.amount||0),0);
+  const bal=allIncome-allExpense;
+  const balEl=document.getElementById('s-balance');
+  balEl.textContent=fmt(bal);
+  balEl.style.color=bal>=0?'#059669':'#DC2626';
+}
+
+function renderTable(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const typeF=document.getElementById('filter-type').value;
+  const mt=getMonthTxns(viewMonth).filter(t=>{
+    const matchQ=!q||(t.memo||'').toLowerCase().includes(q)||(t.cat||'').toLowerCase().includes(q);
+    const matchT=!typeF||t.type===typeF;
+    return matchQ&&matchT;
+  }).sort((a,b)=>b.date.localeCompare(a.date));
+  const tbody=document.getElementById('fin-tbody');
+  if(!mt.length){tbody.innerHTML='<tr class="empty-row"><td colspan="7">이 달에 등록된 거래가 없습니다.</td></tr>';return;}
+  tbody.innerHTML=mt.map(t=>{
+    const isIncome=t.type==='income';
+    const createdDate=t.createdAt?new Date(t.createdAt).toLocaleDateString('ko-KR'):'';
+    return`<tr>
+      <td style="font-weight:700">${t.date||''}</td>
+      <td><span class="type-badge ${isIncome?'type-income':'type-expense'}">${isIncome?'입금':'지출'}</span></td>
+      <td>${esc(t.cat||'-')}</td>
+      <td class="${isIncome?'amount-income':'amount-expense'}">${isIncome?'+':'-'}${fmt(t.amount)}</td>
+      <td style="color:#6B7280">${esc(t.memo||'')}</td>
+      <td style="color:#9CA3AF;font-size:11px">${createdDate}</td>
+      <td><div class="table-actions">
+        <button class="icon-btn" onclick="editItem('${t.id}')">✏️</button>
+        <button class="icon-btn" onclick="deleteItem('${t.id}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+window.setType=function(type){
+  curType=type;
+  document.getElementById('t-income').className=type==='income'?'active-income':'';
+  document.getElementById('t-expense').className=type==='expense'?'active-expense':'';
+};
+
+window.openModal=function(type='income',id=null){
+  editId=id;
+  curType=type;
+  document.getElementById('modal-title').textContent=id?'거래 수정':'거래 추가';
+  setType(type);
+  const today=new Date().toISOString().slice(0,10);
+  if(id){
+    const item=transactions.find(t=>t.id===id);if(!item)return;
+    document.getElementById('f-date').value=item.date||today;
+    document.getElementById('f-amount').value=item.amount||0;
+    document.getElementById('f-cat').value=item.cat||'';
+    document.getElementById('f-memo').value=item.memo||'';
+    setType(item.type||'income');
+  } else {
+    document.getElementById('f-date').value=today;
+    document.getElementById('f-amount').value='';
+    document.getElementById('f-cat').value='';
+    document.getElementById('f-memo').value='';
+  }
+  document.getElementById('item-modal').classList.add('open');
+  document.getElementById('f-amount').focus();
+};
+window.closeModal=function(){document.getElementById('item-modal').classList.remove('open');};
+window.editItem=function(id){const item=transactions.find(t=>t.id===id);if(item)openModal(item.type,id);};
+
+window.saveItem=async function(){
+  const date=document.getElementById('f-date').value;
+  const amount=parseFloat(document.getElementById('f-amount').value)||0;
+  if(!date||!amount){alert('날짜와 금액을 입력해주세요.');return;}
+  const data={id:editId||genId(),type:curType,date,amount,cat:document.getElementById('f-cat').value.trim(),memo:document.getElementById('f-memo').value.trim(),createdAt:editId?(transactions.find(t=>t.id===editId)||{}).createdAt||new Date().toISOString():new Date().toISOString()};
+  if(editId){const idx=transactions.findIndex(t=>t.id===editId);if(idx>=0)transactions[idx]=data;}
+  else transactions.push(data);
+  await save();
+  closeModal();
+  updateStats();
+  renderTable();
+};
+
+window.deleteItem=async function(id){
+  if(!confirm('이 거래를 삭제하시겠습니까?'))return;
+  transactions=transactions.filter(t=>t.id!==id);
+  await save();
+  updateStats();
+  renderTable();
+};
+
+window.exportCSV=function(){
+  const header='날짜,구분,카테고리,금액,메모';
+  const rows=transactions.sort((a,b)=>b.date.localeCompare(a.date)).map(t=>[t.date,t.type==='income'?'입금':'지출',t.cat||'',t.amount||0,t.memo||''].join(','));
+  const blob=new Blob(['﻿'+header+'\n'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='자금관리_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+};
+
+document.getElementById('item-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+</script>
+</body>
+</html>

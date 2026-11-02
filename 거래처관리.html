@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOA 거래처관리</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;background:#F3F4F6;color:#000;-webkit-font-smoothing:antialiased;letter-spacing:-0.01em}
+#auth-overlay{position:fixed;inset:0;background:rgba(4,50,255,.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:9999;display:flex;align-items:center;justify-content:center}
+.auth-box{background:#fff;border-radius:24px;padding:44px 40px 36px;width:380px;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 24px 64px rgba(0,0,0,.18);text-align:center}
+.auth-brand{font-size:13px;font-weight:700;letter-spacing:.12em;color:rgba(4,50,255,.5);text-transform:uppercase;margin-bottom:8px}
+.auth-title{font-size:26px;font-weight:800;letter-spacing:-1px;color:#000;margin-bottom:28px}
+.auth-field{width:100%;border:1.5px solid #E5E7EB;border-radius:10px;padding:12px 16px;font-family:inherit;font-size:14px;font-weight:500;color:#111;outline:none;transition:border-color .15s;margin-bottom:10px;background:#FAFAFA}
+.auth-field:focus{border-color:#0432FF;background:#fff;box-shadow:0 0 0 3px rgba(4,50,255,.1)}
+.auth-btn{width:100%;background:#0432FF;color:#fff;border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .15s}
+.auth-btn:hover{opacity:.88}
+.auth-err{font-size:12px;color:#FF3B30;margin-top:10px;min-height:16px;font-weight:500}
+.auth-footer{font-size:11px;color:#9CA3AF;margin-top:20px}
+.cross-nav{background:#fff;border-bottom:1px solid rgba(0,0,0,.07);display:flex;align-items:center;justify-content:center;gap:2px;height:38px;padding:0 16px;position:sticky;top:0;z-index:400;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.cross-nav a{font-family:'Pretendard',-apple-system,sans-serif;font-size:12px;font-weight:600;color:#9CA3AF;text-decoration:none;padding:5px 11px;border-radius:7px;transition:color .12s,background .12s;letter-spacing:-.01em;white-space:nowrap}
+.cross-nav a:hover{color:#0432FF;background:rgba(4,50,255,.06)}
+.cross-nav a.cn-active{color:#0432FF;background:rgba(4,50,255,.08)}
+.cross-nav .cn-sep{width:1px;height:14px;background:#E5E7EB;margin:0 4px;flex-shrink:0}
+.app-bar{background:#0432FF;color:#fff;padding:0 36px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.app-bar-logo{font-size:16px;font-weight:700;letter-spacing:.08em}
+.app-bar-actions{display:flex;gap:8px;align-items:center}
+.user-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;color:#fff}
+.user-badge .dot{width:7px;height:7px;background:#34C759;border-radius:50%;flex-shrink:0}
+.btn-logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);font-family:inherit;font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;cursor:pointer;transition:all .15s}
+.btn-logout:hover{background:rgba(255,255,255,.2);color:#fff}
+.page-wrapper{max-width:1100px;margin:28px auto;padding:0 24px 80px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.page-actions{display:flex;gap:8px}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;letter-spacing:-.01em;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-primary{background:#0432FF;color:#fff}
+.btn-ghost{background:#fff;color:#374151;border:1.5px solid #E5E7EB}
+.btn-ghost:hover{border-color:#0432FF;color:#0432FF;opacity:1}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.stat-label{font-size:10px;font-weight:700;color:#9CA3AF;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:800;letter-spacing:-1px;color:#000}
+.stat-sub{font-size:10px;color:#9CA3AF;margin-top:2px;font-weight:500}
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.search-input{flex:1;min-width:160px;border:1.5px solid #E5E7EB;border-radius:10px;padding:8px 13px;font-family:inherit;font-size:13px;outline:none;background:#fff;transition:border-color .15s}
+.search-input:focus{border-color:#0432FF;box-shadow:0 0 0 3px rgba(4,50,255,.08)}
+.form-input{border:1.5px solid #E5E7EB;border-radius:10px;padding:8px 13px;font-family:inherit;font-size:13px;outline:none;background:#fff;transition:border-color .15s}
+.form-input:focus{border-color:#0432FF;box-shadow:0 0 0 3px rgba(4,50,255,.08)}
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.partner-card{background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,.06);position:relative;border:1.5px solid transparent;transition:border-color .15s,box-shadow .15s}
+.partner-card:hover{border-color:#0432FF;box-shadow:0 4px 16px rgba(4,50,255,.1)}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.card-avatar{width:40px;height:40px;border-radius:12px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#0432FF;flex-shrink:0}
+.card-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.03em}
+.badge-client{background:#D1FAE5;color:#065F46}
+.badge-vendor{background:#FEE2E2;color:#991B1B}
+.badge-both{background:#EEF2FF;color:#3730A3}
+.card-name{font-size:15px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px}
+.card-info{font-size:12px;color:#6B7280;margin-bottom:3px;display:flex;align-items:center;gap:5px;font-weight:500}
+.card-actions{display:flex;gap:4px;position:absolute;top:16px;right:16px}
+.icon-btn{background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;color:#9CA3AF;transition:background .1s}
+.icon-btn:hover{background:#F3F4F6;color:#374151}
+.card-memo{font-size:11px;color:#9CA3AF;margin-top:10px;padding-top:10px;border-top:1px solid #F3F4F6;line-height:1.5;font-weight:500}
+.empty-state{text-align:center;padding:60px;background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-text{font-size:14px;color:#9CA3AF;font-weight:500}
+#item-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:5000;align-items:center;justify-content:center;padding:20px}
+#item-modal.open{display:flex}
+.modal-box{background:#fff;border-radius:20px;padding:32px 28px;width:500px;box-shadow:0 12px 48px rgba(0,0,0,.18);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:18px;font-weight:800;letter-spacing:-.4px;margin-bottom:20px}
+.form-row{margin-bottom:12px}
+.form-label{font-size:11px;font-weight:700;color:#6B7280;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px;display:block}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-footer{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+.type-toggle{display:flex;border:1.5px solid #E5E7EB;border-radius:9px;overflow:hidden}
+.type-toggle button{flex:1;padding:9px;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;transition:all .15s;color:#6B7280}
+.type-toggle button.active{background:#0432FF;color:#fff}
+@media(max-width:900px){.cards-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.cards-grid{grid-template-columns:1fr}}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-brand">NOA &amp; ARK</div>
+    <div class="auth-title">로그인</div>
+    <input id="auth-user" class="auth-field" type="text" placeholder="아이디" autocomplete="username"
+      onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    <input id="auth-pass" class="auth-field" type="password" placeholder="비밀번호" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="auth-btn" onclick="doLogin()">로그인</button>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-footer">© NOA&amp;ARK · 접근 권한 보유자만 사용 가능</div>
+  </div>
+</div>
+
+<div class="cross-nav">
+  <a href="index.html">🏠 포털</a>
+  <a href="견적서.html">📄 견적서</a>
+  <a href="재고관리.html">📦 재고관리</a>
+  <a href="자금관리.html">💰 자금관리</a>
+  <a href="거래처관리.html" class="cn-active">🏪 거래처관리</a>
+  <a href="수익관리.html">📊 수익관리</a>
+  <div class="cn-sep"></div>
+  <a href="https://www.notion.so/35f9704e895e81c28e07f30f1219dfa3?pvs=1" target="_blank" rel="noopener">📋 할일</a>
+</div>
+
+<div class="app-bar">
+  <div class="app-bar-logo">NOA&ARK · 거래처관리</div>
+  <div class="app-bar-actions">
+    <div class="user-badge"><span class="dot"></span><span id="user-name-display">-</span></div>
+    <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+  </div>
+</div>
+
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="page-title">🏪 거래처관리</div>
+    <div class="page-actions">
+      <button class="btn btn-ghost" onclick="exportCSV()">CSV 내보내기</button>
+      <button class="btn btn-primary" onclick="openModal()">+ 거래처 추가</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">전체</div><div class="stat-value" id="s-total">0</div><div class="stat-sub">등록된 거래처</div></div>
+    <div class="stat-card"><div class="stat-label">거래처</div><div class="stat-value" id="s-client">0</div><div class="stat-sub">클라이언트</div></div>
+    <div class="stat-card"><div class="stat-label">공급처</div><div class="stat-value" id="s-vendor">0</div><div class="stat-sub">벤더/협력사</div></div>
+    <div class="stat-card"><div class="stat-label">복합</div><div class="stat-value" id="s-both">0</div><div class="stat-sub">거래처+공급처</div></div>
+  </div>
+
+  <div class="filters">
+    <input class="search-input" type="text" id="search" placeholder="🔍 회사명, 담당자, 연락처 검색..." oninput="renderCards()">
+    <select class="form-input" id="filter-type" onchange="renderCards()">
+      <option value="">전체 유형</option>
+      <option value="client">거래처</option>
+      <option value="vendor">공급처</option>
+      <option value="both">복합</option>
+    </select>
+  </div>
+
+  <div id="cards-container"></div>
+</div>
+
+<div id="item-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">거래처 추가</div>
+    <div class="form-row">
+      <label class="form-label">유형 *</label>
+      <div class="type-toggle">
+        <button id="t-client" onclick="setPType('client')">거래처</button>
+        <button id="t-vendor" onclick="setPType('vendor')">공급처</button>
+        <button id="t-both" onclick="setPType('both')">복합</button>
+      </div>
+    </div>
+    <div class="form-row"><label class="form-label">회사명 *</label><input class="form-input" id="f-name" placeholder="회사명" style="width:100%"></div>
+    <div class="form-row-2">
+      <div class="form-row"><label class="form-label">담당자</label><input class="form-input" id="f-manager" placeholder="담당자명" style="width:100%"></div>
+      <div class="form-row"><label class="form-label">연락처</label><input class="form-input" id="f-tel" placeholder="010-0000-0000" style="width:100%"></div>
+    </div>
+    <div class="form-row"><label class="form-label">이메일</label><input class="form-input" id="f-email" type="email" placeholder="email@example.com" style="width:100%"></div>
+    <div class="form-row"><label class="form-label">주소</label><input class="form-input" id="f-addr" placeholder="주소" style="width:100%"></div>
+    <div class="form-row"><label class="form-label">사업자번호</label><input class="form-input" id="f-biz" placeholder="000-00-00000" style="width:100%"></div>
+    <div class="form-row"><label class="form-label">메모</label><textarea class="form-input" id="f-memo" rows="3" placeholder="추가 메모" style="width:100%;resize:vertical"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveItem()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const _SESSION_KEY='noa_session_v1',_SESSION_TTL=8*60*60*1000,_AUTH_USERS_KEY='noa_auth_users_v1';
+const _DEFAULT_USERS=[{username:'admin',hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926',name:'관리자',role:'admin'},{username:'david',hash:'2d2a6626eb7a70813ec876ad277281379a2d0d6c6e33e67f3c20d5d66452ef5e',name:'김진욱',role:'admin'},{username:'sooyoung',hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926',name:'소영',role:'user'}];
+function _loadUsers(){try{return JSON.parse(localStorage.getItem(_AUTH_USERS_KEY))||_DEFAULT_USERS;}catch(e){return _DEFAULT_USERS;}}
+async function _sha256(str){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+function _getSession(){try{return JSON.parse(sessionStorage.getItem(_SESSION_KEY));}catch(e){return null;}}
+function _setSession(user){sessionStorage.setItem(_SESSION_KEY,JSON.stringify({username:user.username,name:user.name,role:user.role,expires:Date.now()+_SESSION_TTL}));}
+function _showUser(name){const ov=document.getElementById('auth-overlay');if(ov)ov.remove();document.getElementById('user-name-display').textContent=name;init();}
+window.doLogin=async function(){const u=document.getElementById('auth-user').value.trim(),p=document.getElementById('auth-pass').value;if(!u||!p){document.getElementById('auth-err').textContent='아이디와 비밀번호를 입력해주세요.';return;}const h=await _sha256(p);const user=_loadUsers().find(x=>x.username===u&&x.hash===h);if(user){_setSession(user);_showUser(user.name);}else{document.getElementById('auth-err').textContent='아이디 또는 비밀번호가 올바르지 않습니다.';document.getElementById('auth-pass').value='';}};
+window.doLogout=function(){if(confirm('로그아웃 하시겠습니까?')){sessionStorage.removeItem(_SESSION_KEY);location.reload();}};
+(function(){const s=_getSession();if(s&&Date.now()<s.expires)_showUser(s.name);})();
+
+const _FB_CFG={apiKey:"AIzaSyBvLd4BtsmxTe2P0ZTNTBLmYTQPQGtCwYg",authDomain:"noaark-f8f75.firebaseapp.com",projectId:"noaark-f8f75",storageBucket:"noaark-f8f75.firebasestorage.app",messagingSenderId:"120494768831",appId:"1:120494768831:web:placeholder"};
+if(!firebase.apps.length)firebase.initializeApp(_FB_CFG);
+const db=firebase.firestore();
+
+let partners=[];
+let editId=null;
+let pType='client';
+
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+async function save(){await db.collection('noa_data').doc('partners').set({list:partners,updatedAt:new Date().toISOString()});}
+
+async function init(){
+  try{const doc=await db.collection('noa_data').doc('partners').get();partners=doc.exists?(doc.data().list||[]):[];}catch(e){partners=[];}
+  updateStats();
+  renderCards();
+}
+
+function updateStats(){
+  document.getElementById('s-total').textContent=partners.length;
+  document.getElementById('s-client').textContent=partners.filter(p=>p.ptype==='client').length;
+  document.getElementById('s-vendor').textContent=partners.filter(p=>p.ptype==='vendor').length;
+  document.getElementById('s-both').textContent=partners.filter(p=>p.ptype==='both').length;
+}
+
+function renderCards(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const tf=document.getElementById('filter-type').value;
+  let filtered=partners.filter(p=>{
+    const matchQ=!q||p.name.toLowerCase().includes(q)||(p.manager||'').toLowerCase().includes(q)||(p.tel||'').includes(q)||(p.email||'').toLowerCase().includes(q);
+    const matchT=!tf||p.ptype===tf;
+    return matchQ&&matchT;
+  });
+  const con=document.getElementById('cards-container');
+  if(!filtered.length){
+    con.innerHTML='<div class="empty-state"><div class="empty-icon">🏪</div><div class="empty-text">등록된 거래처가 없습니다. 거래처를 추가해보세요!</div></div>';
+    return;
+  }
+  const typeBadge={client:'<span class="card-badge badge-client">거래처</span>',vendor:'<span class="card-badge badge-vendor">공급처</span>',both:'<span class="card-badge badge-both">복합</span>'};
+  con.innerHTML='<div class="cards-grid">'+filtered.map(p=>{
+    const initial=(p.name||'?').charAt(0);
+    return`<div class="partner-card">
+      <div class="card-actions">
+        <button class="icon-btn" onclick="editItem('${p.id}')">✏️</button>
+        <button class="icon-btn" onclick="deleteItem('${p.id}')">🗑️</button>
+      </div>
+      <div class="card-header">
+        <div class="card-avatar">${esc(initial)}</div>
+        ${typeBadge[p.ptype]||''}
+      </div>
+      <div class="card-name">${esc(p.name)}</div>
+      ${p.manager?`<div class="card-info">👤 ${esc(p.manager)}</div>`:''}
+      ${p.tel?`<div class="card-info">📞 ${esc(p.tel)}</div>`:''}
+      ${p.email?`<div class="card-info">✉️ ${esc(p.email)}</div>`:''}
+      ${p.addr?`<div class="card-info">📍 ${esc(p.addr)}</div>`:''}
+      ${p.biz?`<div class="card-info" style="font-size:11px;color:#9CA3AF">사업자 ${esc(p.biz)}</div>`:''}
+      ${p.memo?`<div class="card-memo">${esc(p.memo)}</div>`:''}
+    </div>`;
+  }).join('')+'</div>';
+}
+
+window.setPType=function(t){
+  pType=t;
+  ['client','vendor','both'].forEach(x=>{document.getElementById('t-'+x).className=x===t?'active':'';});
+};
+
+window.openModal=function(id=null){
+  editId=id;
+  document.getElementById('modal-title').textContent=id?'거래처 수정':'거래처 추가';
+  if(id){
+    const p=partners.find(x=>x.id===id);if(!p)return;
+    document.getElementById('f-name').value=p.name||'';
+    document.getElementById('f-manager').value=p.manager||'';
+    document.getElementById('f-tel').value=p.tel||'';
+    document.getElementById('f-email').value=p.email||'';
+    document.getElementById('f-addr').value=p.addr||'';
+    document.getElementById('f-biz').value=p.biz||'';
+    document.getElementById('f-memo').value=p.memo||'';
+    setPType(p.ptype||'client');
+  } else {
+    ['f-name','f-manager','f-tel','f-email','f-addr','f-biz','f-memo'].forEach(id=>document.getElementById(id).value='');
+    setPType('client');
+  }
+  document.getElementById('item-modal').classList.add('open');
+  document.getElementById('f-name').focus();
+};
+window.closeModal=function(){document.getElementById('item-modal').classList.remove('open');};
+window.editItem=function(id){openModal(id);};
+
+window.saveItem=async function(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){alert('회사명을 입력해주세요.');return;}
+  const data={id:editId||genId(),ptype:pType,name,manager:document.getElementById('f-manager').value.trim(),tel:document.getElementById('f-tel').value.trim(),email:document.getElementById('f-email').value.trim(),addr:document.getElementById('f-addr').value.trim(),biz:document.getElementById('f-biz').value.trim(),memo:document.getElementById('f-memo').value.trim(),createdAt:editId?(partners.find(p=>p.id===editId)||{}).createdAt||new Date().toISOString():new Date().toISOString()};
+  if(editId){const idx=partners.findIndex(p=>p.id===editId);if(idx>=0)partners[idx]=data;}
+  else partners.push(data);
+  await save();
+  closeModal();
+  updateStats();
+  renderCards();
+};
+
+window.deleteItem=async function(id){
+  if(!confirm('이 거래처를 삭제하시겠습니까?'))return;
+  partners=partners.filter(p=>p.id!==id);
+  await save();
+  updateStats();
+  renderCards();
+};
+
+window.exportCSV=function(){
+  const header='회사명,유형,담당자,연락처,이메일,주소,사업자번호,메모';
+  const typeMap={client:'거래처',vendor:'공급처',both:'복합'};
+  const rows=partners.map(p=>[p.name,typeMap[p.ptype]||'',p.manager||'',p.tel||'',p.email||'',p.addr||'',p.biz||'',p.memo||''].join(','));
+  const blob=new Blob(['﻿'+header+'\n'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='거래처관리_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+};
+
+document.getElementById('item-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+</script>
+</body>
+</html>

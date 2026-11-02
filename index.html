@@ -1,4 +1,365 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<meta http-equiv="refresh" content="0; url=./견적서.html">
-<script>location.replace('./견적서.html');</script>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOA&ARK 포털</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;background:#F3F4F6;color:#000;-webkit-font-smoothing:antialiased;letter-spacing:-0.01em}
+#auth-overlay{position:fixed;inset:0;background:rgba(4,50,255,.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:9999;display:flex;align-items:center;justify-content:center}
+.auth-box{background:#fff;border-radius:24px;padding:44px 40px 36px;width:380px;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 24px 64px rgba(0,0,0,.18);text-align:center}
+.auth-brand{font-size:13px;font-weight:700;letter-spacing:.12em;color:rgba(4,50,255,.5);text-transform:uppercase;margin-bottom:8px}
+.auth-title{font-size:26px;font-weight:800;letter-spacing:-1px;color:#000;margin-bottom:28px}
+.auth-field{width:100%;border:1.5px solid #E5E7EB;border-radius:10px;padding:12px 16px;font-family:inherit;font-size:14px;font-weight:500;color:#111;outline:none;transition:border-color .15s;margin-bottom:10px;background:#FAFAFA}
+.auth-field:focus{border-color:#0432FF;background:#fff;box-shadow:0 0 0 3px rgba(4,50,255,.1)}
+.auth-btn{width:100%;background:#0432FF;color:#fff;border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .15s;letter-spacing:-.01em}
+.auth-btn:hover{opacity:.88}
+.auth-err{font-size:12px;color:#FF3B30;margin-top:10px;min-height:16px;font-weight:500}
+.auth-footer{font-size:11px;color:#9CA3AF;margin-top:20px}
+.cross-nav{background:#fff;border-bottom:1px solid rgba(0,0,0,.07);display:flex;align-items:center;justify-content:center;gap:2px;height:38px;padding:0 16px;position:sticky;top:0;z-index:400;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.cross-nav a{font-family:'Pretendard',-apple-system,sans-serif;font-size:12px;font-weight:600;color:#9CA3AF;text-decoration:none;padding:5px 11px;border-radius:7px;transition:color .12s,background .12s;letter-spacing:-.01em;white-space:nowrap}
+.cross-nav a:hover{color:#0432FF;background:rgba(4,50,255,.06)}
+.cross-nav a.cn-active{color:#0432FF;background:rgba(4,50,255,.08)}
+.cross-nav .cn-sep{width:1px;height:14px;background:#E5E7EB;margin:0 4px;flex-shrink:0}
+.app-bar{background:#0432FF;color:#fff;padding:0 36px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.app-bar-logo{font-size:16px;font-weight:700;letter-spacing:.08em}
+.app-bar-actions{display:flex;gap:8px;align-items:center}
+.user-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;color:#fff}
+.user-badge .dot{width:7px;height:7px;background:#34C759;border-radius:50%;flex-shrink:0}
+.btn-logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);font-family:inherit;font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;cursor:pointer;transition:all .15s}
+.btn-logout:hover{background:rgba(255,255,255,.2);color:#fff}
+.portal-wrapper{max-width:1100px;margin:36px auto;padding:0 24px 80px}
+.portal-hero{background:#0432FF;border-radius:20px;padding:40px 48px;margin-bottom:32px;color:#fff;display:flex;align-items:center;justify-content:space-between}
+.hero-text h1{font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:6px}
+.hero-text p{font-size:14px;color:rgba(255,255,255,.75);font-weight:500}
+.hero-date{font-size:13px;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:-.01em}
+.section-title{font-size:12px;font-weight:700;letter-spacing:.08em;color:#6B7280;text-transform:uppercase;margin-bottom:14px}
+.modules-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:32px}
+.module-card{background:#fff;border-radius:16px;padding:24px 20px;text-decoration:none;color:#000;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column;gap:12px;border:1.5px solid transparent}
+.module-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.12);border-color:#0432FF}
+.module-icon{font-size:28px;line-height:1}
+.module-name{font-size:14px;font-weight:800;letter-spacing:-.3px}
+.module-desc{font-size:11px;color:#6B7280;font-weight:500;line-height:1.5}
+.module-stat{font-size:20px;font-weight:800;color:#0432FF;letter-spacing:-1px;margin-top:4px}
+.module-stat-label{font-size:10px;color:#9CA3AF;font-weight:600;letter-spacing:.03em}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
+.stat-card{background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.stat-label{font-size:11px;font-weight:700;color:#6B7280;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.stat-value{font-size:24px;font-weight:800;letter-spacing:-1px;color:#000}
+.stat-sub{font-size:11px;color:#9CA3AF;margin-top:3px;font-weight:500}
+.activity-section{background:#fff;border-radius:16px;padding:24px 28px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.activity-list{display:flex;flex-direction:column;gap:0}
+.activity-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #F3F4F6}
+.activity-item:last-child{border-bottom:none}
+.activity-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.activity-info{flex:1;min-width:0}
+.activity-title{font-size:13px;font-weight:700;color:#111;letter-spacing:-.2px}
+.activity-meta{font-size:11px;color:#9CA3AF;margin-top:2px;font-weight:500}
+.activity-time{font-size:11px;color:#9CA3AF;font-weight:500;flex-shrink:0}
+.empty-activity{text-align:center;padding:32px 0;color:#9CA3AF;font-size:13px;font-weight:500}
+@media(max-width:900px){.modules-grid{grid-template-columns:repeat(2,1fr)}.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.modules-grid{grid-template-columns:1fr}.portal-hero{flex-direction:column;gap:12px;padding:28px 24px}}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-brand">NOA &amp; ARK</div>
+    <div class="auth-title">로그인</div>
+    <input id="auth-user" class="auth-field" type="text" placeholder="아이디" autocomplete="username"
+      onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    <input id="auth-pass" class="auth-field" type="password" placeholder="비밀번호" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="auth-btn" onclick="doLogin()">로그인</button>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-footer">© NOA&amp;ARK · 접근 권한 보유자만 사용 가능</div>
+  </div>
+</div>
+
+<div class="cross-nav">
+  <a href="index.html" class="cn-active">🏠 포털</a>
+  <a href="견적서.html">📄 견적서</a>
+  <a href="재고관리.html">📦 재고관리</a>
+  <a href="자금관리.html">💰 자금관리</a>
+  <a href="거래처관리.html">🏪 거래처관리</a>
+  <a href="수익관리.html">📊 수익관리</a>
+  <div class="cn-sep"></div>
+  <a href="https://www.notion.so/35f9704e895e81c28e07f30f1219dfa3?pvs=1" target="_blank" rel="noopener">📋 할일</a>
+</div>
+
+<div class="app-bar">
+  <div class="app-bar-logo">NOA&ARK · 포털</div>
+  <div class="app-bar-actions">
+    <div class="user-badge"><span class="dot"></span><span id="user-name-display">-</span></div>
+    <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+  </div>
+</div>
+
+<div class="portal-wrapper">
+  <div class="portal-hero">
+    <div class="hero-text">
+      <h1>안녕하세요 👋</h1>
+      <p>NOA &amp; ARK 자금관리 포털입니다. 원하는 메뉴를 선택하세요.</p>
+    </div>
+    <div class="hero-date" id="hero-date"></div>
+  </div>
+
+  <div class="section-title">요약</div>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">견적서</div>
+      <div class="stat-value" id="stat-quotes">-</div>
+      <div class="stat-sub">저장된 견적서 수</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">재고 품목</div>
+      <div class="stat-value" id="stat-inventory">-</div>
+      <div class="stat-sub">등록된 품목 수</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">거래처</div>
+      <div class="stat-value" id="stat-partners">-</div>
+      <div class="stat-sub">등록된 거래처 수</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">이번 달 수익</div>
+      <div class="stat-value" id="stat-revenue">-</div>
+      <div class="stat-sub" id="stat-revenue-sub">집계 중...</div>
+    </div>
+  </div>
+
+  <div class="section-title">메뉴</div>
+  <div class="modules-grid">
+    <a class="module-card" href="견적서.html">
+      <div class="module-icon">📄</div>
+      <div>
+        <div class="module-name">견적서</div>
+        <div class="module-desc">견적서 작성 및 관리</div>
+      </div>
+      <div>
+        <div class="module-stat" id="mod-quotes">-</div>
+        <div class="module-stat-label">저장된 견적서</div>
+      </div>
+    </a>
+    <a class="module-card" href="재고관리.html">
+      <div class="module-icon">📦</div>
+      <div>
+        <div class="module-name">재고관리</div>
+        <div class="module-desc">품목별 재고 현황</div>
+      </div>
+      <div>
+        <div class="module-stat" id="mod-inventory">-</div>
+        <div class="module-stat-label">등록 품목</div>
+      </div>
+    </a>
+    <a class="module-card" href="자금관리.html">
+      <div class="module-icon">💰</div>
+      <div>
+        <div class="module-name">자금관리</div>
+        <div class="module-desc">입출금 내역 추적</div>
+      </div>
+      <div>
+        <div class="module-stat" id="mod-finance">-</div>
+        <div class="module-stat-label">이번달 입금</div>
+      </div>
+    </a>
+    <a class="module-card" href="거래처관리.html">
+      <div class="module-icon">🏪</div>
+      <div>
+        <div class="module-name">거래처관리</div>
+        <div class="module-desc">거래처·공급처 CRM</div>
+      </div>
+      <div>
+        <div class="module-stat" id="mod-partners">-</div>
+        <div class="module-stat-label">등록 거래처</div>
+      </div>
+    </a>
+    <a class="module-card" href="수익관리.html">
+      <div class="module-icon">📊</div>
+      <div>
+        <div class="module-name">수익관리</div>
+        <div class="module-desc">프로젝트별 수익 분석</div>
+      </div>
+      <div>
+        <div class="module-stat" id="mod-revenue">-</div>
+        <div class="module-stat-label">이번달 순이익</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="section-title">최근 활동</div>
+  <div class="activity-section">
+    <div class="activity-list" id="activity-list">
+      <div class="empty-activity">데이터를 불러오는 중...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const _SESSION_KEY = 'noa_session_v1';
+const _SESSION_TTL = 8 * 60 * 60 * 1000;
+const _AUTH_USERS_KEY = 'noa_auth_users_v1';
+const _DEFAULT_USERS = [
+  { username:'admin',    hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926', name:'관리자',  role:'admin' },
+  { username:'david',    hash:'2d2a6626eb7a70813ec876ad277281379a2d0d6c6e33e67f3c20d5d66452ef5e', name:'김진욱',  role:'admin' },
+  { username:'sooyoung', hash:'9fa1c66b467a1b984e7493e1409d57aa4e9b61f169c131ef6fab89f5c57fc926', name:'소영',    role:'user'  }
+];
+
+function _loadUsers() { try { return JSON.parse(localStorage.getItem(_AUTH_USERS_KEY)) || _DEFAULT_USERS; } catch(e) { return _DEFAULT_USERS; } }
+async function _sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function _getSession() { try { return JSON.parse(sessionStorage.getItem(_SESSION_KEY)); } catch(e) { return null; } }
+function _setSession(user) {
+  sessionStorage.setItem(_SESSION_KEY, JSON.stringify({ username:user.username, name:user.name, role:user.role, expires:Date.now()+_SESSION_TTL }));
+}
+function _showUser(name) {
+  const ov = document.getElementById('auth-overlay');
+  if (ov) ov.remove();
+  document.getElementById('user-name-display').textContent = name;
+  initPortal();
+}
+window.doLogin = async function() {
+  const username = document.getElementById('auth-user').value.trim();
+  const password = document.getElementById('auth-pass').value;
+  if (!username || !password) { document.getElementById('auth-err').textContent = '아이디와 비밀번호를 입력해주세요.'; return; }
+  const hash = await _sha256(password);
+  const users = _loadUsers();
+  const user = users.find(u => u.username === username && u.hash === hash);
+  if (user) { _setSession(user); _showUser(user.name); }
+  else { document.getElementById('auth-err').textContent = '아이디 또는 비밀번호가 올바르지 않습니다.'; document.getElementById('auth-pass').value = ''; }
+};
+window.doLogout = function() {
+  if (confirm('로그아웃 하시겠습니까?')) { sessionStorage.removeItem(_SESSION_KEY); location.reload(); }
+};
+(function() {
+  const s = _getSession();
+  if (s && Date.now() < s.expires) _showUser(s.name);
+})();
+
+// Firebase
+const _FB_CFG = {
+  apiKey:"AIzaSyBvLd4BtsmxTe2P0ZTNTBLmYTQPQGtCwYg",
+  authDomain:"noaark-f8f75.firebaseapp.com",
+  projectId:"noaark-f8f75",
+  storageBucket:"noaark-f8f75.firebasestorage.app",
+  messagingSenderId:"120494768831",
+  appId:"1:120494768831:web:placeholder"
+};
+if (!firebase.apps.length) firebase.initializeApp(_FB_CFG);
+const db = firebase.firestore();
+
+function fmtMoney(n) {
+  if (!n && n !== 0) return '-';
+  return '₩' + Math.round(n).toLocaleString('ko-KR');
+}
+
+function getThisMonthRange() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+  const end = new Date(now.getFullYear(), now.getMonth()+1, 0).toISOString().slice(0,10);
+  return { start, end };
+}
+
+async function initPortal() {
+  // Date
+  const now = new Date();
+  document.getElementById('hero-date').textContent = now.toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+
+  const activities = [];
+
+  try {
+    // Quotes
+    const quoteDoc = await db.collection('noa_data').doc('history').get();
+    const history = quoteDoc.exists ? (quoteDoc.data().history || []) : [];
+    const qCount = history.length;
+    document.getElementById('stat-quotes').textContent = qCount;
+    document.getElementById('mod-quotes').textContent = qCount;
+    if (history.length > 0) {
+      const last = history[history.length - 1];
+      activities.push({ icon:'📄', bg:'#EEF2FF', title: last.title || '견적서', meta:'견적서', time: last.savedAt ? new Date(last.savedAt).toLocaleDateString('ko-KR') : '' });
+    }
+  } catch(e) { document.getElementById('stat-quotes').textContent = '-'; }
+
+  try {
+    // Inventory
+    const invDoc = await db.collection('noa_data').doc('inventory').get();
+    const items = invDoc.exists ? (invDoc.data().items || []) : [];
+    document.getElementById('stat-inventory').textContent = items.length;
+    document.getElementById('mod-inventory').textContent = items.length;
+    if (items.length > 0) {
+      const last = items[items.length - 1];
+      activities.push({ icon:'📦', bg:'#F0FDF4', title: last.name || '품목', meta:'재고관리', time: last.updatedAt ? new Date(last.updatedAt).toLocaleDateString('ko-KR') : '' });
+    }
+  } catch(e) { document.getElementById('stat-inventory').textContent = '-'; }
+
+  try {
+    // Partners
+    const partDoc = await db.collection('noa_data').doc('partners').get();
+    const partners = partDoc.exists ? (partDoc.data().list || []) : [];
+    document.getElementById('stat-partners').textContent = partners.length;
+    document.getElementById('mod-partners').textContent = partners.length;
+    if (partners.length > 0) {
+      const last = partners[partners.length - 1];
+      activities.push({ icon:'🏪', bg:'#FFF7ED', title: last.name || '거래처', meta:'거래처관리', time: last.createdAt ? new Date(last.createdAt).toLocaleDateString('ko-KR') : '' });
+    }
+  } catch(e) { document.getElementById('stat-partners').textContent = '-'; }
+
+  try {
+    // Finance this month
+    const finDoc = await db.collection('noa_data').doc('finance').get();
+    const txns = finDoc.exists ? (finDoc.data().transactions || []) : [];
+    const { start, end } = getThisMonthRange();
+    const thisMonth = txns.filter(t => t.date >= start && t.date <= end && t.type === 'income');
+    const total = thisMonth.reduce((s, t) => s + (t.amount || 0), 0);
+    document.getElementById('mod-finance').textContent = total > 0 ? fmtMoney(total) : '0';
+    if (txns.length > 0) {
+      const last = txns[txns.length - 1];
+      activities.push({ icon:'💰', bg:'#F0F9FF', title: last.category + ' ' + fmtMoney(last.amount), meta:'자금관리', time: last.date || '' });
+    }
+  } catch(e) {}
+
+  try {
+    // Revenue this month
+    const revDoc = await db.collection('noa_data').doc('revenue').get();
+    const records = revDoc.exists ? (revDoc.data().records || []) : [];
+    const { start, end } = getThisMonthRange();
+    const thisMonth = records.filter(r => r.date >= start && r.date <= end);
+    const totalProfit = thisMonth.reduce((s, r) => s + (r.profit || 0), 0);
+    const totalRevenue = thisMonth.reduce((s, r) => s + (r.revenue || 0), 0);
+    document.getElementById('stat-revenue').textContent = totalProfit > 0 || totalRevenue > 0 ? fmtMoney(totalProfit) : '0';
+    document.getElementById('stat-revenue-sub').textContent = `매출 ${fmtMoney(totalRevenue)}`;
+    document.getElementById('mod-revenue').textContent = totalProfit !== 0 ? fmtMoney(totalProfit) : '0';
+    if (records.length > 0) {
+      const last = records[records.length - 1];
+      activities.push({ icon:'📊', bg:'#FFF1F2', title: last.project || '프로젝트', meta:'수익관리', time: last.date || '' });
+    }
+  } catch(e) { document.getElementById('stat-revenue').textContent = '-'; }
+
+  // Render activities
+  const al = document.getElementById('activity-list');
+  if (activities.length === 0) {
+    al.innerHTML = '<div class="empty-activity">아직 활동 내역이 없습니다.</div>';
+  } else {
+    activities.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+    al.innerHTML = activities.map(a => `
+      <div class="activity-item">
+        <div class="activity-icon" style="background:${a.bg}">${a.icon}</div>
+        <div class="activity-info">
+          <div class="activity-title">${a.title}</div>
+          <div class="activity-meta">${a.meta}</div>
+        </div>
+        <div class="activity-time">${a.time}</div>
+      </div>`).join('');
+  }
+}
+</script>
+</body>
+</html>
