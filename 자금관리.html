@@ -397,6 +397,13 @@ async function init(){
     DB.entries=[];
     FX=loadFixed();
   }
+  // Jump to most recent month that has data
+  if(DB.entries.length>0){
+    const dates=DB.entries.map(e=>e.date).filter(Boolean).sort();
+    const lastDate=dates[dates.length-1];
+    const [ly,lm]=lastDate.split('-').map(Number);
+    boardYear=ly; boardMonth=lm;
+  }
   renderBoard();
 }
 
