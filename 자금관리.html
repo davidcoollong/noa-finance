@@ -426,7 +426,9 @@ function renderBoard(){
 
   const mEntries=getMonthEntries(y,m);
   const totalIncome=getIncome(mEntries);
-  const totalExpense=getExpense(mEntries);
+  const totalVarExpense=getExpense(mEntries);
+  const totalFixedExpense=FX.reduce((s,f)=>s+f.amount,0);
+  const totalExpense=totalVarExpense+totalFixedExpense;
   const balance=totalIncome-totalExpense;
 
   const monthStartStr=y+'-'+String(m).padStart(2,'0')+'-01';
@@ -442,7 +444,7 @@ function renderBoard(){
   document.getElementById('s-income').textContent=won(totalIncome);
   document.getElementById('s-income-cnt').textContent=mEntries.filter(e=>e.type==='income').length+'건';
   document.getElementById('s-expense').textContent=won(totalExpense);
-  document.getElementById('s-expense-cnt').textContent=mEntries.filter(e=>e.type==='expense').length+'건';
+  document.getElementById('s-expense-cnt').textContent=(mEntries.filter(e=>e.type==='expense').length+FX.length)+'건';
   const cumEl=document.getElementById('s-cumend');
   cumEl.textContent=(cumMonth>=0?'+':'')+Math.round(cumMonth).toLocaleString('ko-KR');
   cumEl.style.color=cumMonth>=0?'var(--blue)':'var(--red)';
@@ -472,11 +474,14 @@ function renderBoard(){
     const wEntries=mEntries.filter(e=>e.date>=w.start&&e.date<=w.end);
     const wIncome=getIncome(wEntries);
     const wExpense=getExpense(wEntries);
-    const wNet=wIncome-wExpense;
+    const dispStart=new Date(w.dispStart+'T00:00:00');
+    const dispEnd=new Date(w.dispEnd+'T00:00:00');
+    const wFixedExpense=FX.filter(f=>f.dayOfMonth>=dispStart.getDate()&&f.dayOfMonth<=dispEnd.getDate()).reduce((s,f)=>s+f.amount,0);
+    const wNet=wIncome-wExpense-wFixedExpense;
     const carryIn=runningBalance;
     const cumEnd=runningBalance+wNet;
     runningBalance=cumEnd;
-    return{wEntries,wIncome,wExpense,wNet,carryIn,cumEnd};
+    return{wEntries,wIncome,wExpense,wFixedExpense,wNet,carryIn,cumEnd};
   });
 
   grid.innerHTML=weeks.map((w,wi)=>{
