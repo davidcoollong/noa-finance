@@ -50,7 +50,7 @@ body{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;background
 .hero-text p{font-size:14px;color:rgba(255,255,255,.75);font-weight:500}
 .hero-date{font-size:13px;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:-.01em}
 .section-title{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--sub);text-transform:uppercase;margin-bottom:14px}
-.modules-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:32px}
+.modules-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:32px}
 .module-card{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--stroke);border-radius:18px;padding:24px 20px;text-decoration:none;color:var(--text);box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s,border-color .15s;display:flex;flex-direction:column;gap:12px}
 .module-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(10,132,255,.18);border-color:rgba(10,132,255,.3)}
 .module-icon{font-size:28px;line-height:1}
@@ -73,6 +73,7 @@ body{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;background
 .activity-meta{font-size:11px;color:var(--faint);margin-top:2px;font-weight:500}
 .activity-time{font-size:11px;color:var(--faint);font-weight:500;flex-shrink:0}
 .empty-activity{text-align:center;padding:32px 0;color:var(--faint);font-size:13px;font-weight:500}
+@media(max-width:1100px){.modules-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:900px){.modules-grid{grid-template-columns:repeat(2,1fr)}.stats-row{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.modules-grid{grid-template-columns:1fr}.portal-hero{flex-direction:column;gap:12px;padding:28px 24px}}
 </style>
@@ -104,7 +105,7 @@ body{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;background
   <a href="거래처관리.html">🏪 거래처관리</a>
   <a href="수익관리.html">📊 수익관리</a>
   <div class="cn-sep"></div>
-  <a href="https://www.notion.so/35f9704e895e81c28e07f30f1219dfa3?pvs=1" target="_blank" rel="noopener">📋 할일</a>
+  <a href="https://todo-plan-13cf1.web.app" target="_blank" rel="noopener">✅ 할일</a>
 </div>
 
 <div class="app-bar">
@@ -203,6 +204,13 @@ body{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;background
       <div>
         <div class="module-stat" id="mod-revenue">-</div>
         <div class="module-stat-label">이번달 순이익</div>
+      </div>
+    </a>
+    <a class="module-card" href="https://todo-plan-13cf1.web.app" target="_blank" rel="noopener">
+      <div class="module-icon">✅</div>
+      <div>
+        <div class="module-name">할일</div>
+        <div class="module-desc">Todo Plan 앱</div>
       </div>
     </a>
   </div>
